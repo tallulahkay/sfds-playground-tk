@@ -1,0 +1,8 @@
+{
+  "name": "sfds-playground",
+  "version": "1.0.0",
+  "author": "John Dunning",
+  "description": "Bits and bobs from San Francisco Digital Services",
+  "license": "ISC",
+  "workspaces": ["./packages/*"]
+}

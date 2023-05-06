@@ -1,0 +1,27 @@
+{
+  "name": "screendoor-scraper",
+  "version": "0.0.1",
+  "author": "John Dunning",
+  "description": "Scrape metadata from Screendoor.",
+  "license": "ISC",
+  "type": "module",
+  "scripts": {
+    "start": "npm run start:dev",
+    "start:prod": "node dist/main.js",
+    "start:dev": "ts-node-esm -T src/main.ts",
+    "build": "tsc",
+    "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
+  },
+  "dependencies": {
+    "crawlee": "^3.0.0",
+    "fast-csv": "^4.3.6",
+    "fs-extra": "^11.1.1"
+  },
+  "devDependencies": {
+    "@apify/tsconfig": "^0.1.0",
+    "@types/fs-extra": "^11.0.1",
+    "@types/node": "^18.0.0",
+    "ts-node": "^10.8.0",
+    "typescript": "^5.0.0"
+  }
+}
