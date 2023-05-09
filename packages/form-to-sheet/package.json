@@ -1,0 +1,18 @@
+{
+  "name": "form-to-sheet",
+  "version": "1.0.0",
+  "description": "",
+  "author": "John Dunning",
+  "keywords": [],
+  "license": "ISC",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "jmespath": "^0.16.0",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
+  }
+}
