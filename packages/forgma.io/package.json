@@ -1,0 +1,39 @@
+{
+  "name": "forgma.io",
+  "version": "1.0.0",
+  "description": "",
+  "author": "John Dunning",
+  "keywords": [],
+  "license": "ISC",
+  "main": "src/index.ts",
+  "scripts": {
+    "build": "build-figma-plugin --typecheck --minify",
+    "dev": "build-figma-plugin --typecheck --watch"
+  },
+  "figma-plugin": {
+    "editorType": [
+      "figma"
+    ],
+    "id": "forgma.io",
+    "name": "Forgma.io",
+    "main": "src/main.ts",
+    "ui": "src/ui.tsx",
+    "menu": [
+      {
+        "name": "Dump",
+        "main": "src/dump.ts"
+      }
+    ]
+  },
+  "dependencies": {
+    "@create-figma-plugin/ui": "^2.4.0",
+    "@create-figma-plugin/utilities": "^2.4.0",
+    "preact": "^10"
+  },
+  "devDependencies": {
+    "@create-figma-plugin/build": "^2.4.0",
+    "@create-figma-plugin/tsconfig": "^2.4.0",
+    "@figma/plugin-typings": "^1.64.0",
+    "typescript": "^4"
+  }
+}
