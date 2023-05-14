@@ -4,3 +4,6 @@ export interface ResizeWindowHandler extends EventHandler {
 	name: "RESIZE_WINDOW";
 	handler: (windowSize: { width: number; height: number }) => void;
 }
+
+export type JSON = Record<string, any>;
+export type FigmaComponentProps = Record<string, string | boolean>;

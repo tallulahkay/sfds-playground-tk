@@ -1,6 +1,6 @@
 import { camelCase, clean } from "./utils/string";
-
-type JSON = Record<string, any>;
+import { FigmaComponentProps, JSON } from "./types";
+import { mapProperties } from "./mapProperties";
 
 type ComponentProcessor = (
 	node: InstanceNode,
@@ -14,75 +14,27 @@ const DefaultProcessor: ComponentProcessor = (node: InstanceNode, type: string) 
 const ComponentProcessors: Record<string, ComponentProcessor> = {
 	"Checkbox": DefaultProcessor,
 	"Text field": (node: InstanceNode, type: string) => {
-		const {
-			errorText,
-			helpText,
-			labelText,
-			placeholderText,
-			required,
-			showErrorMessage,
-			showHelpText,
-			showPlaceholderText
-		} = getComponentProperties(node);
+		const props = getComponentProperties(node);
 		const json: JSON = {
 			type: "textfield",
-			key: camelCase(labelText),
-			label: labelText,
+			key: camelCase(props.labelText),
 			tableView: true,
-			input: true
+			input: true,
+			...mapProperties(props)
 		};
-
-		if (required) {
-			json.validate = {
-				required: true,
-			}
-
-			if (showErrorMessage) {
-				json.validate.customMessage = errorText
-			}
-		}
-
-		if (showHelpText) {
-			json.description = helpText;
-		}
-
-		if (showPlaceholderText) {
-			json.placeholder = placeholderText;
-		}
 
 		return json;
 	},
 	"Text area": (node: InstanceNode, type: string) => {
-		const {
-			errorText,
-			helpText,
-			labelText,
-			required,
-			showErrorMessage,
-			showHelpText
-		} = getComponentProperties(node);
+		const props = getComponentProperties(node);
 		const json: JSON = {
 			type: "textarea",
-			key: camelCase(labelText),
-			label: labelText,
+			key: camelCase(props.labelText),
 			autoExpand: false,
 			tableView: true,
-			input: true
+			input: true,
+			...mapProperties(props)
 		};
-
-		if (required) {
-			json.validate = {
-				required: true,
-			}
-
-			if (showErrorMessage) {
-				json.validate.customMessage = errorText
-			}
-		}
-
-		if (showHelpText) {
-			json.description = helpText;
-		}
 
 		return json;
 	},
@@ -90,7 +42,7 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 } as const;
 
 function getComponentProperties(
-	node: InstanceNode)
+	node: InstanceNode): FigmaComponentProps
 {
 	const { componentProperties } = node;
 
