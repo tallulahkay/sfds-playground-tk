@@ -13,7 +13,8 @@ export default async function() {
 //	console.log([...names].sort());
 
 	await processSelection("INSTANCE",
-		(node) => console.log(getFormioJSON(node)));
+		(node) => console.log(JSON.stringify(getFormioJSON(node), null, "\t")));
+//		(node) => console.log(getFormioJSON(node)));
 //		(node) => console.log(getComponentType(node)));
 //		({ mainComponent }) => console.log(mainComponent?.parent?.name));
 //		({ componentProperties }) => console.log(componentProperties));

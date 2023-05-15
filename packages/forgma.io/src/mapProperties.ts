@@ -4,6 +4,7 @@ const isTrue = (key: string) => (props: FigmaComponentProps) => props[key];
 
 const PropertyProcessors: Record<string, any> = {
 	labelText: "label",
+	checkboxText: "label",
 	helpText: [isTrue("showHelpText"), "description"],
 	placeholderText: [isTrue("showPlaceholderText"), "placeholder"],
 	required: (props: FigmaComponentProps) => {

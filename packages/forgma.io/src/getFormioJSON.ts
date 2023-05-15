@@ -1,10 +1,22 @@
-import { camelCase, clean } from "./utils/string";
 import { FigmaComponentProps, JSON } from "./types";
 import { mapProperties } from "./mapProperties";
+import { camelCase, clean } from "./utils/string";
+import { isInstance } from "./utils/plugin";
 
 type ComponentProcessor = (
 	node: InstanceNode,
 	string: string) => object;
+
+type FormioCheckboxProps = {
+	label: string,
+	value: string,
+	shortcut: string
+};
+
+type CheckboxInfo = {
+	values: FormioCheckboxProps[],
+	defaultValue: Record<string, boolean>
+};
 
 const DefaultProcessor: ComponentProcessor = (node: InstanceNode, type: string) => ({
 		...getComponentProperties(node),
@@ -12,8 +24,50 @@ const DefaultProcessor: ComponentProcessor = (node: InstanceNode, type: string) 
 });
 
 const ComponentProcessors: Record<string, ComponentProcessor> = {
-	"Checkbox": DefaultProcessor,
-	"Text field": (node: InstanceNode, type: string) => {
+	"Checkbox": (node) => {
+		const props = getComponentProperties(node);
+		const checkboxInfo = node.children
+			.filter(isInstance)
+			.filter(({ visible }) => visible)
+			.reduce((result: CheckboxInfo, node) => {
+				const { rowText, status } = getComponentProperties(node);
+				const identifier = camelCase(rowText);
+
+				result.values.push({
+					label: rowText as string,
+					value: identifier,
+					shortcut: ""
+				});
+				result.defaultValue[identifier] = status === "Selected";
+
+				return result;
+			}, { values: [], defaultValue: {} });
+		const json: JSON = {
+			type: "selectboxes",
+			key: camelCase(props.labelText),
+			tableView: false,
+			inputType: "checkbox",
+			optionsLabelPosition: "right",
+			...mapProperties(props),
+			...checkboxInfo
+		};
+
+		return json;
+	},
+	"Checkbox text": (node) => {
+		const props = getComponentProperties(node);
+		const json: JSON = {
+			type: "checkbox",
+			key: camelCase(props.checkboxText),
+			tableView: false,
+			input: true,
+			defaultValue: props.type === "Selected",
+			...mapProperties(props)
+		};
+
+		return json;
+	},
+	"Text field": (node) => {
 		const props = getComponentProperties(node);
 		const json: JSON = {
 			type: "textfield",
@@ -25,7 +79,7 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 
 		return json;
 	},
-	"Text area": (node: InstanceNode, type: string) => {
+	"Text area": (node) => {
 		const props = getComponentProperties(node);
 		const json: JSON = {
 			type: "textarea",

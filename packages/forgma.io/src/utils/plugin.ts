@@ -55,11 +55,8 @@ export function findInGroups<T extends NodeType, N extends { type: T } & SceneNo
 }
 
 
-export function loadFontsAsync(
-	el: TextNode
-): Promise<void[]>
+export function isInstance(
+	node: SceneNode): node is InstanceNode
 {
-	return Promise.all(
-		el.getRangeAllFontNames(0, el.characters.length).map(figma.loadFontAsync)
-	);
+	return node.type === "INSTANCE";
 }
