@@ -7,14 +7,14 @@ type ComponentProcessor = (
 	node: InstanceNode,
 	string: string) => object;
 
-type FormioCheckboxProps = {
+type FormioOptionProps = {
 	label: string,
 	value: string,
 	shortcut: string
 };
 
-type CheckboxInfo = {
-	values: FormioCheckboxProps[],
+type FormioOptionInfo = {
+	values: FormioOptionProps[],
 	defaultValue: Record<string, boolean>
 };
 
@@ -26,37 +26,34 @@ const DefaultProcessor: ComponentProcessor = (node: InstanceNode, type: string) 
 const ComponentProcessors: Record<string, ComponentProcessor> = {
 	"Checkbox": (node) => {
 		const props = getComponentProperties(node);
-		const checkboxInfo = node.children
-			.filter(isInstance)
-			.filter(({ visible }) => visible)
-			.reduce((result: CheckboxInfo, node) => {
-				const { rowText, status } = getComponentProperties(node);
-				const identifier = camelCase(rowText);
 
-				result.values.push({
-					label: rowText as string,
-					value: identifier,
-					shortcut: ""
-				});
-				result.defaultValue[identifier] = status === "Selected";
-
-				return result;
-			}, { values: [], defaultValue: {} });
-		const json: JSON = {
+		return {
 			type: "selectboxes",
 			key: camelCase(props.labelText),
 			tableView: false,
 			inputType: "checkbox",
 			optionsLabelPosition: "right",
 			...mapProperties(props),
-			...checkboxInfo
+			...getFormioOptionProperties(node)
 		};
+	},
+	"Radio": (node) => {
+		const props = getComponentProperties(node);
 
-		return json;
+		return {
+			type: "radio",
+			key: camelCase(props.labelText),
+			tableView: false,
+			input: true,
+			optionsLabelPosition: "right",
+			...mapProperties(props),
+			...getFormioOptionProperties(node)
+		};
 	},
 	"Checkbox text": (node) => {
 		const props = getComponentProperties(node);
-		const json: JSON = {
+
+		return {
 			type: "checkbox",
 			key: camelCase(props.checkboxText),
 			tableView: false,
@@ -64,24 +61,22 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			defaultValue: props.type === "Selected",
 			...mapProperties(props)
 		};
-
-		return json;
 	},
 	"Text field": (node) => {
 		const props = getComponentProperties(node);
-		const json: JSON = {
+
+		return {
 			type: "textfield",
 			key: camelCase(props.labelText),
 			tableView: true,
 			input: true,
 			...mapProperties(props)
 		};
-
-		return json;
 	},
 	"Text area": (node) => {
 		const props = getComponentProperties(node);
-		const json: JSON = {
+
+		return {
 			type: "textarea",
 			key: camelCase(props.labelText),
 			autoExpand: false,
@@ -89,11 +84,31 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			input: true,
 			...mapProperties(props)
 		};
-
-		return json;
 	},
 	"Navigational buttons": (node: InstanceNode, type: string) => ({ type }),
 } as const;
+
+function getFormioOptionProperties(
+	node: InstanceNode)
+{
+	return node.children
+		.filter(isInstance)
+		.filter(({ visible }) => visible)
+		.reduce((result: FormioOptionInfo, node) => {
+			const { rowText, text, status } = getComponentProperties(node);
+			const label = (rowText || text) as string;
+			const value = camelCase(label);
+
+			result.values.push({
+				label,
+				value,
+				shortcut: ""
+			});
+			result.defaultValue[value] = status === "Selected";
+
+			return result;
+		}, { values: [], defaultValue: {} });
+}
 
 function getComponentProperties(
 	node: InstanceNode): FigmaComponentProps
