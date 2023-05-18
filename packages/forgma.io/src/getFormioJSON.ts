@@ -1,7 +1,25 @@
-import { FigmaComponentProps, JSON } from "./types";
-import { mapProperties } from "./mapProperties";
+import { FigmaComponentProps } from "./types";
+import { getFormioProperties } from "./getFormioProperties";
 import { camelCase, clean } from "./utils/string";
 import { isInstance } from "./utils/plugin";
+
+const AlertStylesByType: Record<string, { icon: string, iconClass: string, bg: string }> = {
+	Informational: {
+		icon: "alert",
+		iconClass: "",
+		bg: "bg-blue-1"
+	},
+	Success: {
+		icon: "alert",
+		iconClass: "",
+		bg: "bg-blue-1"
+	},
+	Failure: {
+		icon: "delete",
+		iconClass: "fg-red-4",
+		bg: "bg-red-1"
+	}
+} as const;
 
 type ComponentProcessor = (
 	node: InstanceNode,
@@ -13,7 +31,7 @@ type FormioOptionProps = {
 	shortcut: string
 };
 
-type FormioOptionInfo = {
+type FormioOptionValues = {
 	values: FormioOptionProps[],
 	defaultValue: Record<string, boolean>
 };
@@ -33,7 +51,7 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			tableView: false,
 			inputType: "checkbox",
 			optionsLabelPosition: "right",
-			...mapProperties(props),
+			...getFormioProperties(props),
 			...getFormioOptionProperties(node)
 		};
 	},
@@ -46,7 +64,7 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			tableView: false,
 			input: true,
 			optionsLabelPosition: "right",
-			...mapProperties(props),
+			...getFormioProperties(props),
 			...getFormioOptionProperties(node)
 		};
 	},
@@ -59,7 +77,7 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			tableView: false,
 			input: true,
 			defaultValue: props.type === "Selected",
-			...mapProperties(props)
+			...getFormioProperties(props)
 		};
 	},
 	"Text field": (node) => {
@@ -70,7 +88,7 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			key: camelCase(props.labelText),
 			tableView: true,
 			input: true,
-			...mapProperties(props)
+			...getFormioProperties(props)
 		};
 	},
 	"Text area": (node) => {
@@ -82,7 +100,53 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			autoExpand: false,
 			tableView: true,
 			input: true,
-			...mapProperties(props)
+			...getFormioProperties(props)
+		};
+	},
+	"Upload": (node) => {
+		const props = getComponentProperties(node);
+
+		return {
+			type: "file",
+			key: camelCase(props.labelText),
+			tableView: false,
+			input: true,
+			storage: "azure",
+			dir: "ooc-equity-mvp",
+			webcam: true,
+			fileTypes: [
+				{
+					label: "",
+					value: ""
+				}
+			],
+			...getFormioProperties(props)
+		};
+	},
+	"Alert callouts": (node) => {
+		const props = getComponentProperties(node);
+		const { type, alertMessage } = props;
+		const { icon, iconClass, bg } = AlertStylesByType[String(type)];
+
+		return {
+			type: "htmlelement",
+			key: camelCase(alertMessage),
+			label: `${type} alert`,
+			tag: "div",
+			content: `<span class="mr-2 ${iconClass}" data-icon="${icon}"></span>\n<span>\n${alertMessage}\n</span>\n`,
+			className: `flex flex-items-start p-40 mt-40 mb-100 ${bg}`,
+			tableView: false,
+			input: false,
+			lockKey: true,
+			source: "61b7cba855627e36d98108ca",
+			isNew: true,
+			attrs: [
+				{
+					attr: "role",
+					value: "alert"
+				}
+			],
+			...getFormioProperties(props)
 		};
 	},
 	"Navigational buttons": (node: InstanceNode, type: string) => ({ type }),
@@ -94,7 +158,7 @@ function getFormioOptionProperties(
 	return node.children
 		.filter(isInstance)
 		.filter(({ visible }) => visible)
-		.reduce((result: FormioOptionInfo, node) => {
+		.reduce((result: FormioOptionValues, node) => {
 			const { rowText, text, status } = getComponentProperties(node);
 			const label = (rowText || text) as string;
 			const value = camelCase(label);

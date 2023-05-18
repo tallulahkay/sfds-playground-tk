@@ -1,6 +1,21 @@
 import { FigmaComponentProps, JSON } from "./types";
 
-const isTrue = (key: string) => (props: FigmaComponentProps) => props[key];
+const DefaultStrings: Record<string, [string, string]> = {
+	showHelpText: ["helpText", "Help text would go here."],
+	showErrorMessage: ["errorText", "Error message would go here."]
+};
+
+const isTrue = (key: string) => (props: FigmaComponentProps) => {
+	const defaultCheck = DefaultStrings[key];
+
+	if (defaultCheck) {
+		const [stringKey, defaultString] = defaultCheck;
+
+		return props[key] && props[stringKey] !== defaultString;
+	} else {
+		return props[key];
+	}
+};
 
 const PropertyProcessors: Record<string, any> = {
 	labelText: "label",
@@ -11,7 +26,8 @@ const PropertyProcessors: Record<string, any> = {
 		if (props.required) {
 			const validate: JSON = { required: true };
 
-			if (props.showErrorMessage) {
+				// only add the error message if it's not set to the default string
+			if (isTrue("showErrorMessage")(props)) {
 				validate.customMessage = props.errorText;
 			}
 
@@ -20,7 +36,7 @@ const PropertyProcessors: Record<string, any> = {
 	}
 };
 
-export function mapProperties(
+export function getFormioProperties(
 	props: FigmaComponentProps)
 {
 	const json: JSON = {};
