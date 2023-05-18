@@ -1,7 +1,8 @@
-import { FigmaComponentProps } from "./types";
-import { getFormioProperties } from "./getFormioProperties";
+import { FigmaComponentProps, FormioJSON } from "./types";
 import { camelCase, clean } from "./utils/string";
-import { isInstance } from "./utils/plugin";
+import { findChildByName, findChildByPath, isInstance } from "./utils/plugin";
+import { getFormioProperties } from "./getFormioProperties";
+import mailingAddress from "./mailingAddress.json";
 
 const AlertStylesByType: Record<string, { icon: string, iconClass: string, bg: string }> = {
 	Informational: {
@@ -35,11 +36,6 @@ type FormioOptionValues = {
 	values: FormioOptionProps[],
 	defaultValue: Record<string, boolean>
 };
-
-const DefaultProcessor: ComponentProcessor = (node: InstanceNode, type: string) => ({
-		...getComponentProperties(node),
-		type
-});
 
 const ComponentProcessors: Record<string, ComponentProcessor> = {
 	"Checkbox": (node) => {
@@ -82,14 +78,47 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 	},
 	"Text field": (node) => {
 		const props = getComponentProperties(node);
-
-		return {
+		const json: FormioJSON = {
 			type: "textfield",
 			key: camelCase(props.labelText),
 			tableView: true,
 			input: true,
 			...getFormioProperties(props)
 		};
+		const prefix = String(props.type).match(/Prefix:\s+(\w+)/);
+
+		if (prefix) {
+				// the prefix types don't seem to have a showPlaceholderText option, so
+				// the placeholder is always included, but we don't want the default
+				// phone placeholder to be in the prefixed component
+			delete json.placeholder;
+
+			if (prefix[1] === "Currency") {
+				json.prefix = "$";
+			} else if (prefix[1] === "Date") {
+				json.widget = {
+					type: "calendar",
+					altInput: true,
+					allowInput: true,
+					clickOpens: true,
+					enableDate: true,
+					enableTime: true,
+					mode: "single",
+					noCalendar: false,
+					format: "yyyy-MM-dd hh:mm a",
+					dateFormat: "yyyy-MM-ddTHH:mm:ssZ",
+					useLocaleSettings: false,
+					hourIncrement: 1,
+					minuteIncrement: 5,
+					time_24hr: false,
+					saveAs: "text",
+					displayInTimezone: "viewer",
+					locale: "en"
+				};
+			}
+		}
+
+		return json;
 	},
 	"Text area": (node) => {
 		const props = getComponentProperties(node);
@@ -149,7 +178,15 @@ const ComponentProcessors: Record<string, ComponentProcessor> = {
 			...getFormioProperties(props)
 		};
 	},
-	"Navigational buttons": (node: InstanceNode, type: string) => ({ type }),
+	"Fieldset": (node) => {
+		const props = getComponentProperties(node);
+		const json = JSON.parse(JSON.stringify(mailingAddress));
+
+		json.label = props.labelText;
+		json.key = camelCase(props.labelText);
+
+		return json;
+	},
 } as const;
 
 function getFormioOptionProperties(
@@ -212,4 +249,33 @@ export function getFormioJSON(
 	}
 
 	return null;
+}
+
+export function getPanelJSON(
+	node: FrameNode)
+{
+	const mainContent = findChildByPath(node, "Content area/Main content") as FrameNode;
+	const pageTitle = findChildByName(mainContent, "Page title") as TextNode;
+	const title = pageTitle?.characters;
+	const components = mainContent.children.filter(isInstance)
+		.map(getFormioJSON)
+		.filter((node) => node);
+
+	return {
+		type: "panel",
+		title,
+		key: camelCase(title),
+		label: title,
+		breadcrumbClickable: true,
+		buttonSettings: {
+			previous: true,
+			cancel: true,
+			next: true
+		},
+		navigateOnEnter: false,
+		saveOnEnter: false,
+		scrollToTop: false,
+		collapsible: false,
+		components
+	};
 }

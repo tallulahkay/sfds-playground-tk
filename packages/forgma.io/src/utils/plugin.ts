@@ -9,7 +9,6 @@ export function main(
 		.finally(figma.closePlugin);
 }
 
-
 // TODO: findAllWithCriteria() already does this
 export function selection<T extends NodeType>(
 	filterType?: T
@@ -24,7 +23,6 @@ export function selection<T extends NodeType>(
 	return result;
 }
 
-
 export async function processSelection<T extends NodeType>(
 	filterType: T,
 	func: (node: { type: T } & SceneNode) => void
@@ -34,7 +32,6 @@ export async function processSelection<T extends NodeType>(
 		await func(node);
 	}
 }
-
 
 export function findInGroups<T extends NodeType, N extends { type: T } & SceneNode>(
 	filterType: T,
@@ -54,6 +51,45 @@ export function findInGroups<T extends NodeType, N extends { type: T } & SceneNo
 	return result as Array<N>;
 }
 
+export function findChildByName(
+	node: FrameNode,
+	name: string)
+{
+	const { children } = node;
+
+	for (const child of children) {
+		if (child.name === name) {
+			return child;
+		}
+	}
+
+	return null;
+}
+
+export function findChildByPath(
+	node: FrameNode,
+	path: string|string[])
+{
+	let parent = node;
+	let child = null;
+	let names = path;
+
+	if (typeof path === "string") {
+		names = path.split("/");
+	}
+
+	for (const name of names) {
+		child = findChildByName(parent, name);
+
+		if (child) {
+			parent = child as FrameNode;
+		} else {
+			break;
+		}
+	}
+
+	return child;
+}
 
 export function isInstance(
 	node: SceneNode): node is InstanceNode

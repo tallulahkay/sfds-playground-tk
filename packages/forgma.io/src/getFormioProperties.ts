@@ -1,4 +1,4 @@
-import { FigmaComponentProps, JSON } from "./types";
+import { FigmaComponentProps, FormioJSON } from "./types";
 
 const DefaultStrings: Record<string, [string, string]> = {
 	showHelpText: ["helpText", "Help text would go here."],
@@ -24,7 +24,7 @@ const PropertyProcessors: Record<string, any> = {
 	placeholderText: [isTrue("showPlaceholderText"), "placeholder"],
 	required: (props: FigmaComponentProps) => {
 		if (props.required) {
-			const validate: JSON = { required: true };
+			const validate: FormioJSON = { required: true };
 
 				// only add the error message if it's not set to the default string
 			if (isTrue("showErrorMessage")(props)) {
@@ -39,7 +39,7 @@ const PropertyProcessors: Record<string, any> = {
 export function getFormioProperties(
 	props: FigmaComponentProps)
 {
-	const json: JSON = {};
+	const json: FormioJSON = {};
 
 	for (const [key, value] of Object.entries(props)) {
 		const processor = PropertyProcessors[key];
