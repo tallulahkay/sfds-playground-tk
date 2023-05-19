@@ -3,6 +3,26 @@ const CamelSplitPattern = /([a-z\d])([A-Z])/g;
 const IllegalCamelPattern = /[\s\W]+/g;
 const UUIDPattern = /#[\d:]+$/;
 
+const idHistory = new Map<string, number>();
+
+function autoIncrement(
+	string: string)
+{
+	let count = idHistory.get(string);
+	let result = string;
+
+	if (count !== undefined) {
+		count++;
+		result = string + count;
+	} else {
+		count = 0;
+	}
+
+	idHistory.set(string, count);
+
+	return result;
+}
+
 function adjustCase(
 	word: string,
 	index: number)
@@ -32,6 +52,7 @@ export function camelCase(
 				return length <= maxLength;
 			})
 			.join("");
+		result = autoIncrement(result);
 	}
 
 	return result;

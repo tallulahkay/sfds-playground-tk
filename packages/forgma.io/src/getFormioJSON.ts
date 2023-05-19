@@ -5,6 +5,7 @@ import AlertCallout from "@/formio/alertCallout";
 import Checkbox from "@/formio/checkbox";
 import CheckboxText from "@/formio/checkboxText";
 import Fieldset from "@/formio/fieldset";
+import PlainText from "@/formio/plainText";
 import Radio from "@/formio/radio";
 import TextArea from "@/formio/textArea";
 import TextField from "@/formio/textField";
@@ -15,6 +16,7 @@ const ComponentProcessors: Record<string, ComponentProcessor> = Object.fromEntri
 	Checkbox,
 	CheckboxText,
 	Fieldset,
+	PlainText,
 	Radio,
 	TextArea,
 	TextField,
@@ -59,7 +61,7 @@ export function getPanelJSON(
 	const title = pageTitle?.characters;
 	const components = mainContent.children.filter(isInstance)
 		.map(getFormioJSON)
-//		.filter((node) => node);
+		.filter((node) => node);
 
 	return {
 		type: "panel",

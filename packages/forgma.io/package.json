@@ -16,14 +16,7 @@
     ],
     "id": "forgma.io",
     "name": "Forgma.io",
-    "main": "src/main.ts",
-    "ui": "src/ui.tsx",
-    "menu": [
-      {
-        "name": "Dump",
-        "main": "src/dump.ts"
-      }
-    ]
+    "main": "src/main.ts"
   },
   "dependencies": {
     "@create-figma-plugin/ui": "^2.4.0",

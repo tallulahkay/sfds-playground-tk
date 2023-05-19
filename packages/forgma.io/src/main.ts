@@ -1,26 +1,18 @@
-import { on, showUI } from "@create-figma-plugin/utilities";
+import { selection } from "./utils/plugin";
+import { getFormioJSON, getPanelJSON } from "./getFormioJSON";
 
-import { ResizeWindowHandler } from "./types";
+export default async function() {
+//	const [selectedItem] = selection("INSTANCE");
+//
+//	if (selectedItem) {
+//		console.log(JSON.stringify(getFormioJSON(selectedItem), null, "\t"));
+//	}
 
-async function handleAdd()
-{
-console.log("==== add");
-}
+	const [selectedItem] = selection("FRAME");
 
-export default function()
-{
-	on<ResizeWindowHandler>(
-		"RESIZE_WINDOW",
-		function(windowSize: { width: number; height: number }) {
-			const { width, height } = windowSize;
-			figma.ui.resize(width, height);
-		}
-	);
+	if (selectedItem) {
+		console.log(JSON.stringify(getPanelJSON(selectedItem), null, "\t"));
+	}
 
-	on("add", handleAdd);
-
-	showUI({
-		width: 240,
-		height: 240
-	});
+	figma.closePlugin("dump!!!");
 }
