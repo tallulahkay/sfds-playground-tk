@@ -1,7 +1,13 @@
 import { selection } from "./utils/plugin";
-import { getPanelJSON } from "./getFormioJSON";
+import { getFormioJSON, getPanelJSON } from "./getFormioJSON";
 
 export default async function() {
+//	const [selectedItem] = selection("INSTANCE");
+//
+//	if (selectedItem) {
+//		console.log(JSON.stringify(getFormioJSON(selectedItem), null, "\t"));
+//	}
+
 	const [selectedItem] = selection("FRAME");
 
 	if (selectedItem) {

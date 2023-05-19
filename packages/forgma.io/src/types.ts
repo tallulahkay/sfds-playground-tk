@@ -7,3 +7,5 @@ export interface ResizeWindowHandler extends EventHandler {
 
 export type FormioJSON = Record<string, any>;
 export type FigmaComponentProps = Record<string, string | boolean>;
+export type ComponentProcessor = (node: InstanceNode) => object;
+export type ComponentSpec = [string, ComponentProcessor];
