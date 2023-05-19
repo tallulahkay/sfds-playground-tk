@@ -1,4 +1,4 @@
-import { FigmaComponentProps, FormioJSON } from "./types";
+import { FigmaComponentProps, FormioJSON } from "@/types";
 
 const DefaultStrings: Record<string, [string, string]> = {
 	showHelpText: ["helpText", "Help text would go here."],

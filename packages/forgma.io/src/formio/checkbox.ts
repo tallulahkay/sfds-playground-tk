@@ -1,6 +1,6 @@
 import { ComponentSpec } from "@/types";
 import { camelCase } from "@/utils/string";
-import { getFormioProperties } from "@/getFormioProperties";
+import { getFormioProperties } from "@/formio/getFormioProperties";
 import { getFormioOptionProperties } from "@/formio/getFormioOptionProperties";
 import { getComponentProperties } from "@/formio/getComponentProperties";
 

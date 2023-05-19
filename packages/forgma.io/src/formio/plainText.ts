@@ -4,16 +4,26 @@ import { getFormioProperties } from "@/formio/getFormioProperties";
 import { getComponentProperties } from "@/formio/getComponentProperties";
 
 const spec: ComponentSpec = [
-	"Text area",
+	"Plain text",
 	(node) => {
 		const props = getComponentProperties(node);
+		const { plainText } = props;
 
 		return {
-			type: "textarea",
-			key: camelCase(props.labelText),
-			autoExpand: false,
-			tableView: true,
-			input: true,
+			type: "htmlelement",
+			key: camelCase(plainText),
+			label: "html",
+			tag: "div",
+			content: `<div style="white-space: pre-wrap;">${plainText}</div>`,
+			className: "mb-40",
+			tableView: false,
+			input: false,
+			attrs: [
+				{
+					attr: "",
+					value: ""
+				}
+			],
 			...getFormioProperties(props)
 		};
 	}
