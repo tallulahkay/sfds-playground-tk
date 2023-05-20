@@ -1,4 +1,4 @@
-import {traverseNode} from "@create-figma-plugin/utilities";
+import { traverseNode } from "@create-figma-plugin/utilities";
 
 export function main(
 	func: Function
@@ -55,11 +55,13 @@ export function findChildByName(
 	node: FrameNode,
 	name: string)
 {
-	const { children } = node;
+	if (node) {
+		const { children } = node;
 
-	for (const child of children) {
-		if (child.name === name) {
-			return child;
+		for (const child of children) {
+			if (child.name === name) {
+				return child;
+			}
 		}
 	}
 
@@ -89,10 +91,4 @@ export function findChildByPath(
 	}
 
 	return child;
-}
-
-export function isInstance(
-	node: SceneNode): node is InstanceNode
-{
-	return node.type === "INSTANCE";
 }

@@ -1,4 +1,4 @@
-import { isInstance } from "@/utils/plugin";
+import { isInstance } from "@/types";
 import { camelCase } from "@/utils/string";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
