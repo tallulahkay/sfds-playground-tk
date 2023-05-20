@@ -1,6 +1,4 @@
-import { ComponentProcessor } from "./types";
-import { camelCase } from "./utils/string";
-import { findChildByName, findChildByPath, isInstance } from "./utils/plugin";
+import { ComponentProcessor } from "../types";
 import AlertCallout from "@/formio/alertCallout";
 import Checkbox from "@/formio/checkbox";
 import CheckboxText from "@/formio/checkboxText";
@@ -51,33 +49,4 @@ export function getFormioJSON(
 	}
 
 	return null;
-}
-
-export function getPanelJSON(
-	node: FrameNode)
-{
-	const mainContent = findChildByPath(node, "Content area/Main content") as FrameNode;
-	const pageTitle = findChildByName(mainContent, "Page title") as TextNode;
-	const title = pageTitle?.characters;
-	const components = mainContent.children.filter(isInstance)
-		.map(getFormioJSON)
-		.filter((node) => node);
-
-	return {
-		type: "panel",
-		title,
-		key: camelCase(title),
-		label: title,
-		breadcrumbClickable: true,
-		buttonSettings: {
-			previous: true,
-			cancel: true,
-			next: true
-		},
-		navigateOnEnter: false,
-		saveOnEnter: false,
-		scrollToTop: false,
-		collapsible: false,
-		components
-	};
 }

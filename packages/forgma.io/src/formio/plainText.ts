@@ -1,12 +1,12 @@
 import { ComponentSpec } from "@/types";
 import { camelCase } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
-import { getComponentProperties } from "@/formio/getComponentProperties";
+import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
 const spec: ComponentSpec = [
 	"Plain text",
 	(node) => {
-		const props = getComponentProperties(node);
+		const props = getFigmaComponentProperties(node);
 		const { plainText } = props;
 
 		return {

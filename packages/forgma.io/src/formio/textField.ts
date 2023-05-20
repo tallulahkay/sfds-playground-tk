@@ -1,12 +1,12 @@
 import { ComponentSpec, FormioJSON } from "@/types";
 import { camelCase } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
-import { getComponentProperties } from "@/formio/getComponentProperties";
+import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
 const spec: ComponentSpec = [
 	"Text field",
 	(node) => {
-		const props = getComponentProperties(node);
+		const props = getFigmaComponentProperties(node);
 		const json: FormioJSON = {
 			type: "textfield",
 			key: camelCase(props.labelText),

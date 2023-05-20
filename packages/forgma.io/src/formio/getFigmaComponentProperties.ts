@@ -1,7 +1,7 @@
 import { FigmaComponentProps } from "@/types";
 import { clean } from "@/utils/string";
 
-export function getComponentProperties(
+export function getFigmaComponentProperties(
 	node: InstanceNode): FigmaComponentProps
 {
 	const { componentProperties } = node;

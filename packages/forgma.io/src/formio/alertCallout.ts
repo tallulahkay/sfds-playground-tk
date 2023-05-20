@@ -1,7 +1,7 @@
 import { ComponentSpec } from "@/types";
 import { camelCase } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
-import { getComponentProperties } from "@/formio/getComponentProperties";
+import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
 const AlertStylesByType: Record<string, { icon: string, iconClass: string, bg: string }> = {
 	Informational: {
@@ -24,7 +24,7 @@ const AlertStylesByType: Record<string, { icon: string, iconClass: string, bg: s
 const spec: ComponentSpec = [
 	"Alert callouts",
 	(node) => {
-		const props = getComponentProperties(node);
+		const props = getFigmaComponentProperties(node);
 		const { type, alertMessage } = props;
 		const { icon, iconClass, bg } = AlertStylesByType[String(type)];
 

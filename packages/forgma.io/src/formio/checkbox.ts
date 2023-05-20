@@ -2,12 +2,12 @@ import { ComponentSpec } from "@/types";
 import { camelCase } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
 import { getFormioOptionProperties } from "@/formio/getFormioOptionProperties";
-import { getComponentProperties } from "@/formio/getComponentProperties";
+import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
 const spec: ComponentSpec = [
 	"Checkbox",
 	(node) => {
-		const props = getComponentProperties(node);
+		const props = getFigmaComponentProperties(node);
 
 		return {
 			type: "selectboxes",

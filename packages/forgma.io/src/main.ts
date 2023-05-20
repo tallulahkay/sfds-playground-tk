@@ -1,5 +1,6 @@
 import { selection } from "./utils/plugin";
-import { getFormioJSON, getPanelJSON } from "./getFormioJSON";
+import { getFormioJSON } from "@/formio/getFormioJSON";
+import { getPanelJSON } from "@/formio/getPanelJSON";
 
 export default async function() {
 //	const [selectedItem] = selection("INSTANCE");
