@@ -1,5 +1,5 @@
 import { isInstance } from "@/types";
-import { camelCase } from "@/utils/string";
+import { uniqueKey } from "@/utils/string";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
 type FormioOptionProps = {
@@ -24,7 +24,7 @@ export function getFormioOptionProperties(
 			node) => {
 			const { rowText, text, status } = getFigmaComponentProperties(node);
 			const label = (rowText || text) as string;
-			const value = camelCase(label);
+			const value = uniqueKey(label);
 
 			result.values.push({
 				label,

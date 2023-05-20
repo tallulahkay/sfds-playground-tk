@@ -3,7 +3,7 @@ import { selection } from "@/utils/plugin";
 import { getPanelJSON } from "@/formio/getPanelJSON";
 import { formioToken } from "../.env.json";
 
-const FormioURL = "https://formio.sfgov.org/dev-ruehbbakcoznmcf";
+const FormioURL = "http://127.0.0.1:3000/api/create";
 
 function createForm(
 	form: FormioJSON)
@@ -29,14 +29,16 @@ function getFormJSON(
 	const [firstPanel] = panels;
 
 	if (firstPanel) {
-		const { title, key } = firstPanel;
-		const path = key.toLowerCase();
+		const { title: panelTitle, key } = firstPanel;
+		const title = `TEST ${panelTitle}`;
+		const name = `TEST${key}`;
+		const path = name.toLowerCase();
 
 		return {
 			type: "form",
 			display: "wizard",
-			title: `TEST ${title}`,
-			name: `TEST${key}`,
+			title,
+			name,
 			path,
 			components: panels
 		};
@@ -50,12 +52,12 @@ export default async function() {
 	let exitMessage = "Make sure a group of panels is selected.";
 
 	if (selectedItem?.children[0].type === "FRAME") {
-		figma.notify("Converting Figma design...");
+		figma.notify("Converting Figma design...", { timeout: 500 });
 
 		const form = getFormJSON(selectedItem.children[0]);
 
 		if (form) {
-			figma.notify("Creating form...");
+			figma.notify("Creating form...", { timeout: 500 });
 
 			try {
 				const response = await createForm(form);
@@ -64,6 +66,7 @@ export default async function() {
 				exitMessage = `Form created: ${form.name}`;
 			} catch (e) {
 				console.error(e);
+				exitMessage = `ERROR: ${(e as Error).message}`;
 			}
 
 			console.log("FORM", form);

@@ -1,5 +1,5 @@
 import { ComponentSpec } from "@/types";
-import { camelCase } from "@/utils/string";
+import { uniqueKey } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
@@ -30,11 +30,11 @@ const spec: ComponentSpec = [
 
 		return {
 			type: "htmlelement",
-			key: camelCase(alertMessage),
+			key: uniqueKey(alertMessage),
 			label: `${type} alert`,
 			tag: "div",
 			content: `<span class="mr-2 ${iconClass}" data-icon="${icon}"></span>\n<span>\n${alertMessage}\n</span>\n`,
-			className: `flex flex-items-start p-40 mt-40 mb-100 ${bg}`,
+			className: `flex flex-items-start p-40 my-40 ${bg}`,
 			tableView: false,
 			input: false,
 			lockKey: true,

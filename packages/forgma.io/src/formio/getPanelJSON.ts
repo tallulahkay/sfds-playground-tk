@@ -1,6 +1,6 @@
 import { isInstance, isNotNull } from "@/types";
 import { findChildByName, findChildByPath } from "@/utils/plugin";
-import { camelCase } from "@/utils/string";
+import { uniqueKey } from "@/utils/string";
 import { getFormioJSON } from "@/formio/getFormioJSON";
 
 export function getPanelJSON(
@@ -18,7 +18,7 @@ export function getPanelJSON(
 		return {
 			type: "panel",
 			title,
-			key: camelCase(title),
+			key: uniqueKey(title),
 			label: title,
 			breadcrumbClickable: true,
 			buttonSettings: {

@@ -1,5 +1,5 @@
 import { ComponentSpec } from "@/types";
-import { camelCase } from "@/utils/string";
+import { uniqueKey } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
@@ -11,7 +11,7 @@ const spec: ComponentSpec = [
 
 		return {
 			type: "htmlelement",
-			key: camelCase(plainText),
+			key: uniqueKey(plainText),
 			label: "html",
 			tag: "div",
 			content: `<div style="white-space: pre-wrap;">${plainText}</div>`,

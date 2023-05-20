@@ -1,4 +1,4 @@
-import { ComponentProcessor } from "../types";
+import { ComponentProcessor } from "@/types";
 import AlertCallout from "@/formio/alertCallout";
 import Checkbox from "@/formio/checkbox";
 import CheckboxText from "@/formio/checkboxText";

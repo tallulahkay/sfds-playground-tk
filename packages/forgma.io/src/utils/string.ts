@@ -31,12 +31,18 @@ function adjustCase(
 }
 
 export function camelCase(
+	value: any)
+{
+	return String(value)
+		.replace(CamelPattern, adjustCase)
+		.replace(IllegalCamelPattern, "");
+}
+
+export function uniqueKey(
 	value: any,
 	maxLength = 32)
 {
-	let result = String(value)
-		.replace(CamelPattern, adjustCase)
-		.replace(IllegalCamelPattern, "");
+	let result = camelCase(value);
 
 	if (maxLength && result.length > maxLength) {
 		let length = 0;
@@ -52,8 +58,9 @@ export function camelCase(
 				return length <= maxLength;
 			})
 			.join("");
-		result = autoIncrement(result);
 	}
+
+	result = autoIncrement(result);
 
 	return result;
 }

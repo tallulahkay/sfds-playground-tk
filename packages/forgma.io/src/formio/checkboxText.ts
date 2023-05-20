@@ -1,5 +1,5 @@
 import { ComponentSpec } from "@/types";
-import { camelCase } from "@/utils/string";
+import { uniqueKey } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
@@ -10,7 +10,7 @@ const spec: ComponentSpec = [
 
 		return {
 			type: "checkbox",
-			key: camelCase(props.checkboxText),
+			key: uniqueKey(props.checkboxText),
 			tableView: false,
 			input: true,
 			defaultValue: props.type === "Selected",

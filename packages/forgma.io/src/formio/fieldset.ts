@@ -1,5 +1,5 @@
 import { ComponentSpec } from "@/types";
-import { camelCase } from "@/utils/string";
+import { uniqueKey } from "@/utils/string";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 import mailingAddress from "@/formio/mailingAddress.json";
 
@@ -10,7 +10,7 @@ const spec: ComponentSpec = [
 		const json = JSON.parse(JSON.stringify(mailingAddress));
 
 		json.label = props.labelText;
-		json.key = camelCase(props.labelText);
+		json.key = uniqueKey(props.labelText);
 
 		return json;
 	}

@@ -1,5 +1,5 @@
 import { ComponentSpec } from "@/types";
-import { camelCase } from "@/utils/string";
+import { uniqueKey } from "@/utils/string";
 import { getFormioProperties } from "@/formio/getFormioProperties";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
 
@@ -10,7 +10,7 @@ const spec: ComponentSpec = [
 
 		return {
 			type: "textarea",
-			key: camelCase(props.labelText),
+			key: uniqueKey(props.labelText),
 			autoExpand: false,
 			tableView: true,
 			input: true,
