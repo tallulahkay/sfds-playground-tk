@@ -1,6 +1,24 @@
-import { selection } from "./utils/plugin";
+import { FormioJSON, isFrame, isNotNull } from "@/types";
+import { selection } from "@/utils/plugin";
 import { getPanelJSON } from "@/formio/getPanelJSON";
-import { isFrame, isNotNull } from "@/types";
+import { formioToken } from "../.env.json";
+
+const FormioURL = "https://formio.sfgov.org/dev-ruehbbakcoznmcf";
+
+function createForm(
+	form: FormioJSON)
+{
+	const body = JSON.stringify(form);
+
+	return fetch(FormioURL, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"x-token": formioToken,
+		},
+		body
+	});
+}
 
 function getFormJSON(
 	node: FrameNode)
@@ -17,8 +35,8 @@ function getFormJSON(
 		return {
 			type: "form",
 			display: "wizard",
-			title,
-			name: key,
+			title: `TEST ${title}`,
+			name: `TEST${key}`,
 			path,
 			components: panels
 		};
@@ -32,12 +50,21 @@ export default async function() {
 	let exitMessage = "Make sure a group of panels is selected.";
 
 	if (selectedItem?.children[0].type === "FRAME") {
-		figma.notify("Generating form...");
+		figma.notify("Converting Figma design...");
 
 		const form = getFormJSON(selectedItem.children[0]);
 
 		if (form) {
-			exitMessage = `Form created: ${form.name}`;
+			figma.notify("Creating form...");
+
+			try {
+				const response = await createForm(form);
+
+				console.log("response", response);
+				exitMessage = `Form created: ${form.name}`;
+			} catch (e) {
+				console.error(e);
+			}
 
 			console.log("FORM", form);
 		}
