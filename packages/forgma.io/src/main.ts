@@ -61,9 +61,15 @@ export default async function() {
 
 			try {
 				const response = await createForm(form);
+				const responseJSON = await response.json();
 
-				console.log("response", response);
-				exitMessage = `Form created: ${form.name}`;
+				console.log("response", response, responseJSON);
+
+				if (response.ok) {
+					exitMessage = `Form created: ${form.name}`;
+				} else {
+					exitMessage = `ERROR: ${responseJSON.message}`;
+				}
 			} catch (e) {
 				console.error(e);
 				exitMessage = `ERROR: ${(e as Error).message}`;

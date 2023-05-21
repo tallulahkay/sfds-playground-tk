@@ -7,7 +7,7 @@ export interface ResizeWindowHandler extends EventHandler {
 
 export type FormioJSON = Record<string, any>;
 export type FigmaComponentProps = Record<string, string | boolean>;
-export type ComponentProcessor = (node: InstanceNode) => object;
+export type ComponentProcessor = (node: InstanceNode|TextNode) => object;
 export type ComponentSpec = [string, ComponentProcessor];
 
 export function isInstance(
@@ -20,6 +20,12 @@ export function isFrame(
 	node: SceneNode): node is FrameNode
 {
 	return node.type === "FRAME";
+}
+
+export function isText(
+	node: SceneNode): node is TextNode
+{
+	return node.type === "TEXT";
 }
 
 export function isNotNull(

@@ -14,8 +14,12 @@ type FormioOptionValues = {
 };
 
 export function getFormioOptionProperties(
-	node: InstanceNode)
+	node: SceneNode)
 {
+	if (!isInstance(node)) {
+		return null;
+	}
+
 	return node.children
 		.filter(isInstance)
 		.filter(({ visible }) => visible)
