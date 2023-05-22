@@ -1,14 +1,18 @@
-import { EventHandler } from "@create-figma-plugin/utilities";
-
-export interface ResizeWindowHandler extends EventHandler {
-	name: "RESIZE_WINDOW";
-	handler: (windowSize: { width: number; height: number }) => void;
-}
-
 export type FormioJSON = Record<string, any>;
-export type FigmaComponentProps = Record<string, string | boolean>;
-export type ComponentProcessor = (node: InstanceNode|TextNode) => object;
+export type FigmaComponentProps = Record<string, string|boolean>;
+export type ComponentProcessor = (node: InstanceNode|TextNode) => FormioJSON|null;
 export type ComponentSpec = [string, ComponentProcessor];
+
+export type FormioOptionProps = {
+	label: string,
+	value: string,
+	shortcut: string
+};
+
+export type FormioOptionValues = {
+	values: FormioOptionProps[],
+	defaultValue: Record<string, boolean>
+};
 
 export function isInstance(
 	node: SceneNode): node is InstanceNode

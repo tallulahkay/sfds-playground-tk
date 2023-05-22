@@ -4,6 +4,7 @@ import { getPanelJSON } from "@/formio/getPanelJSON";
 import { formioToken } from "../.env.json";
 
 const FormioURL = "http://127.0.0.1:3000/api/create";
+const FormTag = "FORGMA";
 
 function createForm(
 	form: FormioJSON)
@@ -30,8 +31,8 @@ function getFormJSON(
 
 	if (firstPanel) {
 		const { title: panelTitle, key } = firstPanel;
-		const title = `TEST ${panelTitle}`;
-		const name = `TEST${key}`;
+		const title = `${FormTag} ${panelTitle}`;
+		const name = FormTag + key;
 		const path = name.toLowerCase();
 
 		return {
@@ -40,6 +41,7 @@ function getFormJSON(
 			title,
 			name,
 			path,
+			tags: [FormTag],
 			components: panels
 		};
 	}

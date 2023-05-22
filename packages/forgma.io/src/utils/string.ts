@@ -3,12 +3,12 @@ const CamelSplitPattern = /([a-z\d])([A-Z])/g;
 const IllegalCamelPattern = /[\s\W]+/g;
 const UUIDPattern = /#[\d:]+$/;
 
-const idHistory = new Map<string, number>();
+let uniqueIDs = new Map<string, number>();
 
 function autoIncrement(
 	string: string)
 {
-	let count = idHistory.get(string);
+	let count = uniqueIDs.get(string);
 	let result = string;
 
 	if (count !== undefined) {
@@ -18,7 +18,7 @@ function autoIncrement(
 		count = 0;
 	}
 
-	idHistory.set(string, count);
+	uniqueIDs.set(string, count);
 
 	return result;
 }

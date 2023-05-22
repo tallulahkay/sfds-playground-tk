@@ -1,17 +1,6 @@
-import { isInstance } from "@/types";
+import { FormioOptionValues, isInstance } from "@/types";
 import { uniqueKey } from "@/utils/string";
 import { getFigmaComponentProperties } from "@/formio/getFigmaComponentProperties";
-
-type FormioOptionProps = {
-	label: string,
-	value: string,
-	shortcut: string
-};
-
-type FormioOptionValues = {
-	values: FormioOptionProps[],
-	defaultValue: Record<string, boolean>
-};
 
 export function getFormioOptionProperties(
 	node: SceneNode)
