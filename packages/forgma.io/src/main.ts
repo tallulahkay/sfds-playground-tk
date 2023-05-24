@@ -4,7 +4,8 @@ import { getPanelJSON } from "@/formio/getPanelJSON";
 import { formioToken } from "../.env.json";
 
 const FormioURL = "http://127.0.0.1:3000/api/create";
-const FormTag = "FORGMA";
+const FormTag = "TEST";
+//const FormTag = "FORGMA";
 
 function createForm(
 	form: FormioJSON)

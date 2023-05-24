@@ -17,12 +17,10 @@ const spec: ComponentSpec = [
 
 		return {
 			type: "Conditional",
-			logic: IsPattern.test(props.logic as string)
+			operator: IsPattern.test(props.logic as string)
 				? "eq"
 				: "neq",
-			label: labels.length > 1
-				? labels
-				: labels[0]
+			labels
 		};
 	}
 ];

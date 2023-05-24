@@ -6,25 +6,53 @@ import { getFormioJSON } from "@/formio/getFormioJSON";
 	// find the last component that could serve as a source of values in a conditional
 const lastSource = (array: any[]) => [...array].reverse().find(({ values }) => values);
 
-function addSource(
-	conditional: FormioJSON,
-	source: FormioJSON)
+function addSourceToConditional(
+	source: FormioJSON,
+	conditional: FormioJSON)
 {
 	if (source.values) {
-		const labelPattern = new RegExp(`^${conditional.label}`, "i");
-		const option = source.values.find((option: FormioOptionProps) => labelPattern.test(option.label));
+		const labelPattern = new RegExp(`^(${conditional.labels.join("|")})`, "i");
+		const values = (source.values as FormioOptionProps[])
+			.filter(({ label }) => labelPattern.test(label))
+			.map(({ value }) => value);
 
-		if (option) {
+		if (values.length) {
 			conditional.when = source.key;
-			conditional.value = option.value;
+			conditional.values = values;
 console.log("--- logic", conditional, source);
 
 			return conditional;
 		}
 	}
+
 console.log("--- MISSING logic", conditional, source);
 
 	return null;
+}
+
+function addConditionalToComponent(
+	conditional: FormioJSON,
+	component: FormioJSON)
+{
+	const { when, values, operator } = conditional;
+	let logic = {};
+
+	if (values.length === 1) {
+		logic = {
+			show: true,
+			when,
+			[operator]: values[0]
+		};
+	} else {
+			// OR all the paths to the keys on the object that were included in the conditional
+		logic = {
+			json: {
+				"or": values.map((key: string) => ({ var: `data.${when}.${key}` }))
+			}
+		};
+	}
+
+	component.conditional = logic;
 }
 
 function processChildren(
@@ -39,18 +67,14 @@ function processChildren(
 		if (component) {
 			if (component.type === "Conditional") {
 					// track this conditional, but don't include it in the components
-				lastConditional = addSource(component, lastSource(components));
+				lastConditional = addSourceToConditional(lastSource(components), component);
+// TODO: need to push the conditional and padding onto a stack
+//  then pop when another conditional is hit or the padding changes
 			} else {
 				const { paddingLeft } = child as InstanceNode;
 
 				if (paddingLeft && lastConditional) {
-					const { when, value, logic } = lastConditional;
-
-					component.conditional = {
-						show: true,
-						when,
-						[logic]: value
-					};
+					addConditionalToComponent(lastConditional, component);
 console.log("=== conditional", component);
 				}
 
