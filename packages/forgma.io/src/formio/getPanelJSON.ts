@@ -19,7 +19,6 @@ function addSourceToConditional(
 		if (values.length) {
 			conditional.when = source.key;
 			conditional.values = values;
-console.log("--- logic", conditional, source);
 
 			return conditional;
 		}
@@ -59,23 +58,36 @@ function processChildren(
 	children: readonly SceneNode[])
 {
 	const components = [];
-	let lastConditional;
+	const conditionalsByPadding: Record<number, FormioJSON|null> = {};
+	let pendingConditional;
 
 	for (const child of children) {
 		const component = getFormioJSON(child);
 
 		if (component) {
 			if (component.type === "Conditional") {
-					// track this conditional, but don't include it in the components
-				lastConditional = addSourceToConditional(lastSource(components), component);
-// TODO: need to push the conditional and padding onto a stack
-//  then pop when another conditional is hit or the padding changes
+					// track this conditional, but don't include it in the components.  we
+					// also don't know what padding level to assign it until we see the
+					// next component that has a paddingLeft value.
+				pendingConditional = addSourceToConditional(lastSource(components), component);
 			} else {
 				const { paddingLeft } = child as InstanceNode;
 
-				if (paddingLeft && lastConditional) {
-					addConditionalToComponent(lastConditional, component);
-console.log("=== conditional", component);
+				if (paddingLeft) {
+						// non-zero paddingLeft indicates that the visiblity of this
+						// component is controlled by a conditional
+					if (pendingConditional) {
+							// there's a conditional waiting to be stored, so assign it to
+							// this component's padding level
+						conditionalsByPadding[paddingLeft] = pendingConditional;
+						pendingConditional = null;
+					}
+
+					const conditional = conditionalsByPadding[paddingLeft];
+
+					if (conditional) {
+						addConditionalToComponent(conditional, component);
+					}
 				}
 
 				components.push(component);
