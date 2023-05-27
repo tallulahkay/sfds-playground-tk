@@ -32,8 +32,8 @@ export function isText(
 	return node.type === "TEXT";
 }
 
-export function isNotNull(
-	value: any)
+export function isNotEmpty<T>(
+	value: T|null|undefined): value is T
 {
 	return value !== null && value !== undefined;
 }

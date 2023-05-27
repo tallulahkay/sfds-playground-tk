@@ -1,18 +1,17 @@
-import { FormioJSON, isFrame, isNotNull } from "@/types";
+import { FormioJSON, isFrame, isNotEmpty } from "@/types";
 import { selection } from "@/utils/plugin";
 import { getPanelJSON } from "@/formio/getPanelJSON";
 import { formioToken } from "../.env.json";
 
-const FormioURL = "http://127.0.0.1:3000/api/create";
-const FormTag = "TEST";
-//const FormTag = "FORGMA";
+const CreateFormURL = "http://127.0.0.1:3000/api/create";
+const FormTag = "FORGMA";
 
 function createForm(
 	form: FormioJSON)
 {
 	const body = JSON.stringify(form);
 
-	return fetch(FormioURL, {
+	return fetch(CreateFormURL, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",
@@ -22,12 +21,13 @@ function createForm(
 	});
 }
 
-function getFormJSON(
+async function getFormJSON(
 	node: FrameNode)
 {
-	const panels = node.children.filter(isFrame)
-		.map(getPanelJSON)
-		.filter(isNotNull);
+		// getPanelJSON returns a promise, since it calls the OpenAI API, so wait for
+		// all the promises to settle before filtering out any nulls
+	const panels = (await Promise.all(node.children.filter(isFrame).map(getPanelJSON)))
+		.filter(isNotEmpty);
 	const [firstPanel] = panels;
 
 	if (firstPanel) {
@@ -57,7 +57,7 @@ export default async function() {
 	if (selectedItem?.children[0].type === "FRAME") {
 		figma.notify("Converting Figma design...", { timeout: 500 });
 
-		const form = getFormJSON(selectedItem.children[0]);
+		const form = await getFormJSON(selectedItem.children[0]);
 
 		if (form) {
 			figma.notify("Creating form...", { timeout: 500 });

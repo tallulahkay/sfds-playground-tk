@@ -1,10 +1,11 @@
-import { FormioJSON, FormioOptionProps, isNotNull } from "@/types";
+import { FormioJSON, FormioOptionProps, isNotEmpty } from "@/types";
+import { generateKeys } from "@/utils/open-ai";
 import { findChildByName, findChildByPath } from "@/utils/plugin";
 import { uniqueKey } from "@/utils/string";
 import { getFormioJSON } from "@/formio/getFormioJSON";
 
 	// find the last component that could serve as a source of values in a conditional
-const lastSource = (array: any[]) => [...array].reverse().find(({ values }) => values);
+const lastSource = (array: readonly any[]) => [...array].reverse().find(({ values }) => values);
 
 function addSourceToConditional(
 	source: FormioJSON,
@@ -57,58 +58,81 @@ function addConditionalToComponent(
 function processChildren(
 	children: readonly SceneNode[])
 {
-	const components = [];
-	const conditionalsByPadding: Record<number, FormioJSON|null> = {};
+	return children.map(getFormioJSON).filter(isNotEmpty);
+}
+
+function processConditionals(
+	components: readonly FormioJSON[])
+{
+	const processed = [];
+	const conditionalsByLevel: Record<number, FormioJSON|null> = {};
 	let pendingConditional;
 
-	for (const child of children) {
-		const component = getFormioJSON(child);
-
+	for (const component of components) {
 		if (component) {
 			if (component.type === "Conditional") {
 					// track this conditional, but don't include it in the components.  we
-					// also don't know what padding level to assign it until we see the
-					// next component that has a paddingLeft value.
-				pendingConditional = addSourceToConditional(lastSource(components), component);
+					// also don't know what level to assign it until we see the next
+					// component that has a conditionalLevel value.
+				pendingConditional = addSourceToConditional(lastSource(processed), component);
 			} else {
-				const { paddingLeft } = child as InstanceNode;
+				const { conditionalLevel } = component;
 
-				if (paddingLeft) {
+				if (conditionalLevel) {
 						// non-zero paddingLeft indicates that the visiblity of this
 						// component is controlled by a conditional
 					if (pendingConditional) {
 							// there's a conditional waiting to be stored, so assign it to
 							// this component's padding level
-						conditionalsByPadding[paddingLeft] = pendingConditional;
+						conditionalsByLevel[conditionalLevel] = pendingConditional;
 						pendingConditional = null;
 					}
 
-					const conditional = conditionalsByPadding[paddingLeft];
+					const conditional = conditionalsByLevel[conditionalLevel];
 
 					if (conditional) {
 						addConditionalToComponent(conditional, component);
 					}
+
+						// we no longer need this, and it isn't a Formio prop, so remove it
+					delete component.conditionalLevel;
 				}
 
-				components.push(component);
+				processed.push(component);
 			}
 		}
 	}
 
-	return components;
+	return processed;
 }
 
-export function getPanelJSON(
-	node: FrameNode)
+export async function getPanelJSON(
+	node: FrameNode,
+	index: number)
 {
 	const mainContent = findChildByPath(node, "Content area/Main content") as FrameNode;
 	const firstPageContent = findChildByPath(node, "Content area/Main content/Content") as FrameNode;
 	const pageTitle = findChildByName(mainContent, "Page title") as TextNode;
+	const content = firstPageContent || mainContent;
 
-	if (mainContent && pageTitle) {
+	if (content && pageTitle) {
 		const title = pageTitle.characters;
-		const { children } = (firstPageContent || mainContent);
-		const components = processChildren(children);
+			// don't include the page title node as a child that gets processed, since
+			// we just put its text directly into the title prop of the panel
+		const children = content.children.filter(child => child !== pageTitle);
+			// convert the child nodes to JSON objects corresponding to Formio components
+		let components = processChildren(children);
+
+			// somewhat arbitrarily, just generate better keys for the second panel,
+			// since the OpenAI API takes ~20s per panel and is limited to 3 calls/min
+		if (index === 2) {
+			figma.notify("Talking to our robot overlords...", { timeout: 10000 });
+			components = await generateKeys(components);
+		}
+
+			// apply any conditionals in the array to the indented components that
+			// follow them
+		components = processConditionals(components);
 
 		return {
 			type: "panel",

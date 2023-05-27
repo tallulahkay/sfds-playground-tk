@@ -1,4 +1,10 @@
-import { ComponentProcessor, isFrame, isInstance, isText } from "@/types";
+import {
+	ComponentProcessor,
+	isFrame,
+	isInstance,
+	isNotEmpty,
+	isText
+} from "@/types";
 import AlertCallout from "@/formio/alertCallout";
 import Checkbox from "@/formio/checkbox";
 import CheckboxText from "@/formio/checkboxText";
@@ -54,7 +60,15 @@ export function getFormioJSON(
 	const processor = ComponentProcessors[type];
 
 	if (processor && (isInstance(node) || isText(node))) {
-		return processor(node);
+		const json = processor(node);
+
+		if (json && json.type !== "Conditional" && isInstance(node) && node.paddingLeft) {
+				// we need to temporarily store the paddingLeft on the component so we
+				// know which components are affected by which conditional
+			json.conditionalLevel = node.paddingLeft;
+		}
+
+		return json;
 	}
 
 	return null;
