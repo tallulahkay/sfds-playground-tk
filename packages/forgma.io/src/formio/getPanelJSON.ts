@@ -1,5 +1,4 @@
 import { FormioJSON, FormioOptionProps, isNotEmpty } from "@/types";
-import { generateKeys } from "@/utils/open-ai";
 import { findChildByName, findChildByPath } from "@/utils/plugin";
 import { uniqueKey } from "@/utils/string";
 import { getFormioJSON } from "@/formio/getFormioJSON";
@@ -106,9 +105,20 @@ function processConditionals(
 	return processed;
 }
 
+export function processPanelConditionals(
+	panel: FormioJSON)
+{
+	const { components } = panel;
+
+		// apply any conditionals in the array to the indented components that
+		// follow them
+	panel.components = processConditionals(components);
+
+	return panel;
+}
+
 export async function getPanelJSON(
-	node: FrameNode,
-	index: number)
+	node: FrameNode)
 {
 	const mainContent = findChildByPath(node, "Content area/Main content") as FrameNode;
 	const firstPageContent = findChildByPath(node, "Content area/Main content/Content") as FrameNode;
@@ -121,18 +131,7 @@ export async function getPanelJSON(
 			// we just put its text directly into the title prop of the panel
 		const children = content.children.filter(child => child !== pageTitle);
 			// convert the child nodes to JSON objects corresponding to Formio components
-		let components = processChildren(children);
-
-			// somewhat arbitrarily, just generate better keys for the second panel,
-			// since the OpenAI API takes ~20s per panel and is limited to 3 calls/min
-		if (index === 2) {
-			figma.notify("Talking to our robot overlords...", { timeout: 10000 });
-			components = await generateKeys(components);
-		}
-
-			// apply any conditionals in the array to the indented components that
-			// follow them
-		components = processConditionals(components);
+		const components = processChildren(children);
 
 		return {
 			type: "panel",

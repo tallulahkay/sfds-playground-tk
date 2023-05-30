@@ -1,7 +1,7 @@
 import { FormioJSON, isFrame, isNotEmpty } from "@/types";
 import { selection } from "@/utils/plugin";
-import { getPanelJSON } from "@/formio/getPanelJSON";
-import { formioToken } from "../.env.json";
+import { getPanelJSON, processPanelConditionals } from "@/formio/getPanelJSON";
+import { generateKeys } from "@/utils/open-ai";
 
 const CreateFormURL = "http://127.0.0.1:3000/api/create";
 const FormTag = "FORGMA";
@@ -13,10 +13,6 @@ function createForm(
 
 	return fetch(CreateFormURL, {
 		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			"x-token": formioToken,
-		},
 		body
 	});
 }
@@ -35,6 +31,25 @@ async function getFormJSON(
 		const title = `${FormTag} ${panelTitle}`;
 		const name = FormTag + key;
 		const path = name.toLowerCase();
+		let components: FormioJSON[] = panels;
+
+		try {
+			console.log("==== panels before gpt", panels);
+			figma.notify("Talking to our robot overlords...", { timeout: 10000 });
+
+			const result = await generateKeys(components);
+
+			console.log("==== panels after gpt", result);
+
+			if (result) {
+					// only update the components if we got something back from the server
+				components = result;
+			}
+		} catch (e) {
+			console.error(e);
+		}
+
+		components = components.map(processPanelConditionals);
 
 		return {
 			type: "form",
@@ -43,7 +58,7 @@ async function getFormJSON(
 			name,
 			path,
 			tags: [FormTag],
-			components: panels
+			components
 		};
 	}
 
