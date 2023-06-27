@@ -6,7 +6,8 @@ const SpacePattern = /[\n ]/g;	// literal non-breaking space character
 const Headers = ["Response Number", "Response ID", "Timestamp", "Activity", "Message"];
 
 // TODO: pull the form name from a CLI argument
-const url = (responseNumber: string) => `https://screendoor.dobt.co/sfgovofficeofcannabis/office-of-cannabis-temporary-permit-application-2/admin/responses/${responseNumber}`;
+const url = (responseNumber: string) => `https://screendoor.dobt.co/sfgovofficeofcannabis/article-33-permit-holders/admin/responses/${responseNumber}`;
+//const url = (responseNumber: string) => `https://screendoor.dobt.co/sfgovofficeofcannabis/office-of-cannabis-temporary-permit-application-2/admin/responses/${responseNumber}`;
 //const url = (responseNumber: string) => `https://screendoor.dobt.co/sfgovofficeofcannabis/tell-the-city-you-want-to-be-an-equity-incubator/admin/responses/${responseNumber}`;
 
 const clean = (string: string) => string.replace(SpacePattern, " ").trim();
