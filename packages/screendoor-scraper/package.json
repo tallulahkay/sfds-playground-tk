@@ -9,17 +9,21 @@
     "start": "npm run start:dev",
     "start:prod": "node dist/main.js",
     "start:dev": "ts-node-esm -T src/main.ts",
+    "start-metadata:dev": "ts-node-esm -T src/scrape-metadata.ts",
     "build": "tsc",
     "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
   },
   "dependencies": {
     "crawlee": "^3.0.0",
+    "dotenv": "^16.3.1",
     "fast-csv": "^4.3.6",
-    "fs-extra": "^11.1.1"
+    "fs-extra": "^11.1.1",
+    "minimist": "^1.2.8"
   },
   "devDependencies": {
     "@apify/tsconfig": "^0.1.0",
     "@types/fs-extra": "^11.0.1",
+    "@types/minimist": "^1.2.2",
     "@types/node": "^18.0.0",
     "ts-node": "^10.8.0",
     "typescript": "^5.0.0"
