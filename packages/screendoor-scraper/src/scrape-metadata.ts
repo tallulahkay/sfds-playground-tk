@@ -1,16 +1,21 @@
 import fs from "fs-extra";
 import { CheerioCrawler, Dataset } from "crawlee";
-import { writeToPath } from "fast-csv";
+import TurndownService from "turndown";
 import parseArgs from "minimist";
 import "dotenv/config";
+import { Totals } from "./Totals.js";
 
-const SpacePattern = /[\n ]/g;	// literal non-breaking space character
-const Headers = ["Response Number", "Response ID", "Timestamp", "Activity", "Message"];
+	// create a service to map HTML to markdown
+const turndown = new TurndownService();
+
+	// ignore the OOC dept image that's at the top of most emails
+turndown.addRule("img", {
+	filter: "img",
+	replacement: () => ""
+});
 
 const responseURL = (projectName: string, responseNumber: string) => `https://screendoor.dobt.co/sfgovofficeofcannabis/${projectName}/admin/responses/${responseNumber}`;
 const responsesAPI = ({ projectID = 0, api_key = "", page = 0, per_page = 100 }) => `https://screendoor.dobt.co/api/projects/${projectID}/responses?v=1&api_key=${api_key}&per_page=${per_page}&page=${page}`;
-
-const clean = (string: string) => string.replace(SpacePattern, " ").trim();
 
 function getArgs(
 	argString = process.argv.slice(2))
@@ -31,7 +36,8 @@ async function fetchJSON(
 
 async function getAllRequests(
 	projectName: string,
-	projectID: number)
+	projectID: number,
+	formIDs: Totals)
 {
 	const requests: object[] = [];
 	const api_key = process.env.SCREENDOOR_KEY;
@@ -56,12 +62,17 @@ async function getAllRequests(
 			page++;
 			responseCount = responses.length;
 
-			responses.forEach(({ id, sequential_id }) => {
+			responses.forEach((response) => {
+				const { id, sequential_id, initial_response_id, form_id } = response;
+
+				formIDs.add(form_id);
 				requests.push({
 					url: responseURL(projectName, sequential_id),
 					userData: {
 						responseID: id,
-						responseNumber: sequential_id
+						responseNumber: sequential_id,
+						formID: form_id,
+						initialID: initial_response_id
 					}
 				});
 			});
@@ -70,6 +81,8 @@ async function getAllRequests(
 
 	return requests;
 }
+
+// TODO: change this to project name and ID
 
 const { flags: { formName, formID, output } } = getArgs();
 
@@ -80,16 +93,19 @@ if (!formName || !formID) {
 	process.exit(1);
 }
 
-const requests = await getAllRequests(formName, formID);
+const formIDs = new Totals();
+const requests = await getAllRequests(formName, formID, formIDs);
+
+console.log("Found form IDs:\n", formIDs.all());
 
 const cookies = fs.readJsonSync("env/cookies.json");
 
 const crawler = new CheerioCrawler({
 //	maxRequestsPerCrawl: 2,
 	requestHandler: async ({ request, $ }) => {
-		const { responseID, responseNumber } = request.userData;
+		const { responseID, responseNumber, formID, initialID } = request.userData;
 		const activityItems = $("li.activity_item:not(.js_comment_form_li)");
-		const rows: any[] = [];
+		const items: object[] = [];
 
 		activityItems.each((_, el) => {
 			const time = $("span[class^='activity_time']", el);
@@ -106,27 +122,26 @@ const crawler = new CheerioCrawler({
 				const comment = $(".activity_card_body", el);
 				let message = "";
 
+// TODO: convert comment to markdown?  maybe also convert labels to ` ` or other formatted string
+
 				if (messageContainer.length) {
 					const subject = $("header", messageContainer).text();
-					const body = $(".message_mailer_body .rendered_from_wysiwyg", messageContainer).text();
+					const body = turndown.turndown($(".message_mailer_body .rendered_from_wysiwyg", messageContainer).html() ?? "");
 
-					message = `'${subject}': ${body}`;
+					message = `### ${subject}\n\n${body}`;
 				} else if (comment.length) {
 					message = comment.text();
 				}
 
-// TODO: change timestamp to PDT format, since Airtable isn't adjusting the timezone
-
-				rows.push([
+				items.push({
+					formID,
 					responseID,
 					responseNumber,
+					initialID,
 					timestamp,
 					event,
-						// strip any newlines from the message text, so that it doesn't
-						// wrap to the next row in the spreadsheet, and replace non-breaking
-						// spaces with regular ones
-					clean(message)
-				]);
+					message
+				});
 			}
 		});
 
@@ -134,7 +149,7 @@ const crawler = new CheerioCrawler({
 			responseID,
 			responseNumber,
 			url: request.url,
-			activity: rows
+			activity: items
 		});
 	},
 	preNavigationHooks: [({ session, request }) => {
@@ -148,17 +163,21 @@ await crawler.run(requests);
 
 const dataset = await Dataset.open();
 const { items } = await dataset.getData();
-let rows: string[][] = [Headers];
+let metadataItems: object[] = [];
 
 items.forEach((item) => {
 	const { activity } = item;
 
-	rows = rows.concat(activity);
+	metadataItems = metadataItems.concat(activity);
 });
 
 	// sort by the response number.  the response ID won't necessarily be in the same order.
-rows = rows.sort((a, b) => (a[1] - b[1]));
+metadataItems = metadataItems.sort((a, b) => (a.timestamp - b.timestamp));
+metadataItems = metadataItems.sort((a, b) => (a.responseNumber - b.responseNumber));
 
-writeToPath(output, rows);
+	// change the timestamp to PDT format, since Airtable isn't adjusting the timezone
+//rows = rows.map(({ timestamp, ...rest }) => ({ ...rest, timestamp: new Date(timestamp).toLocaleString() }));
+
+fs.writeJSONSync(output, metadataItems, { spaces: "\t" });
 
 // TODO: fix curly quotes.  need to save it as utf8?  or use the xlsx export?

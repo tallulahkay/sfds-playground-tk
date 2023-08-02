@@ -35,7 +35,7 @@ class Progress {
 
 	pctString()
 	{
-		return ((this.done / this.total) * 100).toFixed(1);
+		return this.pct().toFixed(1);
 	}
 }
 
@@ -79,8 +79,7 @@ const updates = [];
 const skippedMetadata = new Set();
 
 metadataQuery.records
-		// currently, the scraped metadata is mostly for the initial application form, but has some other
-		// forms mixed in as well, so filter those out
+		// filter out records that have already been linked, in case the script didn't finish the last time
 	.filter((record) => !record.getCellValue(ReviewLinkField))
 	.forEach((record) => {
 		const number = record.getCellValue(ResponseNumField);
@@ -95,6 +94,8 @@ metadataQuery.records
 				}
 			});
 		} else {
+				// currently, the scraped metadata is mostly for the initial application form, but has some other
+				// forms mixed in as well, so track those response numbers
 			skippedMetadata.add(number);
 		}
 	});
