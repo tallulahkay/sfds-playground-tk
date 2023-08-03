@@ -1,18 +1,31 @@
 import fs from "fs-extra";
-import { CheerioCrawler, Dataset } from "crawlee";
+import {
+	CheerioCrawler,
+	Dataset,
+	RequestOptions
+} from "crawlee";
 import TurndownService from "turndown";
 import parseArgs from "minimist";
 import "dotenv/config";
 import { Totals } from "./Totals.js";
 
+const SpacePattern = / /g;	// literal non-breaking space character
+
+const clean = (string: string) => string.replace(SpacePattern, " ").trim();
+
 	// create a service to map HTML to markdown
 const turndown = new TurndownService();
 
-	// ignore the OOC dept image that's at the top of most emails
-turndown.addRule("img", {
-	filter: "img",
-	replacement: () => ""
-});
+turndown
+		// ignore the OOC dept image that's at the top of most emails
+	.addRule("img", {
+		filter: "img",
+		replacement: () => ""
+	})
+	.addRule("label", {
+		filter: (node: HTMLElement) => node.nodeName === "SPAN" && node.classList.contains("label"),
+		replacement: (content) => `\`${content}\` `
+	});
 
 const responseURL = (projectName: string, responseNumber: string) => `https://screendoor.dobt.co/sfgovofficeofcannabis/${projectName}/admin/responses/${responseNumber}`;
 const responsesAPI = ({ projectID = 0, api_key = "", page = 0, per_page = 100 }) => `https://screendoor.dobt.co/api/projects/${projectID}/responses?v=1&api_key=${api_key}&per_page=${per_page}&page=${page}`;
@@ -21,9 +34,9 @@ function getArgs(
 	argString = process.argv.slice(2))
 {
 	const { _: [command], ...flags } = parseArgs(argString);
-	const { formName, formID, output = `${formName}.csv` } = flags;
+	const { projectName, projectID, output = `${projectName}.json` } = flags;
 
-	return { command, flags: { formName, formID, output } };
+	return { command, flags: { projectName, projectID, output } };
 }
 
 async function fetchJSON(
@@ -39,7 +52,7 @@ async function getAllRequests(
 	projectID: number,
 	formIDs: Totals)
 {
-	const requests: object[] = [];
+	const requests: RequestOptions[] = [];
 	const api_key = process.env.SCREENDOOR_KEY;
 	let page = 0;
 	let responseCount = 0;
@@ -82,19 +95,15 @@ async function getAllRequests(
 	return requests;
 }
 
-// TODO: change this to project name and ID
+const { flags: { projectName, projectID, output } } = getArgs();
 
-const { flags: { formName, formID, output } } = getArgs();
-
-console.log(formName, formID, output);
-
-if (!formName || !formID) {
-	console.log("`formName` and `formID` parameters are required.");
+if (!projectName || !projectID) {
+	console.log("`projectName` and `projectID` parameters are required.");
 	process.exit(1);
 }
 
 const formIDs = new Totals();
-const requests = await getAllRequests(formName, formID, formIDs);
+const requests = await getAllRequests(projectName, projectID, formIDs);
 
 console.log("Found form IDs:\n", formIDs.all());
 
@@ -110,19 +119,18 @@ const crawler = new CheerioCrawler({
 		activityItems.each((_, el) => {
 			const time = $("span[class^='activity_time']", el);
 
-// TODO: if there are multiple labels in the header, separate with commas, or surround with []
-
 			if (time.length) {
 				const timestamp = $("time", time).attr("datetime");
-				const event = $(".activity_label", el).text() || $(".activity_header", el).text();
+					// messages have a plain text activity_label, while the activity_header contains
+					// span.label elements that we want to convert to code spans
+				const event = $(".activity_label", el).text()
+					|| turndown.turndown($(".activity_header", el).html() ?? "");
 					// the .activity_message_full element seems to not get filled out until
 					// the card is expanded, so grab the text from partial card, which does
 					// not include the metadata elements, unfortunately
 				const messageContainer = $(".activity_message_partial", el);
 				const comment = $(".activity_card_body", el);
 				let message = "";
-
-// TODO: convert comment to markdown?  maybe also convert labels to ` ` or other formatted string
 
 				if (messageContainer.length) {
 					const subject = $("header", messageContainer).text();
@@ -132,6 +140,9 @@ const crawler = new CheerioCrawler({
 				} else if (comment.length) {
 					message = comment.text();
 				}
+
+					// remove non-breaking spaces from the message
+				message = clean(message);
 
 				items.push({
 					formID,
@@ -171,13 +182,8 @@ items.forEach((item) => {
 	metadataItems = metadataItems.concat(activity);
 });
 
-	// sort by the response number.  the response ID won't necessarily be in the same order.
-metadataItems = metadataItems.sort((a, b) => (a.timestamp - b.timestamp));
-metadataItems = metadataItems.sort((a, b) => (a.responseNumber - b.responseNumber));
-
-	// change the timestamp to PDT format, since Airtable isn't adjusting the timezone
-//rows = rows.map(({ timestamp, ...rest }) => ({ ...rest, timestamp: new Date(timestamp).toLocaleString() }));
+	// sort by descending date/time and then by the response ID
+metadataItems = metadataItems.sort((a, b) => (b.timestamp - a.timestamp));
+metadataItems = metadataItems.sort((a, b) => (a.responseID - b.responseID));
 
 fs.writeJSONSync(output, metadataItems, { spaces: "\t" });
-
-// TODO: fix curly quotes.  need to save it as utf8?  or use the xlsx export?

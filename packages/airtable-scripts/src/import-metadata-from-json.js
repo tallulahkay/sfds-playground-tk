@@ -43,7 +43,6 @@ class Progress {
 
 const UpdateChunkSize = 50;
 const ScreendoorIDField = "Screendoor Response ID";
-const ReviewsTableName = "Cannabis Business Permit Reviews";
 const FormNamesByID = {
 	5804: "Initial Application",
   5885: "Community Outreach",
@@ -113,7 +112,7 @@ const MetadataTableFields = [
 		},
 	},
 	{
-		name: "Initial ID",
+		name: "Initial Response ID",
 		key: "initialID",
 		type: "number",
 		options: {
@@ -125,12 +124,18 @@ const MetadataTableFields = [
 		key: "",
 		type: "multipleRecordLinks",
 		options: {
-			linkedTableId: base.getTable(ReviewsTableName).id
+				// we'll set this below after the user chooses a reviews table
+			linkedTableId: null
 		}
 	},
 ];
 
 const byTimestampDesc = (a, b) => new Date(b.timestamp) - new Date(a.timestamp);
+
+const reviewsTable = await input.tableAsync("Choose the table containing the review records:");
+
+	// now that the user's picked the table, we can link it to the field
+MetadataTableFields.find(({ name }) => name === "Review Link").options.linkedTableId = reviewsTable.id;
 
 const metadataTableName = await input.textAsync("Enter a name for the new table to contain the Screendoor metadata:");
 
@@ -148,7 +153,6 @@ const jsonFile = await input.fileAsync(
 );
 
 const startTime = Date.now();
-const reviewsTable = base.getTable(ReviewsTableName);
 const reviewsQuery = await reviewsTable.selectRecordsAsync({
 	fields: [ScreendoorIDField],
 });
@@ -167,9 +171,10 @@ const metadataItems = jsonFile.parsedContents.sort(byTimestampDesc);
 const metadataRecords = [];
 const skippedIDs = new Set();
 
-metadataItems.slice(0, 100).forEach((item) => {
-//metadataItems.forEach((item) => {
+metadataItems.forEach((item) => {
 	const { responseID, initialID } = item;
+		// submissions that are linked to the initial business application with have an initialID number set.  if that
+		// value is null, then this metadata is from the initial application submission itself, so use its responseID.
 	const id = initialID ?? responseID;
 	const reviewRecord = reviewsByID[id];
 
@@ -186,9 +191,6 @@ metadataItems.slice(0, 100).forEach((item) => {
 					: [reviewRecord]
 		}), {});
 
-// TODO: fix this in the JSON
-		fields.Timestamp = new Date(fields.Timestamp).toISOString();
-
 		metadataRecords.push({ fields });
 	} else {
 		skippedIDs.add(id);
@@ -196,13 +198,14 @@ metadataItems.slice(0, 100).forEach((item) => {
 });
 
 if (skippedIDs.size > 0) {
-	output.markdown(`Skipping metadata response IDs with no matching reviews in \`${ReviewsTableName}\`: ${[...skippedIDs].join(", ")}`);
+	output.markdown(`Skipping metadata response IDs with no matching reviews in \`${reviewsTable.name}\`:\n\n${[...skippedIDs].join(", ")}`);
 }
 
-output.markdown(`Starting metadata import and linking...`);
+output.markdown(`Starting metadata import...`);
 
 const updateProgress = new Progress({
 	total: metadataRecords.length,
+		// print the progress every 4%
 	printStep: 4
 });
 
