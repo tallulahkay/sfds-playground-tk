@@ -44,22 +44,28 @@ class Progress {
 const UpdateChunkSize = 50;
 const ScreendoorIDField = "Screendoor Response ID";
 const FormNamesByID = {
+	4209: "Temporary Permit",
+	4225: "Article 33",
+	4279: "Pre-inspection",
+	4717: "Equity Application",
+	6799: "Event Permit",
 	5804: "Initial Application",
-  5885: "Community Outreach",
-  6447: "General Operations",
-  5886: "General Operations",
-  5887: "Security Plan",
-  6162: "General Operations",
-  6419: "Storefront Retail",
-  6425: "Distributor",
-  6437: "Cultivation",
-  6420: "Delivery",
-  9396: "Delivery",
-  6428: "Manufacturing",
-  6431: "Testing",
-  8110: "Renewal",
-  9026: "Renewal",
-  9436: "Renewal"
+	5885: "Community Outreach",
+	6447: "General Operations",
+	5886: "General Operations",
+	5887: "Security Plan",
+	6162: "General Operations",
+	6419: "Storefront Retail",
+	6425: "Distributor",
+	6437: "Cultivation",
+	6420: "Delivery",
+	9396: "Delivery",
+	6428: "Manufacturing",
+	6431: "Testing",
+	6682: "Legal Help",
+	8110: "Renewal",
+	9026: "Renewal",
+	9436: "Renewal"
 };
 const FormNames = [...new Set(Object.values(FormNamesByID))];
 const MetadataTableFields = [
@@ -191,7 +197,11 @@ metadataItems.forEach((item) => {
 					: [reviewRecord]
 		}), {});
 
-		metadataRecords.push({ fields });
+		if (fields.Form.name) {
+			metadataRecords.push({ fields });
+		} else {
+			console.error(`Unrecognized form ID: ${item.formID}\n${JSON.stringify(fields, null, 2)}`);
+		}
 	} else {
 		skippedIDs.add(id);
 	}
@@ -212,8 +222,13 @@ const updateProgress = new Progress({
 for (let i = 0, len = metadataRecords.length; i < len; i += UpdateChunkSize) {
 	const chunk = metadataRecords.slice(i, i + UpdateChunkSize);
 
-	await metadataTable.createRecordsAsync(chunk);
-	updateProgress.increment(chunk.length);
+	try {
+		await metadataTable.createRecordsAsync(chunk);
+		updateProgress.increment(chunk.length);
+	} catch (e) {
+		console.error(e);
+		console.log("Bad chunk", i, chunk);
+	}
 }
 
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s**`);

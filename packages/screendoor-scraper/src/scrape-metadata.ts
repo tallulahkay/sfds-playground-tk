@@ -1,4 +1,5 @@
 import fs from "fs-extra";
+import { resolve } from "path";
 import {
 	CheerioCrawler,
 	Dataset,
@@ -9,9 +10,15 @@ import parseArgs from "minimist";
 import "dotenv/config";
 import { Totals } from "./Totals.js";
 
-const SpacePattern = / /g;	// literal non-breaking space character
+const NBSPPattern = / /g;	// literal non-breaking space character
+const NewlineSpacePattern = / +\n/g;	// spaces before a newline
+const MultiSpacePattern = /  +/g;	// 2+ spaces in a row
 
-const clean = (string: string) => string.replace(SpacePattern, " ").trim();
+const clean = (string: string) => string
+	.replace(NBSPPattern, " ")
+	.replace(NewlineSpacePattern, "\n")
+	.replace(MultiSpacePattern, " ")
+	.trim();
 
 	// create a service to map HTML to markdown
 const turndown = new TurndownService();
@@ -186,4 +193,4 @@ items.forEach((item) => {
 metadataItems = metadataItems.sort((a, b) => (b.timestamp - a.timestamp));
 metadataItems = metadataItems.sort((a, b) => (a.responseID - b.responseID));
 
-fs.writeJSONSync(output, metadataItems, { spaces: "\t" });
+fs.writeJSONSync(resolve("./out", output), metadataItems, { spaces: "\t" });
