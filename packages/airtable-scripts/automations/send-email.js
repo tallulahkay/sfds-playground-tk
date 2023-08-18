@@ -159,10 +159,6 @@ await reviewsTable.updateRecordAsync(reviewRecord,
 const previousNotes = getCell(sourceRecord, NotesFormulaFields);
 const updatedNotesFields = Object.fromEntries(previousNotes.map((note, i) => [PermitNotesFields[i], note]));
 
-//	// for now, delete the first and last note fields, since the spelling is slightly different
-//delete updatedNotesFields[PermitNotesFields[0]];
-//delete updatedNotesFields[PermitNotesFields.pop()];
-
 	// update the permit review record with the latest notes
 await reviewsTable.updateRecordAsync(reviewRecord, updatedNotesFields);
 

@@ -1,8 +1,11 @@
 	// "import" these utilities from the function at the end of this script
-const { getCellHash, loopChunks } = utils();
+const { getCell, getCellHash, getFieldsByName, loopChunks } = utils();
 
-const JSONTableName = "SCREENDOOR_EQUITY_APPLICANT";
-const JSONFieldName = "RESPONSE_JSON";
+const ScreendoorTableName = "SCREENDOOR_EQUITY_APPLICANT_REV";
+const ScreendoorFields = {
+	JSON: "AIRTABLE_JSON",
+	Submitted: "SUBMITTED_AT",
+};
 const SubmissionsTableName = "TEST Equity Applicant Submissions";
 const SubmissionFields = {
 	ID: "RESPONSE_ID",
@@ -22,67 +25,51 @@ const ReviewFields = {
 	ResponseID: "Screendoor Response ID",
 	ResponseNum: "Screendoor Response Number",
 };
-const UpdateChunkSize = 50;
-const DayMS = 24 * 60 * 60 * 1000;
+const ChunkSize = 50;
 
-	// this mapping is just to generate some basic Airtable data from the Screendoor JSON,
-	// and wouldn't be needed in the real script
-const ATToSDMapping = {
-	"RESPONSE_ID": "id",
-	"RESPONSE_NUM": "sequential_id",
-	"Submitted": "submitted_at",
-	name: ({ responder: { name } }) => name.split(" ")[0],
-	yourLastName: ({ responder: { name } }) => name.split(" ").slice(1).join(" "),
-	email: ({ responder: { email } }) => email,
-	phoneNumber: ({ created_at }) => created_at.split("T")[0],
-	additionalContactFirstName: "pretty_id",
-};
-
-const rnd = (min, max) => Math.floor(Math.random() * (max - min + 1) + min);
-const clone = (value) => JSON.parse(JSON.stringify(value));
 const bySubmittedDesc = (a, b) => new Date(b.fields.Submitted) - new Date(a.fields.Submitted);
 
 const startTime = Date.now();
-const jsonTable = await base.getTable(JSONTableName);
+const jsonTable = await base.getTable(ScreendoorTableName);
 const jsonQuery = await jsonTable.selectRecordsAsync({
-	fields: [JSONFieldName],
+	fields: Object.values(ScreendoorFields)
 });
 
 const submissionsTable = await base.getTable(SubmissionsTableName);
-const extraSubmissions = [];
+const submissionFieldsByName = getFieldsByName(submissionsTable);
 const submissions = jsonQuery.records.map((record) => {
-	const json = record.getCellValue(JSONFieldName);
-	const screendoorData = JSON.parse(json);
-		// generate some data from the JSON
-	const airtableData = Object.entries(ATToSDMapping).reduce((result, [atKey, sdKey]) => {
-		result[atKey] = typeof sdKey === "function"
-			? sdKey(screendoorData)
-			: String(screendoorData[sdKey])
+	const [json, Submitted] = getCell(record, Object.values(ScreendoorFields));
+	const airtableData = JSON.parse(json);
 
-		return result;
-	}, {});
-	const submitted = new Date(airtableData.Submitted);
+	Object.entries(airtableData).forEach(([key, value]) => {
+		const { type } = submissionFieldsByName[key];
 
-		// create 1 - 3 additional random submissions for this project
-	for (let i = 1, len = rnd(1, 3); i <= len; i++) {
-		const extra = clone(airtableData);
+			// the JSON is coming in with bare strings for select values, so fix those
+		if (type === "singleSelect") {
+			airtableData[key] = { name: value };
+		} else if (type === "multipleSelects") {
+			airtableData[key] = value.map((name) => ({ name }));
+		} else if (key.startsWith("SCREENDOOR")) {
+// TODO: fix this
+				// for some reason, this link to another record in the SCREENDOOR_EQUITY_APPLICANT
+				// field doesn't work, so just delete it for now
+			delete airtableData[key];
+		}
+	});
 
-		extra.Submitted = new Date(+submitted + (i * 30 * DayMS) + (rnd(0, 15) * DayMS)).toISOString();
-		extraSubmissions.push({ fields: extra });
-	}
+		// hack the date string into something parseable without moment.js
+	airtableData.Submitted = new Date(Submitted.replace(/([ap]m)/, " $1")).toISOString();
 
 	return { fields: airtableData };
-}).concat(extraSubmissions);
+});
 
-	// we want the submissions sorted by reverse chronological order so that they'll get linked
-	// to the review in the correct order
 submissions.sort(bySubmittedDesc);
 
 const submissionRecIDsByResponse = {};
 
 output.markdown(`Starting import of ${submissions.length} submissions...`);
 
-await loopChunks(submissions, UpdateChunkSize, async (chunk) => {
+await loopChunks(submissions, ChunkSize, async (chunk) => {
 	const records = await submissionsTable.createRecordsAsync(chunk);
 
 	chunk.forEach((submission, i) => {
@@ -122,7 +109,7 @@ for (const [latestID, ...previousIDs] of Object.values(submissionRecIDsByRespons
 	});
 }
 
-await loopChunks(reviews, UpdateChunkSize, (chunk) => reviewsTable.createRecordsAsync(chunk));
+await loopChunks(reviews, ChunkSize, (chunk) => reviewsTable.createRecordsAsync(chunk));
 
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s**`);
 
@@ -194,6 +181,15 @@ function utils() {
 		return Object.fromEntries(result.map((value, i) => [fieldNames[i], value]));
 	}
 
+	function getFieldsByName(
+		table)
+	{
+		return table.fields.reduce((result, field) => ({
+			...result,
+			[field.name]: field
+		}), {});
+	}
+
 	async function loopChunks(
 		items,
 		chunkSize,
@@ -227,6 +223,7 @@ function utils() {
 		Progress,
 		getCell,
 		getCellHash,
+		getFieldsByName,
 		loopChunks,
 	};
 }

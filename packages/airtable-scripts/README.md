@@ -1,6 +1,25 @@
 # Airtable Scripts
 
 
+## Automations
+
+These scripts are used in some automations in the Office of Cannabis Airtable bases.
+
+
+### [save-submission-status.js](automations/save-submission-status.js)
+
+> Saves a new entry in the activity table
+
+It shifts the last modified date in the sent to applicant and edits received fields over one column to store the new value.
+
+
+### [send-email.js](automations/send-email.js)
+
+> Sends an email to the applicant
+
+It also prepends the current notes to the previous notes fields.
+
+
 ## Extensions
 
 These scripts are intended to be copy-and-pasted into Script Extension fields inside Airtable.  There doesn't appear to be any way to load remote scripts into a base, unfortunately.
