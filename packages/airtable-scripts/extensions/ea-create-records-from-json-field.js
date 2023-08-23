@@ -4,9 +4,11 @@ const { getCell, getCellHash, getFieldsByName, loopChunks } = utils();
 const ScreendoorTableName = "SCREENDOOR_EQUITY_APPLICANT";
 const ScreendoorRevTableName = "SCREENDOOR_EQUITY_APPLICANT_REV";
 const ScreendoorFields = [
-	"AIRTABLE_JSON",
-	"RESPONSE_ID",
 	"SUBMITTED_AT",
+	"RESPONSE_ID",
+	"RESPONSE_NUM",
+	"RESPONSE_JSON",
+	"AIRTABLE_JSON",
 ];
 const SubmissionsTableName = "TEST Equity Applicant Submissions";
 const SubmissionFields = {
@@ -29,35 +31,38 @@ const ReviewFields = {
 };
 const ChunkSize = 50;
 
-const bySubmittedDesc = (a, b) => new Date(b.fields.Submitted) - new Date(a.fields.Submitted);
-
 const startTime = Date.now();
-const jsonTable = await base.getTable(ScreendoorTableName);
-const jsonRevTable = await base.getTable(ScreendoorRevTableName);
+const screendoorTable = await base.getTable(ScreendoorTableName);
+const screendoorRevTable = await base.getTable(ScreendoorRevTableName);
 	// combine the original submissions and revisions into one list for processing
-const jsonRecords = [
-	...(await jsonTable.selectRecordsAsync({
+const screendoorRecords = [
+	...(await screendoorTable.selectRecordsAsync({
 		fields: ScreendoorFields
 	})).records,
-	...(await jsonRevTable.selectRecordsAsync({
+	...(await screendoorRevTable.selectRecordsAsync({
 		fields: ScreendoorFields
 	})).records
-];
+]
+		// hack the submitted date string into something parseable without moment.js, and store it with the record, so we
+		// can sort the array by the date next
+	.map((record) => ([new Date(getCell(record, ScreendoorFields[0]).replace(/([ap]m)/, " $1")), record]))
+	.sort((a, b) => b[0] - a[0]);
 
 const submissionsTable = await base.getTable(SubmissionsTableName);
 const submissionFieldsByName = getFieldsByName(submissionsTable);
-const submissions = jsonRecords.map((record) => {
-	const [json, responseID, Submitted] = getCell(record, ScreendoorFields);
+const submissionLabelsByResponse = {};
+const submissions = screendoorRecords.map(([submitted, record], i) => {
+	const [responseID, responseNum, screendoorJSON, airtableJSON] = getCell(record, ScreendoorFields.slice(1));
 
-	if (!json) {
+	if (!airtableJSON) {
 			// some of the Screendoor records don't have any converted Airtable JSON associated with them, possibly
 			// because they're from an old form we're not migrating.  so ignore those records.
-		console.log(`Skipping empty Airtable JSON: ${record.id} ${Submitted}`);
+		console.log(`Skipping empty Airtable JSON: ${i} ${record.id} ${responseID} ${submitted} ${screendoorJSON.slice(0, 200)}`);
 
 		return null;
 	}
 
-	const airtableData = JSON.parse(json);
+	const airtableData = JSON.parse(airtableJSON);
 
 	Object.entries(airtableData).forEach(([key, value]) => {
 		const { type } = submissionFieldsByName[key];
@@ -77,19 +82,24 @@ const submissions = jsonRecords.map((record) => {
 		}
 	});
 
-		// hack the date string into something parseable without moment.js
-	airtableData.Submitted = new Date(Submitted.replace(/([ap]m)/, " $1")).toISOString();
+		// we have to convert the submitted date from a Date object to an ISO string in order to write it into a record
+	airtableData.Submitted = submitted.toISOString();
 
-		// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission, which we
-		// need it to be to link the revisions to the originals.  so overwrite it with the RESPONSE_ID field.
+		// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
+		// other, unrelated ID.  but we need the original response ID to link the revisions to the originals.  so overwrite
+		// the RESPONSE_ID field in the Airtable data with the one from Screendoor.  the revisions also won't have the
+		// sequential_id in the JSON, so take it from the RESPONSE_NUM field in the record.
 	airtableData.RESPONSE_ID = responseID;
+	airtableData.RESPONSE_NUM = responseNum;
+
+		// keep track of the labels from the Screendoor data, which we'll use below to update the Review and Submission
+		// Status fields in the Review table.
+	submissionLabelsByResponse[responseID] = JSON.parse(screendoorJSON).labels;
 
 	return { fields: airtableData };
 })
 		// filter out any records with no JSON
 	.filter((record) => !!record);
-
-submissions.sort(bySubmittedDesc);
 
 const submissionRecIDsByResponse = {};
 
@@ -140,10 +150,45 @@ await loopChunks(reviews, ChunkSize, (chunk) => reviewsTable.createRecordsAsync(
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s**`);
 
 
+function mapLabelsToStatus(
+	labels)
+{
+
+}
+
+
 // ==================================================================================
 // this set of reusable utility functions can be "imported" by destructuring utils()
 // ==================================================================================
 function utils() {
+	class GroupedArray {
+		constructor(
+			initialGroups = {})
+		{
+			this.groups = { ...initialGroups };
+		}
+
+		push(
+			key,
+			value)
+		{
+			const arr = this.groups[key] || (this.groups[key] = []);
+
+			arr.push(value);
+		}
+
+		get(
+			key)
+		{
+			return this.groups[key];
+		}
+
+		getAll()
+		{
+			return this.groups;
+		}
+	}
+
 	class Progress {
 		constructor({
 			total,
@@ -246,6 +291,7 @@ function utils() {
 	}
 
 	return {
+		GroupedArray,
 		Progress,
 		loopChunks,
 		getCell,
