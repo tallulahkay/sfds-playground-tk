@@ -1,5 +1,6 @@
-	// "import" these utilities from the function at the end of this script
+	// "import" these utilities from the functions at the end of this script
 const { getCell, getCellHash, getFieldsByName, loopChunks } = utils();
+const { getSubmissionStatus, getReviewStatus } = status();
 
 const ScreendoorTableName = "SCREENDOOR_EQUITY_APPLICANT";
 const ScreendoorRevTableName = "SCREENDOOR_EQUITY_APPLICANT_REV";
@@ -63,6 +64,7 @@ const submissions = screendoorRecords.map(([submitted, record], i) => {
 	}
 
 	const airtableData = JSON.parse(airtableJSON);
+	const { labels } = JSON.parse(screendoorJSON);
 
 	Object.entries(airtableData).forEach(([key, value]) => {
 		const { type } = submissionFieldsByName[key];
@@ -93,10 +95,19 @@ const submissions = screendoorRecords.map(([submitted, record], i) => {
 	airtableData.RESPONSE_NUM = responseNum;
 
 		// keep track of the labels from the Screendoor data, which we'll use below to update the Review and Submission
-		// Status fields in the Review table.
-	submissionLabelsByResponse[responseID] = JSON.parse(screendoorJSON).labels;
+		// Status fields in the Reviews table.  the whole reason we're sorting the screendoorRecords above is so that we can
+		// capture the labels from the most recent submission in this map.
+	if (!(responseID in submissionLabelsByResponse)) {
+		submissionLabelsByResponse[responseID] = labels;
+	}
 
-	return { fields: airtableData };
+		// combine the migrated Airtable fields with status fields set by the Screendoor labels
+	return {
+		fields: {
+			...getSubmissionStatus(labels),
+			...airtableData
+		}
+	};
 })
 		// filter out any records with no JSON
 	.filter((record) => !!record);
@@ -127,19 +138,19 @@ for (const [latestID, ...previousIDs] of Object.values(submissionRecIDsByRespons
 		// that we need to use when generating the review data below
 	const latestRecord = await submissionsTable.selectRecordAsync(latestID.id);
 	const latest = getCellHash(latestRecord, Object.values(SubmissionFields));
-	const status = previousIDs.length
-		? "New edits received"
-		: "New submission";
+	const responseID = latest[SubmissionFields.ID];
+	const labels = submissionLabelsByResponse[responseID];
+	const [reviewStatus, submissionStatus] = getReviewStatus(labels, previousIDs.length);
 
 	reviews.push({
 		fields: {
 			[ReviewFields.MostRecent]: [latestID],
 			[ReviewFields.Previous]: previousIDs,
 			[ReviewFields.NameID]: latest[SubmissionFields.NameID],
-			[ReviewFields.ReviewStatus]: { name: "Submitted" },
-			[ReviewFields.SubmissionStatus]: { name: status },
+			[ReviewFields.ReviewStatus]: reviewStatus,
+			[ReviewFields.SubmissionStatus]: submissionStatus,
 			[ReviewFields.SubmissionID]: latest[SubmissionFields.SubmissionID],
-			[ReviewFields.ResponseID]: latest[SubmissionFields.ID],
+			[ReviewFields.ResponseID]: responseID,
 			[ReviewFields.ResponseNum]: latest[SubmissionFields.Num],
 		}
 	});
@@ -150,10 +161,66 @@ await loopChunks(reviews, ChunkSize, (chunk) => reviewsTable.createRecordsAsync(
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s**`);
 
 
-function mapLabelsToStatus(
-	labels)
+function status()
 {
+	const LabelToSubmissionStatus = {
+		"0: Asset Test": ["Assets Verification Status", "Verified"],
+		"1: Income": ["Criteria 5: Income Verification Status", "Verified"],
+		"2: CJI": ["Criteria 3: Applicant Arrest Verification Status", "Verified"],
+		"3: CJI (Family)": ["Criteria 4: Family Arrest Verification Status", "Verified"],
+		"4: Housing": ["Criteria 1: Eviction Verification Status", "Verified"],
+		"5: SFUSD": ["Criteria 2: SFUSD Verification Status", "Verified"],
+		"6: Census": ["Criteria 6: Neighborhood Verification Status", "Verified"]
+	};
+	const LabelToReviewStatus = {
+		"Archived_Duplicate Equity Verification App": ["Archived", null],
+		"Asset Test Question": ["Submitted", "New"],
+		"Denial": ["Denied", null],
+		"Director's Review": ["Director's Review", "New"],
+		"No Documents": ["Submitted", "New"],
+		"On Hold": ["On-Hold", null],
+		"?:Question": ["Submitted", "New"],
+		"Updated": ["Submitted", "New"],
+		"Verified": ["Verified", "Submission verified"],
+		"Verified: Email Needed": ["Verified", "Submission verified"]
+	};
 
+	function getSubmissionStatus(
+		labels = [])
+	{
+		return labels.reduce((result, label) => {
+			const [fieldName, statusName] = LabelToSubmissionStatus[label] || [];
+
+			if (fieldName) {
+				result[fieldName] = { name: statusName };
+			}
+
+			return result;
+		}, {});
+	}
+
+	function getReviewStatus(
+		labels = [],
+		revisionCount)
+	{
+		const label = labels.find((string) => string in LabelToReviewStatus);
+		const result = LabelToReviewStatus[label] || [null, null];
+
+		if (result[1] === "New") {
+				// this status can only be "new edits received" if there were previous submissions
+			result[1] = revisionCount
+				? "New edits received"
+				: "New submission";
+		}
+
+			// convert the status names to objects we can use to set the single-select field
+		return result.map((name) => name ? ({ name }) : null);
+	}
+
+	return {
+		getSubmissionStatus,
+		getReviewStatus
+	};
 }
 
 
