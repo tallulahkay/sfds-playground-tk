@@ -1,6 +1,6 @@
 	// "import" these utilities from the functions at the end of this script
 const { getCell, getCellHash, getFieldsByName, loopChunks } = utils();
-const { getSubmissionStatus, getReviewStatus } = status();
+const { getSubmissionTableStatus, getReviewTableStatus } = status();
 
 const ScreendoorTableName = "SCREENDOOR_EQUITY_APPLICANT";
 const ScreendoorRevTableName = "SCREENDOOR_EQUITY_APPLICANT_REV";
@@ -104,7 +104,7 @@ const submissions = screendoorRecords.map(([submitted, record], i) => {
 		// combine the migrated Airtable fields with status fields set by the Screendoor labels
 	return {
 		fields: {
-			...getSubmissionStatus(labels),
+			...getSubmissionTableStatus(labels),
 			...airtableData
 		}
 	};
@@ -140,7 +140,7 @@ for (const [latestID, ...previousIDs] of Object.values(submissionRecIDsByRespons
 	const latest = getCellHash(latestRecord, Object.values(SubmissionFields));
 	const responseID = latest[SubmissionFields.ID];
 	const labels = submissionLabelsByResponse[responseID];
-	const [reviewStatus, submissionStatus] = getReviewStatus(labels, previousIDs.length);
+	const [reviewStatus, submissionStatus] = getReviewTableStatus(labels, previousIDs.length);
 
 	reviews.push({
 		fields: {
@@ -163,7 +163,7 @@ output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s*
 
 function status()
 {
-	const LabelToSubmissionStatus = {
+	const LabelToSubmissionTableStatus = {
 		"0: Asset Test": ["Assets Verification Status", "Verified"],
 		"1: Income": ["Criteria 5: Income Verification Status", "Verified"],
 		"2: CJI": ["Criteria 3: Applicant Arrest Verification Status", "Verified"],
@@ -172,24 +172,26 @@ function status()
 		"5: SFUSD": ["Criteria 2: SFUSD Verification Status", "Verified"],
 		"6: Census": ["Criteria 6: Neighborhood Verification Status", "Verified"]
 	};
-	const LabelToReviewStatus = {
+	const LabelToReviewTableStatus = {
 		"Archived_Duplicate Equity Verification App": ["Archived", null],
-		"Asset Test Question": ["Submitted", "New"],
+		"Asset Test Question": ["Processing", ["New submission", "Sent to applicant for edits"]],
 		"Denial": ["Denied", null],
-		"Director's Review": ["Director's Review", "New"],
-		"No Documents": ["Submitted", "New"],
+		"Director's Review": ["Director's Review", ["New submission", "New edits received"]],
+		"No Documents": ["Processing", "Sent to applicant for edits"],
 		"On Hold": ["On-Hold", null],
-		"?:Question": ["Submitted", "New"],
-		"Updated": ["Submitted", "New"],
+		"?:Question": ["Processing", "Sent to applicant for edits"],
+		"Updated": [null, ["New submission", "New edits received"]],
 		"Verified": ["Verified", "Submission verified"],
-		"Verified: Email Needed": ["Verified", "Submission verified"]
+		"Verified: Email Needed": ["Verified", "Submission verified"],
+			// this undefined row is used as the default when there are no matching labels
+		[undefined]: [null, ["New submission", "New edits received"]],
 	};
 
-	function getSubmissionStatus(
+	function getSubmissionTableStatus(
 		labels = [])
 	{
 		return labels.reduce((result, label) => {
-			const [fieldName, statusName] = LabelToSubmissionStatus[label] || [];
+			const [fieldName, statusName] = LabelToSubmissionTableStatus[label] || [];
 
 			if (fieldName) {
 				result[fieldName] = { name: statusName };
@@ -199,27 +201,24 @@ function status()
 		}, {});
 	}
 
-	function getReviewStatus(
+	function getReviewTableStatus(
 		labels = [],
 		revisionCount)
 	{
-		const label = labels.find((string) => string in LabelToReviewStatus);
-		const result = LabelToReviewStatus[label] || [null, null];
+		const label = labels.find((string) => string in LabelToReviewTableStatus);
+		let [review, submission] = LabelToReviewTableStatus[label];
 
-		if (result[1] === "New") {
-				// this status can only be "new edits received" if there were previous submissions
-			result[1] = revisionCount
-				? "New edits received"
-				: "New submission";
+		if (Array.isArray(submission)) {
+				// the Submission Status field may have different values depending on whether there are previous submissions or not
+			submission = submission[revisionCount === 0 ? 0 : 1];
 		}
 
-			// convert the status names to objects we can use to set the single-select field
-		return result.map((name) => name ? ({ name }) : null);
+		return [review, submission].map((name) => name ? ({ name }) : null);
 	}
 
 	return {
-		getSubmissionStatus,
-		getReviewStatus
+		getSubmissionTableStatus,
+		getReviewTableStatus
 	};
 }
 
