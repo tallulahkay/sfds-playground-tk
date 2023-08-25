@@ -33,8 +33,8 @@ const ReviewFields = {
 const ChunkSize = 50;
 
 const startTime = Date.now();
-const screendoorTable = await base.getTable(ScreendoorTableName);
-const screendoorRevTable = await base.getTable(ScreendoorRevTableName);
+const screendoorTable = base.getTable(ScreendoorTableName);
+const screendoorRevTable = base.getTable(ScreendoorRevTableName);
 	// combine the original submissions and revisions into one list for processing
 const screendoorRecords = [
 	...(await screendoorTable.selectRecordsAsync({
@@ -49,7 +49,7 @@ const screendoorRecords = [
 	.map((record) => ([new Date(getCell(record, ScreendoorFields[0]).replace(/([ap]m)/, " $1")), record]))
 	.sort((a, b) => b[0] - a[0]);
 
-const submissionsTable = await base.getTable(SubmissionsTableName);
+const submissionsTable = base.getTable(SubmissionsTableName);
 const submissionFieldsByName = getFieldsByName(submissionsTable);
 const submissionLabelsByResponse = {};
 const submissions = screendoorRecords.map(([submitted, record], i) => {
@@ -127,7 +127,7 @@ await loopChunks(submissions, ChunkSize, async (chunk) => {
 	});
 });
 
-const reviewsTable = await base.getTable(ReviewsTableName);
+const reviewsTable = base.getTable(ReviewsTableName);
 const reviews = [];
 
 output.markdown(`Starting creation of ${Object.keys(submissionRecIDsByResponse).length} reviews...`);
