@@ -6,6 +6,10 @@ Scrapes metadata from form responses in Screendoor.
 
 `npm run start-metadata:dev -- --projectName=apply-for-a-cannabis-business-permit --projectID=6360`
 
+`npm run start-metadata:dev -- --projectName=equity-applicant-form --projectID=5301 --output=equity-applicant.json`
+
+`npm run start-metadata:dev -- --projectName=tell-the-city-you-want-to-be-an-equity-incubator --projectID=5302 --output=equity-incubator.json`
+
 need .env file, include .env.example
 SCREENDOOR_KEY
 

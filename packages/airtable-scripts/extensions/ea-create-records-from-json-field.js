@@ -161,8 +161,11 @@ await loopChunks(reviews, ChunkSize, (chunk) => reviewsTable.createRecordsAsync(
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s**`);
 
 
-function status()
-{
+// =======================================================================================
+// these reusable utility functions can be "imported" by destructuring the functions below
+// =======================================================================================
+
+function status() {
 	const LabelToSubmissionTableStatus = {
 		"0: Asset Test": ["Assets Verification Status", "Verified"],
 		"1: Income": ["Criteria 5: Income Verification Status", "Verified"],
@@ -222,10 +225,6 @@ function status()
 	};
 }
 
-
-// ==================================================================================
-// this set of reusable utility functions can be "imported" by destructuring utils()
-// ==================================================================================
 function utils() {
 	class GroupedArray {
 		constructor(
