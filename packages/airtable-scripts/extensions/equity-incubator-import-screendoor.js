@@ -30,7 +30,6 @@ const ReviewFields = {
 	SubmissionStatus: "Submission Status",
 	EquityID: "Equity Incubator ID",
 };
-const ChunkSize = 50;
 
 const startTime = Date.now();
 
@@ -88,10 +87,9 @@ const submissions = screendoorRecords.map(([submitted, record], i) => {
 		} else if (key.includes(".upload")) {
 				// break the comma-delimited files into one per line
 			airtableData[key] = value.replace(/,/g, "\n");
-		} else if (key.startsWith("SCREENDOOR") && SubmissionsTableName.startsWith("TEST")) {
-				// this link to another record in the SCREENDOOR_EQUITY_APPLICANT field doesn't seem to work when we're
-				// working with the test table, so delete it for now
-			delete airtableData[key];
+		} else if (typeof value === "string") {
+				// extra spaces at the beginning or end of some fields can cause issues, so trim them
+			airtableData[key] = value.trim();
 		}
 	});
 
@@ -120,7 +118,7 @@ const submissionRecordIDsByResponse = {};
 
 output.markdown(`Starting import of ${submissions.length} submissions...`);
 
-await loopChunks(submissions, ChunkSize, async (chunk) => {
+await loopChunks(submissions, async (chunk) => {
 	const records = await submissionsTable.createRecordsAsync(chunk);
 
 	chunk.forEach((submission, i) => {
@@ -159,9 +157,9 @@ for (const [latestID, ...previousIDs] of Object.values(submissionRecordIDsByResp
 	});
 }
 
-await loopChunks(reviews, ChunkSize, (chunk) => reviewsTable.createRecordsAsync(chunk));
+await loopChunks(reviews, (chunk) => reviewsTable.createRecordsAsync(chunk));
 
-output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s**`);
+output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s** at ${new Date().toLocaleString()}`);
 
 
 // =======================================================================================
@@ -169,6 +167,8 @@ output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s*
 // =======================================================================================
 
 function utils() {
+	const MaxChunkSize = 50;
+
 	class GroupedArray {
 		constructor(
 			initialGroups = {})
@@ -244,9 +244,14 @@ function utils() {
 		chunkSize,
 		loopFn)
 	{
+		if (typeof chunkSize === "function") {
+			loopFn = chunkSize;
+			chunkSize = MaxChunkSize;
+		}
+
 		const updateProgress = new Progress({
 			total: items.length,
-			printStep: 5
+			printStep: 10
 		});
 
 			// we don't have any try/catch around the loopFn because trying to catch errors and then log what they are just
@@ -302,9 +307,8 @@ function utils() {
 
 		output.markdown(`Deleting ${records.length} records in the **${table.name}** table.`);
 
-		await loopChunks(records, ChunkSize, (chunk) => table.deleteRecordsAsync(chunk));
+		await loopChunks(records, MaxChunkSize, (chunk) => table.deleteRecordsAsync(chunk));
 	}
-
 
 	return {
 		GroupedArray,

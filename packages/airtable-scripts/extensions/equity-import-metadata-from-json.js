@@ -1,26 +1,10 @@
 const { loopChunks, deleteTable } = utils();
 
 const Basename = "Equity Incubator";
-const SubmissionsTableName = Basename + " Submissions";
+const SubmissionsTableName = Basename + " Reviews";
 const MetadataTableName = Basename + " Screendoor Metadata";
 const ScreendoorIDField = "RESPONSE_ID";
 const MetadataTableFields = [
-	{
-			// for some reason, the EI metadata table has both Activity Date and Timestamp.  for now, just copy the timestamp
-			// to this field as well.
-		name: "Activity Date",
-		key: "timestamp",
-		type: "dateTime",
-		options: {
-			dateFormat: {
-				name: "us"
-			},
-			timeFormat: {
-				name: "12hour"
-			},
-			timeZone: "America/Los_Angeles"
-		}
-	},
 	{
 		name: "Timestamp",
 		key: "timestamp",
@@ -62,7 +46,7 @@ const MetadataTableFields = [
 		},
 	},
 	{
-		name: "Equity Incubator Submissions",
+		name: "Equity Incubator Reviews",
 		key: "",
 		type: "multipleRecordLinks",
 		options: {
@@ -232,7 +216,7 @@ function utils() {
 
 		const updateProgress = new Progress({
 			total: items.length,
-			printStep: 5
+			printStep: 10
 		});
 
 			// we don't have any try/catch around the loopFn because trying to catch errors and then log what they are just
