@@ -1,5 +1,5 @@
 	// "import" these utilities from the functions at the end of this script
-const { GroupedArray, getCell, getCellHash, getFieldsByName, getRecords, loopChunks, confirmClearTable, by } = utils();
+const { GroupedArray, getCell, getCellHash, getFieldsByName, getRecords, loopChunks, confirmClearTable, parseDate, by } = utils();
 const { getSubmissionTableStatus, getReviewTableStatus } = status();
 
 const Basename = "Equity Applicant";
@@ -18,7 +18,7 @@ const SubmissionFields = {
 	SubmissionID: "SUBMISSION_ID",
 	Submitted: "Submitted",
 	NameID: "Name ID",
-	Email: "email"
+	Email: "email",
 };
 const ReviewsTableName = Basename + " Reviews";
 const ReviewFields = {
@@ -30,6 +30,7 @@ const ReviewFields = {
 	SubmissionID: "Submission ID",
 	ResponseID: "Screendoor Response ID",
 	ResponseNum: "Screendoor Response Number",
+	OriginalDate: "Original Submission Date",
 };
 const MetadataPattern = /(approved .+ edits|edited the response\.)/;
 
@@ -78,11 +79,15 @@ function getDataFromJSON(
 }
 
 async function getImportedData(
-	table)
+	table,
+	fieldNames,
+	destinationTable)
 {
-	return (await getRecords(table, ScreendoorFields))
+	const fieldMetadata = getFieldsByName(destinationTable);
+
+	return (await getRecords(table, fieldNames))
 		.map((record) => {
-			const [responseID, responseNumber, screendoorJSON, airtableJSON] = getCell(record, ScreendoorFields);
+			const [responseID, responseNumber, screendoorJSON, airtableJSON] = getCell(record, fieldNames);
 
 			if (!airtableJSON) {
 					// some of the Screendoor records don't have any converted Airtable JSON associated with them, possibly
@@ -100,7 +105,7 @@ async function getImportedData(
 					// sequential_id in the JSON, so take it from the RESPONSE_NUM field in the record.
 				RESPONSE_ID: responseID,
 				RESPONSE_NUM: responseNumber,
-					// current submissions will have a blank SUBMISSION_ID, while revisions will have a 0 in the field.  this makes
+					// we want to give current submissions a blank SUBMISSION_ID, but a 0 to revisions.  this makes
 					// it possible to distinguish them when generating Form.io records.
 				SUBMISSION_ID: typeof initial_response_id !== "undefined" ? "" : "0",
 				...getSubmissionTableStatus(labels),
@@ -114,17 +119,18 @@ async function getImportedData(
 				overrides.Submitted = submitted_at;
 			}
 
+// TODO: maybe create this object in this function and return it so we don't need to access a global
 				// the last submission to store its labels should be the most recent submission, since we're processing the
 				// revisions before the submissions below
 			submissionLabelsByResponse[responseID] = labels;
 
-			return getDataFromJSON(airtableJSON, submissionFieldsByName, overrides);
+			return getDataFromJSON(airtableJSON, fieldMetadata, overrides);
 		})
 			// filter out any records with no JSON
 		.filter((data) => !!data);
 }
 
-// TODO: pull this from a table.  or generate the metadata records from it and then link them to the submissions at the end.
+// TODO: generate the metadata records from this file and then link them to the submissions at the end.
 
 const jsonFile = await input.fileAsync(
 	"Choose a .json file containing Screendoor metadata:",
@@ -160,14 +166,13 @@ if (!await confirmClearTable(submissionsTable) || !await confirmClearTable(revie
 
 const airtableDataByNum = new GroupedArray();
 
-const submissionFieldsByName = getFieldsByName(submissionsTable);
 const submissionLabelsByResponse = {};
 const screendoorTable = base.getTable(ScreendoorTableName);
 const screendoorRevTable = base.getTable(ScreendoorRevTableName);
 
-(await getImportedData(screendoorRevTable))
+(await getImportedData(screendoorRevTable, ScreendoorFields, submissionsTable))
 	.sort(by("Submitted"))
-	.concat(await getImportedData(screendoorTable))
+	.concat(await getImportedData(screendoorTable, ScreendoorFields, submissionsTable))
 	.forEach((data) => airtableDataByNum.push(data.RESPONSE_NUM, data));
 
 const submissions = [];
@@ -187,12 +192,18 @@ airtableDataByNum.forEach((num, items) => {
 
 			// when there are revisions, the submission date of the "current" submission is not included in the JSON, so we
 			// have to pull it from the metadata.  the last metadata date should be when the current submission was approved.
-		rest[rest.length - 1].Submitted = lastSubmittedDate.timestamp;
+		rest.at(-1).Submitted = lastSubmittedDate.timestamp;
 
 			// store each of the submissions on a fields key so it's ready to be used to create a new record
 		submissions.push(...(rest.map((fields) => ({ fields }))));
 	}
 });
+
+	// we now need to sort the submissions in descending order so that the first record in each GroupedArray value will
+	// be the most recent submission when we store it in the loopChunks() below.  that way, it'll be the latestID that we
+	// use to get the latest submission when creating the review record in the for loop below.  we have to dig into the
+	// fields to get the date, and then call parseDate(), because the format isn't quite parseable with new Date().
+submissions.sort(by(({ fields: { Submitted } }) => parseDate(Submitted), true));
 
 const submissionRecordIDsByResponse = new GroupedArray();
 
@@ -212,8 +223,6 @@ const reviews = [];
 
 output.markdown(`Starting creation of ${submissionRecordIDsByResponse.keys().length} reviews...`);
 
-// TODO: we need to sort the submissions in descending order above so that the latest ID is first in these arrays
-
 	// step through each set of related submissions
 for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values()) {
 		// get the created record for the most recent submission, so we can get any fields set by formulas
@@ -223,6 +232,15 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 	const responseID = latest[SubmissionFields.ID];
 	const labels = submissionLabelsByResponse[responseID];
 	const [reviewStatus, submissionStatus] = getReviewTableStatus(labels, previousIDs.length);
+	let originalSubmittedDate = latest[SubmissionFields.Submitted];
+
+	if (previousIDs.length) {
+			// with more than one record, the original submission date is from the oldest record, which is last in this array
+		const oldestRecord = await submissionsTable.selectRecordAsync(previousIDs.at(-1).id);
+		const oldest = getCellHash(oldestRecord, Object.values(SubmissionFields));
+
+		originalSubmittedDate = oldest[SubmissionFields.Submitted];
+	}
 
 	reviews.push({
 		fields: {
@@ -234,6 +252,7 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 			[ReviewFields.SubmissionID]: latest[SubmissionFields.SubmissionID],
 			[ReviewFields.ResponseID]: responseID,
 			[ReviewFields.ResponseNum]: latest[SubmissionFields.Num],
+			[ReviewFields.OriginalDate]: parseDate(originalSubmittedDate).toISOString(),
 		}
 	});
 }
@@ -351,6 +370,11 @@ function utils() {
 		values()
 		{
 			return Object.values(this.groups);
+		}
+
+		entries()
+		{
+			return Object.entries(this.groups);
 		}
 
 		forEach(
@@ -506,27 +530,46 @@ function utils() {
 		return true;
 	}
 
-	function by(
-		iteratee)
+	function parseDate(
+		dateString)
 	{
+		let date = new Date(dateString);
+
+		if (isNaN(date)) {
+			date = new Date(dateString.replace(/([ap]m)/, " $1"));
+		}
+
+		return date;
+	}
+
+
+	function by(
+		iteratee,
+		descending)
+	{
+		const order = descending ? -1 : 1;
+
 		return (a, b) => {
 			const keyA = typeof iteratee === "function" ? iteratee(a) : a[iteratee];
 			const keyB = typeof iteratee === "function" ? iteratee(b) : b[iteratee];
+			let result;
 
 			if (typeof keyA === "string" && typeof keyB === "string") {
 				const valueA = keyA.toUpperCase();
 				const valueB = keyB.toUpperCase();
 
 				if (valueA < valueB) {
-					return -1;
+					result = -1;
 				} else if (valueA > valueB) {
-					return 1;
+					result = 1;
 				} else {
-					return 0;
+					result = 0;
 				}
+			} else {
+				result = keyA - keyB;
 			}
 
-			return keyA - keyB;
+			return result * order;
 		};
 	}
 
@@ -540,6 +583,7 @@ function utils() {
 		getRecords,
 		clearTable,
 		confirmClearTable,
+		parseDate,
 		by,
 	};
 }
