@@ -1,5 +1,7 @@
+{
+
 	// "import" these utilities from the functions at the end of this script
-const { GroupedArray, getCell, getCellHash, getFieldsByName, getRecords, loopChunks, confirmClearTable, parseDate, by } = utils();
+const { GroupedArray, getCell, getCellHash, getFieldsByName, getRecords, loopChunks, confirm, clearTable, parseDate, by } = utils();
 const { getSubmissionTableStatus, getReviewTableStatus } = status();
 
 const Basename = "Equity Applicant";
@@ -32,7 +34,59 @@ const ReviewFields = {
 	ResponseNum: "Screendoor Response Number",
 	OriginalDate: "Original Submission Date",
 };
-const MetadataPattern = /(approved .+ edits|edited the response\.)/;
+const MetadataTableName = Basename + " Screendoor Metadata";
+const MetadataTableFields = [
+	{
+		name: "Timestamp",
+		key: "timestamp",
+		type: "dateTime",
+		options: {
+			dateFormat: {
+				name: "us"
+			},
+			timeFormat: {
+				name: "12hour"
+			},
+			timeZone: "America/Los_Angeles"
+		}
+	},
+	{
+		name: "Activity",
+		key: "event",
+		type: "richText",
+	},
+	{
+		name: "Message",
+		key: "message",
+		type: "richText",
+	},
+	{
+		name: "Response ID",
+		key: "responseID",
+		type: "number",
+		options: {
+			precision: 0
+		},
+	},
+	{
+		name: "Response Number",
+		key: "responseNumber",
+		type: "number",
+		options: {
+			precision: 0
+		},
+	},
+	{
+		name: ReviewsTableName,
+		key: "",
+		type: "multipleRecordLinks",
+		options: {
+				// we'll set this below after the user chooses a reviews table
+			linkedTableId: null
+		}
+	},
+];
+const ApprovalPattern = /(approved .+ edits|edited the response\.)/;
 
 function getDataFromJSON(
 	json,
@@ -60,8 +114,8 @@ function getDataFromJSON(
 			data[key] = value.map((name) => ({ name }));
 
 			if (values && !value.every(name => values.includes(name))) {
-				console.log(data, key, name);
-				throw new Error(`Unknown option for field "${key}": "${name}"`);
+				console.log(data, key, value);
+				throw new Error(`Unknown option for field "${key}": "${value}"`);
 			}
 		} else if (key.includes(".upload")) {
 				// break the comma-delimited files into one per line
@@ -92,12 +146,12 @@ async function getImportedData(
 			if (!airtableJSON) {
 					// some of the Screendoor records don't have any converted Airtable JSON associated with them, possibly
 					// because they're from an old form we're not migrating.  so ignore those records.
-				console.log(`Skipping empty Airtable JSON: ${i} ${record.id} ${responseID} ${submitted} ${screendoorJSON.slice(0, 200)}`);
+				console.log(`Skipping empty Airtable JSON: ${record.id} ${responseID} ${screendoorJSON.slice(0, 200)}`);
 
 				return null;
 			}
 
-			const { initial_response_id, submitted_at, labels } = JSON.parse(screendoorJSON);
+			const { initial_response_id, labels } = JSON.parse(screendoorJSON);
 			const overrides = {
 					// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
 					// other, unrelated ID.  but we need the original response ID to link the revisions to the originals.  so overwrite
@@ -111,14 +165,6 @@ async function getImportedData(
 				...getSubmissionTableStatus(labels),
 			};
 
-			if (submitted_at) {
-					// for the most recent submission, we want to store the submitted_at date, instead of updated_at, which is
-					// what is currently being stored as Submitted in the Airtable JSON.  this may get further overwritten below
-					// if this is a current submission that has revisions, since we'll need to get that submission date from
-					// the metadata.
-				overrides.Submitted = submitted_at;
-			}
-
 // TODO: maybe create this object in this function and return it so we don't need to access a global
 				// the last submission to store its labels should be the most recent submission, since we're processing the
 				// revisions before the submissions below
@@ -130,8 +176,6 @@ async function getImportedData(
 		.filter((data) => !!data);
 }
 
-// TODO: generate the metadata records from this file and then link them to the submissions at the end.
-
 const jsonFile = await input.fileAsync(
 	"Choose a .json file containing Screendoor metadata:",
 	{
@@ -141,28 +185,34 @@ const jsonFile = await input.fileAsync(
 
 const startTime = Date.now();
 
-const metadataItems = jsonFile.parsedContents.sort(by(({ timestamp }) => new Date(timestamp)));
-const metadataByNum = new GroupedArray();
+	// sort metadata newest to oldest, which is how we want the events to appear in the interface
+const metadataItems = jsonFile.parsedContents.sort(by(({ timestamp }) => new Date(timestamp), true));
+const approvalMetadataByNum = new GroupedArray();
 
-metadataItems.forEach((item) => {
+for (const item of metadataItems) {
 	const { responseNumber, responseID, timestamp, event } = item;
 
-	if (MetadataPattern.test(event)) {
-		metadataByNum.push(responseNumber, {
+	if (ApprovalPattern.test(event)) {
+		approvalMetadataByNum.push(responseNumber, {
 			responseNumber,
 			responseID,
 			event,
 			timestamp,
 		});
 	}
-});
+}
 
 const submissionsTable = base.getTable(SubmissionsTableName);
 const reviewsTable = base.getTable(ReviewsTableName);
+const metadataTable = base.getTable(MetadataTableName);
 
-if (!await confirmClearTable(submissionsTable) || !await confirmClearTable(reviewsTable)) {
+if (!await confirm("Clear the submissions, reviews, and metadata tables?")) {
 	return;
 }
+
+await clearTable(submissionsTable);
+await clearTable(reviewsTable);
+await clearTable(metadataTable);
 
 const airtableDataByNum = new GroupedArray();
 
@@ -183,16 +233,16 @@ airtableDataByNum.forEach((num, items) => {
 	submissions.push({ fields: firstSubmission });
 
 	if (rest.length) {
-		if (!metadataByNum.has(num)) {
-			console.log(num, firstSubmission, rest, submittedDates);
+		if (!approvalMetadataByNum.has(num)) {
+			console.log(num, firstSubmission, rest);
 			throw new Error(`No metadata for response ${num}.`);
 		}
 
-		const lastSubmittedDate = metadataByNum.get(num).pop();
+		const newestSubmittedDate = approvalMetadataByNum.get(num)[0];
 
 			// when there are revisions, the submission date of the "current" submission is not included in the JSON, so we
-			// have to pull it from the metadata.  the last metadata date should be when the current submission was approved.
-		rest.at(-1).Submitted = lastSubmittedDate.timestamp;
+			// have to pull it from the metadata.  the most recent metadata date is when the current submission was approved.
+		rest.at(-1).Submitted = newestSubmittedDate.timestamp;
 
 			// store each of the submissions on a fields key so it's ready to be used to create a new record
 		submissions.push(...(rest.map((fields) => ({ fields }))));
@@ -257,10 +307,54 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 	});
 }
 
-await loopChunks(reviews, (chunk) => reviewsTable.createRecordsAsync(chunk));
+const reviewRecordsByNum = {};
+
+await loopChunks(reviews, async (chunk) => {
+	const records = await reviewsTable.createRecordsAsync(chunk);
+
+	chunk.forEach((review, i) => {
+		const { fields: { [ReviewFields.ResponseNum]: num } } = review;
+
+		reviewRecordsByNum[num] = { id: records[i] };
+	});
+});
+
+const metadataRecords = [];
+const skippedNumbers = new Set();
+
+// TODO: sort metadataItems descending by date.  or change the order expected of them above.
+
+for (const item of metadataItems) {
+	const num = item.responseNumber;
+	const reviewRecord = reviewRecordsByNum[num];
+
+	if (reviewRecord) {
+		const fields = MetadataTableFields.reduce((result, { name, key }) => ({
+			...result,
+			[name]: key
+				? item[key]
+					// the linked record field has an empty key value, since it doesn't exist in the JSON,
+					// and must be wrapped in an array
+				: [reviewRecord]
+		}), {});
+
+		metadataRecords.push({ fields });
+	} else {
+		skippedNumbers.add(num);
+	}
+}
+
+if (skippedNumbers.size > 0) {
+	output.markdown(`Skipping metadata response numbers with no matching reviews in \`${reviewsTable.name}\`:\n\n${[...skippedNumbers].join(", ")}`);
+}
+
+output.markdown(`Starting metadata import...`);
+
+await loopChunks(metadataRecords, (chunk) => metadataTable.createRecordsAsync(chunk));
 
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s** at ${new Date().toLocaleString()}`);
 
+}
 
 // =======================================================================================
 // these reusable utility functions can be "imported" by destructuring the functions below
@@ -276,6 +370,9 @@ function status() {
 		"5: SFUSD": ["Criteria 2: SFUSD Verification Status", "Verified"],
 		"6: Census": ["Criteria 6: Neighborhood Verification Status", "Verified"]
 	};
+		// we want to set the Review Status and Submission Status fields in the Reviews table based on the Screendoor
+		// label, and sometimes whether there is just one submission or revisions as well.  the latter case is indicated by
+		// there being an array of two possible statuses, the first for no revisions and the second for at least one rev.
 	const LabelToReviewTableStatus = {
 		"Archived_Duplicate Equity Verification App": ["Archived", null],
 		"Asset Test Question": ["Processing", ["New submission", "Sent to applicant for edits"]],
@@ -288,7 +385,7 @@ function status() {
 		"Verified": ["Verified", "Submission verified"],
 		"Verified: Email Needed": ["Verified", "Submission verified"],
 			// this undefined row is used as the default when there are no matching labels
-		[undefined]: [null, ["New submission", "New edits received"]],
+		[undefined]: [[null, "Processing"], ["New submission", "New edits received"]],
 	};
 
 	function getSubmissionTableStatus(
@@ -310,14 +407,17 @@ function status() {
 		revisionCount)
 	{
 		const label = labels.find((string) => string in LabelToReviewTableStatus);
-		let [review, submission] = LabelToReviewTableStatus[label];
+		const indexFromRevisionCount = revisionCount === 0 ? 0 : 1;
+		const result = LabelToReviewTableStatus[label]
+				// the mapped status may have different values depending on whether there are previous submissions or not
+			.map((status) => Array.isArray(status)
+				? status[indexFromRevisionCount]
+				: status
+			)
+				// the selected status's label has to be returned in a name field, or null if there's no status
+			.map((name) => name ? ({ name }) : null);
 
-		if (Array.isArray(submission)) {
-				// the Submission Status field may have different values depending on whether there are previous submissions or not
-			submission = submission[revisionCount === 0 ? 0 : 1];
-		}
-
-		return [review, submission].map((name) => name ? ({ name }) : null);
+		return result;
 	}
 
 	return {
@@ -380,7 +480,7 @@ function utils() {
 		forEach(
 			iterator)
 		{
-			Object.entries(this.groups).forEach(([key, values]) => iterator(key, values));
+			this.entries().forEach(([key, values]) => iterator(key, values));
 		}
 	}
 
@@ -536,12 +636,12 @@ function utils() {
 		let date = new Date(dateString);
 
 		if (isNaN(date)) {
+				// this is an Invalid Date, because the dateString wasn't parseable, so try to make it so
 			date = new Date(dateString.replace(/([ap]m)/, " $1"));
 		}
 
 		return date;
 	}
-
 
 	function by(
 		iteratee,
@@ -573,6 +673,15 @@ function utils() {
 		};
 	}
 
+	async function confirm(
+		label,
+		buttons = ["Yes", "No"])
+	{
+		const answer = await input.buttonsAsync(label, buttons);
+
+		return answer === buttons[0];
+	}
+
 	return {
 		GroupedArray,
 		Progress,
@@ -585,5 +694,6 @@ function utils() {
 		confirmClearTable,
 		parseDate,
 		by,
+		confirm,
 	};
 }

@@ -1,7 +1,7 @@
 const { loopChunks, deleteTable } = utils();
 
 const Basename = "Equity Incubator";
-const SubmissionsTableName = Basename + " Reviews";
+const ReviewsTableName = Basename + " Reviews";
 const MetadataTableName = Basename + " Screendoor Metadata";
 const ScreendoorIDField = "RESPONSE_ID";
 const MetadataTableFields = [
@@ -46,7 +46,7 @@ const MetadataTableFields = [
 		},
 	},
 	{
-		name: "Equity Incubator Reviews",
+		name: ReviewsTableName,
 		key: "",
 		type: "multipleRecordLinks",
 		options: {
@@ -65,7 +65,7 @@ const jsonFile = await input.fileAsync(
 	}
 );
 
-const submissionsTable = base.getTable(SubmissionsTableName);
+const reviewsTable = base.getTable(ReviewsTableName);
 const metadataTable = base.getTable(MetadataTableName);
 
 const { records: existingRecords } = await metadataTable.selectRecordsAsync({ fields: [] });
@@ -82,16 +82,16 @@ if (existingRecords.length) {
 
 const startTime = Date.now();
 
-const { records: submissionRecords } = await submissionsTable.selectRecordsAsync({
+const { records: reviewRecords } = await reviewsTable.selectRecordsAsync({
 	fields: [ScreendoorIDField],
 });
-const submissionRecordsByID = {};
+const reviewRecordsByID = {};
 
 	// build a map of the review records by each one's Screendoor response ID
-submissionRecords.forEach((record) => {
+reviewRecords.forEach((record) => {
 	const id = record.getCellValue(ScreendoorIDField);
 
-	submissionRecordsByID[id] = record;
+	reviewRecordsByID[id] = record;
 });
 
 	// sort the metadata by descending date/time, so that when we link it to the review record, it'll show as newest
@@ -102,16 +102,16 @@ const skippedIDs = new Set();
 
 metadataItems.forEach((item) => {
 	const id = item.responseID;
-	const submissionRecord = submissionRecordsByID[id];
+	const reviewRecord = reviewRecordsByID[id];
 
-	if (submissionRecord) {
+	if (reviewRecord) {
 		const fields = MetadataTableFields.reduce((result, { name, key }) => ({
 			...result,
 			[name]: key
 				? item[key]
 					// the linked record field has an empty key value, since it doesn't exist in the JSON,
 					// and must be wrapped in an array
-				: [submissionRecord]
+				: [reviewRecord]
 		}), {});
 
 		metadataRecords.push({ fields });
