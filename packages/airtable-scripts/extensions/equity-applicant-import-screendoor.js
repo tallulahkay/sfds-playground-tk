@@ -1,7 +1,6 @@
 {
-
 	// "import" these utilities from the functions at the end of this script
-const { GroupedArray, getCell, getCellHash, getFieldsByName, getRecords, loopChunks, confirm, clearTable, parseDate, by } = utils();
+const { GroupedArray, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by } = utils();
 const { getSubmissionTableStatus, getReviewTableStatus } = status();
 
 const Basename = "Equity Applicant";
@@ -12,7 +11,10 @@ const ScreendoorFields = [
 	"RESPONSE_NUM",
 	"RESPONSE_JSON",
 	"AIRTABLE_JSON",
+	"SUBMITTED_AT",
+	"SCREENDOOR_FORM_ID",
 ];
+const EAFormID = "4717";
 const SubmissionsTableName = Basename + " Submissions";
 const SubmissionFields = {
 	ID: "RESPONSE_ID",
@@ -132,49 +134,7 @@ function getDataFromJSON(
 	};
 }
 
-async function getImportedData(
-	table,
-	fieldNames,
-	destinationTable)
-{
-	const fieldMetadata = getFieldsByName(destinationTable);
-
-	return (await getRecords(table, fieldNames))
-		.map((record) => {
-			const [responseID, responseNumber, screendoorJSON, airtableJSON] = getCell(record, fieldNames);
-
-			if (!airtableJSON) {
-					// some of the Screendoor records don't have any converted Airtable JSON associated with them, possibly
-					// because they're from an old form we're not migrating.  so ignore those records.
-				console.log(`Skipping empty Airtable JSON: ${record.id} ${responseID} ${screendoorJSON.slice(0, 200)}`);
-
-				return null;
-			}
-
-			const { initial_response_id, labels } = JSON.parse(screendoorJSON);
-			const overrides = {
-					// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
-					// other, unrelated ID.  but we need the original response ID to link the revisions to the originals.  so overwrite
-					// the RESPONSE_ID field in the Airtable data with the one from Screendoor.  the revisions also won't have the
-					// sequential_id in the JSON, so take it from the RESPONSE_NUM field in the record.
-				RESPONSE_ID: responseID,
-				RESPONSE_NUM: responseNumber,
-					// we want to give current submissions a blank SUBMISSION_ID, but a 0 to revisions.  this makes
-					// it possible to distinguish them when generating Form.io records.
-				SUBMISSION_ID: typeof initial_response_id !== "undefined" ? "" : "0",
-				...getSubmissionTableStatus(labels),
-			};
-
-// TODO: maybe create this object in this function and return it so we don't need to access a global
-				// the last submission to store its labels should be the most recent submission, since we're processing the
-				// revisions before the submissions below
-			submissionLabelsByResponse[responseID] = labels;
-
-			return getDataFromJSON(airtableJSON, fieldMetadata, overrides);
-		})
-			// filter out any records with no JSON
-		.filter((data) => !!data);
-}
+output.markdown(`Starting at ${new Date().toLocaleString()}`);
 
 const jsonFile = await input.fileAsync(
 	"Choose a .json file containing Screendoor metadata:",
@@ -219,10 +179,39 @@ const airtableDataByNum = new GroupedArray();
 const submissionLabelsByResponse = {};
 const screendoorTable = base.getTable(ScreendoorTableName);
 const screendoorRevTable = base.getTable(ScreendoorRevTableName);
+const submissionsTableMetadata = getFieldsByName(submissionsTable);
 
-(await getImportedData(screendoorRevTable, ScreendoorFields, submissionsTable))
-	.sort(by("Submitted"))
-	.concat(await getImportedData(screendoorTable, ScreendoorFields, submissionsTable))
+(await getRecordObjects(screendoorRevTable, ScreendoorFields))
+		// confusingly, we have to sort the revisions by the SUBMITTED_AT field in the REV table *before* adding in the
+		// unsorted submission records.  this is because the submissions will have a SUBMITTED_AT date from the original
+		// submission time, even though the most recent submission time is more recent (if there are revisions), and we'll
+		// need to get that most recent time from the metadata.  at this point, we don't have a reliable timestamp that
+		// will guarantee the most recent submission will come last if we sort by it, so that's why we just append the
+		// submissions after the sorted revisions.
+	.sort(by(({ SUBMITTED_AT }) => parseDate(SUBMITTED_AT)))
+	.concat(await getRecordObjects(screendoorTable, ScreendoorFields))
+	.filter(({ AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => AIRTABLE_JSON && SCREENDOOR_FORM_ID == EAFormID)
+	.map(({ RESPONSE_ID, RESPONSE_NUM, RESPONSE_JSON, AIRTABLE_JSON }) => {
+		const { initial_response_id, labels } = JSON.parse(RESPONSE_JSON);
+		const overrides = {
+				// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
+				// other, unrelated ID.  but we need the original response ID to link the revisions to the originals.  so overwrite
+				// the RESPONSE_ID field in the Airtable data with the one from Screendoor.  the revisions also won't have the
+				// sequential_id in the JSON, so take it from the RESPONSE_NUM field in the record.
+			RESPONSE_ID,
+			RESPONSE_NUM,
+				// we want to give current submissions a blank SUBMISSION_ID, but a 0 to revisions.  this makes
+				// it possible to distinguish them when generating Form.io records.
+			SUBMISSION_ID: typeof initial_response_id !== "undefined" ? "" : "0",
+			...getSubmissionTableStatus(labels),
+		};
+
+			// the last submission to store its labels should be the most recent submission, since we're processing the
+			// revisions before the submissions below
+		submissionLabelsByResponse[RESPONSE_ID] = labels;
+
+		return getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadata, overrides);
+	})
 	.forEach((data) => airtableDataByNum.push(data.RESPONSE_NUM, data));
 
 const submissions = [];
@@ -278,7 +267,7 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 		// get the created record for the most recent submission, so we can get any fields set by formulas
 		// that we need to use when generating the review data below
 	const latestRecord = await submissionsTable.selectRecordAsync(latestID.id);
-	const latest = getCellHash(latestRecord, Object.values(SubmissionFields));
+	const latest = getCellObject(latestRecord, Object.values(SubmissionFields));
 	const responseID = latest[SubmissionFields.ID];
 	const labels = submissionLabelsByResponse[responseID];
 	const [reviewStatus, submissionStatus] = getReviewTableStatus(labels, previousIDs.length);
@@ -287,7 +276,7 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 	if (previousIDs.length) {
 			// with more than one record, the original submission date is from the oldest record, which is last in this array
 		const oldestRecord = await submissionsTable.selectRecordAsync(previousIDs.at(-1).id);
-		const oldest = getCellHash(oldestRecord, Object.values(SubmissionFields));
+		const oldest = getCellObject(oldestRecord, Object.values(SubmissionFields));
 
 		originalSubmittedDate = oldest[SubmissionFields.Submitted];
 	}
@@ -353,7 +342,6 @@ output.markdown(`Starting metadata import...`);
 await loopChunks(metadataRecords, (chunk) => metadataTable.createRecordsAsync(chunk));
 
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s** at ${new Date().toLocaleString()}`);
-
 }
 
 // =======================================================================================
@@ -569,7 +557,7 @@ function utils() {
 			: result[0];
 	}
 
-	function getCellHash(
+	function getCellObject(
 		record,
 		fieldNames)
 	{
@@ -600,6 +588,14 @@ function utils() {
 		fields = [])
 	{
 		return (await table.selectRecordsAsync({ fields	})).records;
+	}
+
+	async function getRecordObjects(
+		table,
+		fieldNames)
+	{
+		return (await getRecords(table, fieldNames))
+			.map((record) => getCellObject(record, fieldNames));
 	}
 
 	async function clearTable(
@@ -687,9 +683,10 @@ function utils() {
 		Progress,
 		loopChunks,
 		getCell,
-		getCellHash,
+		getCellObject,
 		getFieldsByName,
 		getRecords,
+		getRecordObjects,
 		clearTable,
 		confirmClearTable,
 		parseDate,
