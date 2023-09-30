@@ -134,7 +134,7 @@ function getDataFromJSON(
 	};
 }
 
-output.markdown(`Starting at ${new Date().toLocaleString()}`);
+output.markdown(`Starting at **${new Date().toLocaleString()}**`);
 
 const jsonFile = await input.fileAsync(
 	"Choose a .json file containing Screendoor metadata:",
@@ -341,7 +341,7 @@ output.markdown(`Starting metadata import...`);
 
 await loopChunks(metadataRecords, (chunk) => metadataTable.createRecordsAsync(chunk));
 
-output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s** at ${new Date().toLocaleString()}`);
+output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s** at **${new Date().toLocaleString()}**`);
 }
 
 // =======================================================================================
@@ -603,7 +603,7 @@ function utils() {
 	{
 		const { records } = await table.selectRecordsAsync({ fields: [] });
 
-		output.markdown(`Deleting ${records.length} records in the **${table.name}** table.`);
+		output.markdown(`Deleting **${records.length}** records in the **${table.name}** table.`);
 
 		await loopChunks(records, MaxChunkSize, (chunk) => table.deleteRecordsAsync(chunk));
 	}
