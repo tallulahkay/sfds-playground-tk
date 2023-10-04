@@ -24,6 +24,7 @@ const ReviewFields = {
 	SubmissionStatus: "Submission Status",
 	LastModified: "Last modified Reviews",
 	LinkedSubmissionID: "SUBMISSION_ID (from Most Recent Submission)",
+	ActivityRecords: "Equity Applicant Activity History",
 };
 const ActivityFields = {
 	ProjectID: "Project ID",
@@ -36,8 +37,6 @@ const ActivityFields = {
 	ID: "Submission ID",
 };
 
-// TODO: pull the tables from a script config?
-
 const { id } = input.config();
 const reviewsTable = base.getTable(ReviewsTableName);
 const activityTable = base.getTable(ActivityTableName);
@@ -45,12 +44,10 @@ const activityTable = base.getTable(ActivityTableName);
 const reviewRecord = await reviewsTable.selectRecordAsync(id);
 
 if (reviewRecord) {
+// TODO: clean up this function name and remove unneeded util funcs
 	const review = getCellObjectPure(reviewRecord, values(ReviewFields));
 //	const review = getCellObject(reviewRecord, values(ReviewFields));
 	const status = review[ReviewFields.SubmissionStatus].name;
-
-console.log(review);
-console.log("status", status);
 
 	if (!values(ReviewStatus).includes(status)) {
 		console.error(`Script called with unrecognized status: ${status}.`);
@@ -59,34 +56,18 @@ console.log("status", status);
 	}
 
 	const lastModified = review[ReviewFields.LastModified];
-		// we have to turn the date field string into an ISO string so we can write it to the sent/received fields below
-//	const lastModified = parseDate(review[ReviewFields.LastModified]).toISOString();
 		// link record fields return an array, even with just one link
-	const [linkedID] = review[ReviewFields.LinkedSubmissionID];
+	const [linkedSubmissionID] = review[ReviewFields.LinkedSubmissionID];
+	const linkedActivityRecords = review[ReviewFields.ActivityRecords];
 
-console.log({
-//		[ActivityFields.Title]: status.name,
-		[ActivityFields.Title]: status,
+	const newActivityID = await activityTable.createRecordAsync({
+		[ActivityFields.Title]: `Submission status changed to: ${status}`,
 		[ActivityFields.Link]: [reviewRecord],
 		[ActivityFields.Time]: lastModified,
-		[ActivityFields.ID]: linkedID,
+		[ActivityFields.ID]: linkedSubmissionID,
 		[ActivityFields.ProjectID]: reviewRecord.id,
 		[ActivityFields.Type]: { name: "Status" },
 		[ActivityFields.Status]: { name: status },
-		[ActivityFields.StatusType]: { name: "Submission" },
-	});
-
-	await activityTable.createRecordAsync({
-//		[ActivityFields.Title]: status.name,
-		[ActivityFields.Title]: status,
-		[ActivityFields.Link]: [reviewRecord],
-		[ActivityFields.Time]: lastModified,
-		[ActivityFields.ID]: linkedID,
-		[ActivityFields.ProjectID]: reviewRecord.id,
-		[ActivityFields.Type]: { name: "Status" },
-//		[ActivityFields.Status]: status,
-		[ActivityFields.Status]: { name: status },
-//		[ActivityFields.Status]: { name: status.name },
 		[ActivityFields.StatusType]: { name: "Submission" },
 	});
 
@@ -101,13 +82,9 @@ console.log({
 	};
 	const targetDirectionValues = values(targetFields[direction]);
 
-console.log("targetDirectionValues", targetDirectionValues);
-
 		// find the first empty field.  default to the last field if we don't find an empty one.
 	const availableFieldIndex = targetDirectionValues.findIndex((value, i, array) => !value || i === array.length - 1);
 	let updatedFields;
-
-console.log(direction, availableFieldIndex, targetDirectionValues[availableFieldIndex]);
 
 	if (!targetDirectionValues[availableFieldIndex]) {
 			// there is a blank field available, so we don't have to copy and shift any other fields
@@ -125,10 +102,6 @@ console.log(direction, availableFieldIndex, targetDirectionValues[availableField
 		const sentKeys = keys(targetFields.sent).slice(1);
 		const receivedKeys = keys(targetFields.received).slice(1);
 
-console.log("newValues", newValues);
-console.log(values(targetFields.sent).slice(2));
-console.log("keys", sentKeys, receivedKeys);
-
 			// create a new object with updated field values.  we combine the array of values created above with an array of
 			// the 2nd through 5th sent and received date labels to build the key/value pairs.
 		updatedFields = {
@@ -142,11 +115,13 @@ console.log("keys", sentKeys, receivedKeys);
 		throw new Error(`No empty received edits date field available for ${reviewRecord.id}, ${lastModified}`);
 	}
 
-console.log(updatedFields);
+		// add the new activity record at the beginning of the link list in the review record, so that the activity events
+		// appear newest to oldest in the interface
+	updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
+
+	console.log(updatedFields);
 
 	await reviewsTable.updateRecordAsync(reviewRecord, updatedFields);
-
-//	console.log(`Updated '${updatedFieldName}' with ${lastModified}.`);
 } else {
 	console.error(`Could not find Review record '${id}'.`);
 }
