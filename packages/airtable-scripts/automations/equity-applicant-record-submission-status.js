@@ -15,7 +15,7 @@ const ReviewStatus = {
 	EditsReceived: "New edits received",
 };
 const DateFieldCount = 5;
-	// generate a list of numbered fields, 1 to 5
+	// generate a list of numbered fields, 1 to 5, so we can access and change their values in the table
 const ReviewTargetFields = {
 	sent: nameRange(DateFieldCount, i => `Edit - Sent to Applicant for Edits ${i} Date`),
 	received: nameRange(DateFieldCount, i => `Edit - New Edits Received ${i} Date`),
@@ -37,94 +37,93 @@ const ActivityFields = {
 	ID: "Submission ID",
 };
 
+	// this is the ID of the review record that changed and caused the automation to run
 const { id } = input.config();
 const reviewsTable = base.getTable(ReviewsTableName);
 const activityTable = base.getTable(ActivityTableName);
 
 const reviewRecord = await reviewsTable.selectRecordAsync(id);
 
-if (reviewRecord) {
+if (!reviewRecord) {
+	throw new Error(`Could not find Review record '${id}'.`);
+}
+
 // TODO: clean up this function name and remove unneeded util funcs
-	const review = getCellObjectPure(reviewRecord, values(ReviewFields));
+const review = getCellObjectPure(reviewRecord, values(ReviewFields));
 //	const review = getCellObject(reviewRecord, values(ReviewFields));
-	const status = review[ReviewFields.SubmissionStatus].name;
+const status = review[ReviewFields.SubmissionStatus].name;
 
-	if (!values(ReviewStatus).includes(status)) {
-		console.error(`Script called with unrecognized status: ${status}.`);
+if (!values(ReviewStatus).includes(status)) {
+	throw new Error(`Unrecognized status: ${status}.`);
+}
 
-		return;
-	}
+const lastModified = review[ReviewFields.LastModified];
+	// link record fields return an array, even with just one link
+const [linkedSubmissionID] = review[ReviewFields.LinkedSubmissionID];
+const linkedActivityRecords = review[ReviewFields.ActivityRecords];
 
-	const lastModified = review[ReviewFields.LastModified];
-		// link record fields return an array, even with just one link
-	const [linkedSubmissionID] = review[ReviewFields.LinkedSubmissionID];
-	const linkedActivityRecords = review[ReviewFields.ActivityRecords];
+const newActivityID = await activityTable.createRecordAsync({
+	[ActivityFields.Title]: `Submission status changed to: ${status}`,
+	[ActivityFields.Link]: [reviewRecord],
+	[ActivityFields.Time]: lastModified,
+	[ActivityFields.ID]: linkedSubmissionID,
+	[ActivityFields.ProjectID]: reviewRecord.id,
+	[ActivityFields.Type]: { name: "Status" },
+	[ActivityFields.Status]: { name: status },
+	[ActivityFields.StatusType]: { name: "Submission" },
+});
 
-	const newActivityID = await activityTable.createRecordAsync({
-		[ActivityFields.Title]: `Submission status changed to: ${status}`,
-		[ActivityFields.Link]: [reviewRecord],
-		[ActivityFields.Time]: lastModified,
-		[ActivityFields.ID]: linkedSubmissionID,
-		[ActivityFields.ProjectID]: reviewRecord.id,
-		[ActivityFields.Type]: { name: "Status" },
-		[ActivityFields.Status]: { name: status },
-		[ActivityFields.StatusType]: { name: "Submission" },
-	});
-
-	const direction = status === ReviewStatus.SentForEdits
-		? "sent"
-		: "received";
-	const targetFields = {
-		sent: getCellObjectPure(reviewRecord, ReviewTargetFields.sent),
-		received: getCellObjectPure(reviewRecord, ReviewTargetFields.received),
+const direction = status === ReviewStatus.SentForEdits
+	? "sent"
+	: "received";
+const targetFields = {
+	sent: getCellObjectPure(reviewRecord, ReviewTargetFields.sent),
+	received: getCellObjectPure(reviewRecord, ReviewTargetFields.received),
 //		sent: getCellObject(reviewRecord, ReviewTargetFields.sent),
 //		received: getCellObject(reviewRecord, ReviewTargetFields.received),
+};
+const targetDirectionValues = values(targetFields[direction]);
+
+	// find the first empty field.  default to the last field if we don't find an empty one.
+const availableFieldIndex = targetDirectionValues.findIndex((value, i, array) => !value || i === array.length - 1);
+let updatedFields;
+
+if (!targetDirectionValues[availableFieldIndex]) {
+		// there is a blank field available, so we don't have to copy and shift any other fields
+	updatedFields = {
+		[keys(targetFields[direction])[availableFieldIndex]]: lastModified
 	};
-	const targetDirectionValues = values(targetFields[direction]);
+} else if (direction === "sent") {
+		// take the 3 most recent sent fields and append the new sent date.  then take the 3 most recent received dates
+		// but append a null, since we're holding that field empty for when the edits are sent back.  the goal is to have
+		// the sent and received fields with the same number represent the start and end of the same transaction.
+	const newValues = {
+		sent: [...(values(targetFields.sent).slice(2)), lastModified],
+		received: [...(values(targetFields.received).slice(2)), null],
+	};
+	const sentKeys = keys(targetFields.sent).slice(1);
+	const receivedKeys = keys(targetFields.received).slice(1);
 
-		// find the first empty field.  default to the last field if we don't find an empty one.
-	const availableFieldIndex = targetDirectionValues.findIndex((value, i, array) => !value || i === array.length - 1);
-	let updatedFields;
-
-	if (!targetDirectionValues[availableFieldIndex]) {
-			// there is a blank field available, so we don't have to copy and shift any other fields
-		updatedFields = {
-			[keys(targetFields[direction])[availableFieldIndex]]: lastModified
-		};
-	} else if (direction === "sent") {
-			// take the 3 most recent sent fields and append the new sent date.  then take the 3 most recent received dates
-			// but append a null, since we're holding that field empty for when the edits are sent back.  the goal is to have
-			// the sent and received fields with the same number represent the start and end of the same transaction.
-		const newValues = {
-			sent: [...(values(targetFields.sent).slice(2)), lastModified],
-			received: [...(values(targetFields.received).slice(2)), null],
-		};
-		const sentKeys = keys(targetFields.sent).slice(1);
-		const receivedKeys = keys(targetFields.received).slice(1);
-
-			// create a new object with updated field values.  we combine the array of values created above with an array of
-			// the 2nd through 5th sent and received date labels to build the key/value pairs.
-		updatedFields = {
-			...fromEntries(zip(sentKeys, newValues.sent)),
-			...fromEntries(zip(receivedKeys, newValues.received)),
-		};
-	} else {
-			// there should always be an empty received edits field available, since when the form is sent for edits and
-			// there is no available field, both the sent and received dates should be shifted over one, leaving an empty
-			// field for the received date, when the edits come back
-		throw new Error(`No empty received edits date field available for ${reviewRecord.id}, ${lastModified}`);
-	}
-
-		// add the new activity record at the beginning of the link list in the review record, so that the activity events
-		// appear newest to oldest in the interface
-	updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
-
-	console.log(updatedFields);
-
-	await reviewsTable.updateRecordAsync(reviewRecord, updatedFields);
+		// create a new object with updated field values.  we combine the array of values created above with an array of
+		// the 2nd through 5th sent and received date labels to build the key/value pairs.
+	updatedFields = {
+		...fromEntries(zip(sentKeys, newValues.sent)),
+		...fromEntries(zip(receivedKeys, newValues.received)),
+	};
 } else {
-	console.error(`Could not find Review record '${id}'.`);
+		// there should always be an empty received edits field available, since when the form is sent for edits and
+		// there is no available field, both the sent and received dates should be shifted over one, leaving an empty
+		// field for the received date, when the edits come back
+	throw new Error(`No empty received edits date field available for ${reviewRecord.id}, ${lastModified}`);
 }
+
+	// add the new activity record at the beginning of the link list in the review record, so that the activity events
+	// appear newest to oldest in the interface
+updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
+
+console.log(updatedFields);
+
+await reviewsTable.updateRecordAsync(reviewRecord, updatedFields);
 
 }
 
