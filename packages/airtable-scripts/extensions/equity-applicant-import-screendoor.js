@@ -311,8 +311,6 @@ await loopChunks(reviews, async (chunk) => {
 const metadataRecords = [];
 const skippedNumbers = new Set();
 
-// TODO: sort metadataItems descending by date.  or change the order expected of them above.
-
 for (const item of metadataItems) {
 	const num = item.responseNumber;
 	const reviewRecord = reviewRecordsByNum[num];
