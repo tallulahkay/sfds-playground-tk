@@ -1,15 +1,15 @@
 {
 const { getFieldsByName, loopChunks } = utils();
-const nameMappings = getNameMappings();
 
 const Basename = "Initial Application";
 //const Basename = "General Operations";
 //const Basename = "Business Ownership";
-//const SubmissionsTableName = "TEST Business Ownership Submissions";
+//const Basename = "TEST Business Ownership";
 const SubmissionsTableName = Basename + " Submissions";
 
 const table = base.getTable(SubmissionsTableName);
 const fields = getFieldsByName(table);
+const nameMappings = getNameMappings(Basename);
 
 const missingNames = nameMappings.filter(([formio, airtable]) => !(formio in fields) && !(airtable in fields));
 
@@ -21,16 +21,22 @@ const remainingNames = nameMappings.filter(([formio, airtable]) => !(formio in f
 
 output.markdown(`Renaming **${remainingNames.length}** fields.`);
 
+	// we can only create 15 promises in parallel at once, so chunk the remaining fields to rename by that amount and
+	// update all the names to the new Formio string
 await loopChunks(remainingNames, 15, async (chunk) => {
-	await Promise.all(chunk.map(([formio, airtable]) => fields[airtable].updateNameAsync(formio)));
+	await Promise.all(
+		chunk.map(([formio, airtable]) => fields[airtable].updateNameAsync(formio))
+	);
 })
 
 output.markdown("**Done.**");
 
 
-function getNameMappings()
+function getNameMappings(
+	tableName)
 {
-	const NameMappingRows = `
+	const mappings = {
+		"Business Ownership": `
 firstName\tfirstName
 lastName\tlastName
 email\temail
@@ -428,9 +434,142 @@ investors.5.investor.whatIsTheInterestOrInvestment\tinvestors.investor5.whatIsTh
 investors.overflow\tinvestors.overflow
 legalTrue\tlegalTrue
 legalOmit\tlegalOmit
-`;
+`,
+		"Initial Application": `
+firstName\tfirstName
+lastName\tlastName
+title\ttitle
+email\temail
+phoneNumber\tphoneNumber
+authorizationToApply\tauthorizationToApply
+equityID\tequityID
+ownershipDocument.1.ownershipDocument1.{UPLOAD}.1\townershipDocument1
+ownershipDocument.2.ownershipDocument1.{UPLOAD}.1\townershipDocument2
+ownershipDocument.3.ownershipDocument1.{UPLOAD}.1\townershipDocument3
+partneringWithIncubator\tpartneringWithIncubator
+equityIncubatorName\tequityIncubatorName
+whatIsYourEquityIncubatorNumber\twhatIsYourEquityIncubatorNumber
+equityAgreement.{UPLOAD}.1\tequityAgreement
+affidavitNumber\taffidavitNumber
+tempPermitNumber\ttempPermitNumber
+complyUseActTemp\tcomplyUseActTemp
+article33PermitNumber\tarticle33PermitNumber
+complyUseActMCD\tcomplyUseActMCD
+additionalContacts\tadditionalContacts
+additionalContact.1.fullName\tadditionalContact1.fullName
+additionalContact.1.email\tadditionalContact1.email
+additionalContact.1.phone\tadditionalContact1.phone
+additionalContact.2.fullName\tadditionalContact2.fullName
+additionalContact.2.email\tadditionalContact2.email
+additionalContact.2.phone\tadditionalContact2.phone
+BAN\tBAN
+OWNERS\tOWNERS
+BusinessName\tBusinessName
+DBAName\tDBAName
+StreetAddress\tStreetAddress
+City\tCity
+State\tState
+PostalCd\tPostalCd
+LIN\tLIN
+BusstartDate\tBusstartDate
+BusEndDate\tBusEndDate
+LocstartDate\tLocstartDate
+LocEndDate\tLocEndDate
+MailingAddress\tMailingAddress
+MailCityStateZip\tMailCityStateZip
+LocationNumber\tLocationNumber
+OrgType\tOrgType
+licclasscodes\tlicclasscodes
+fyfind\tfyfind
+pointlocation\tpointlocation
+noLIN\tnoLIN
+unverifiedAddress.street\tunverifiedAddress.street
+unverifiedAddress.city\tunverifiedAddress.city
+unverifiedAddress.state\tunverifiedAddress.state
+unverifiedAddress.zip\tunverifiedAddress.zip
+operationHours\thoursOfOperation
+numberRetailLocations\tnumberOfRetailLocations
+hasBPA\tbpa
+bpaNumber\tbpaNumber
+hasCUA\tcua
+cuaNumber\tcuaNumber
+hasPlanningDocs\tplanningDocs
+planningDocUpload.{UPLOAD}.1\tplanningDocUpload
+planningContact\tplanningContact
+planningContactAdditional\tplanningContactAdditional
+planningContactName\tplanningContactName
+planningContactEmail\tplanningContactEmail
+planningContactPhone\tplanningContactPhone
+ownOrRent\townOrRent
+uploadTitleOrDeed.{UPLOAD}.1\tuploadTitleOrDeed
+rent\trent
+lease.{UPLOAD}.1\tlease
+landlordActivityAuthorization.{UPLOAD}.1\tlandlordActivityAuthorization
+buyLOI.{UPLOAD}.1\tbuyLOI
+rentLOI.{UPLOAD}.1\trentLOI
+squareFootage\tsquareFootage
+proposedUse\tproposedUse
+floor\tfloor
+previousUse\tpreviousUse
+isVacant\tvacant
+vacancyLength\tvacancyLength
+businessStructure\tbusinessStructure
+businessFormation.{UPLOAD}.1\tbusinessFormation
+microbusiness\tmicrobusiness
+businessActivity\tbusinessActivity
+additionalActivity\tadditionalActivity
+stateLicense\tstateLicense
+legalTrue\tlegalTrue
+legalInformation\tlegalInformation
+`,
+		"General Operations": `
+firstName\tfirstName
+lastName\tlastName
+email\temail
+DBAName\tDBAName
+StreetAddress\tStreetAddress
+\tScreendoorAddress
+fulfillRenewableEnergyMandate\tfulfillRenewableEnergyMandate
+acknowledgeEnergyAssessment\tacknowledgeEnergyAssessment
+payRecologyForWastePickup\tpayRecologyForWastePickup
+describeCannabisShipments\tdescribeCannabisShipments
+ensureSafetyDuringShipments\tensureSafetyDuringShipments
+preventTheftDuringShipments\tpreventTheftDuringShipments
+moveInventoryToAndFrom\tmoveInventoryToAndFrom
+inventoryReconciliationFrequency\tinventoryReconciliationFrequency
+describeInventoryReconciliation\tdescribeInventoryReconciliation
+trackAndTraceContactFullName\ttrackAndTraceContactFullName
+trackAndTraceContactPhoneNumber\ttrackAndTraceContactPhoneNumber
+verifyProductLabels\tverifyProductLabels
+checkBatchesInAndOut\tcheckBatchesInAndOut
+preventProductSpoilage\tpreventProductSpoilage
+handleReturns\thandleReturns
+selectHazardousMaterials\tselectHazardousMaterials
+otherHazardousMaterials\totherHazardousMaterials
+storeMaterialsSafely\tstoreMaterialsSafely
+numberOfStaff\tnumberOfStaff
+uploadOrganizationalChart.{UPLOAD}.1\tuploadOrganizationalChart
+uploadStaffingAndLaborForm.{UPLOAD}.1\tuploadStaffingAndLaborForm
+agreeToHireOver21\tagreeToHireOver21
+uploadSignedFirstSourceHiringAgreement.{UPLOAD}.1\tuploadSignedFirstSourceHiringAgreement
+describeEmploymentOutreach\tdescribeEmploymentOutreach
+stateDocument.{UPLOAD}.1\tstateDocument
+cityDocument.{UPLOAD}.1\tcityDocument
+cityDocumentUpload.1.uploadAdditionalDocuments.{UPLOAD}.1\tuploadAdditionalDocuments1
+cityDocumentUpload.2.uploadAdditionalDocuments.{UPLOAD}.1\tuploadAdditionalDocuments2
+cityDocumentUpload.3.uploadAdditionalDocuments.{UPLOAD}.1\tuploadAdditionalDocuments3
+underPenaltyOfPerjury\tunderPenaltyOfPerjury
+\tSourcing Energy and Waste Section Notes
+\tProduct Tracking Section Notes
+\tHandling Cannabis Products Section Notes
+\tHazardous Materials Section Notes
+\tAbout Your Staff Section Notes
+\tHiring for Entry Level Positions Section Notes
+\tUpload Documents Section Notes
+\tLegal Agreements Section Notes`,
+	};
 
-	return NameMappingRows
+	return mappings[tableName]
 		.split("\n")
 		.filter(line => line)
 		.map((line) => line.split("\t"))
