@@ -1,7 +1,8 @@
 {
 	// "import" these utilities from the functions at the end of this script
-const { GroupedArray, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by } = utils();
+const { GroupedArray, LazyMap, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by } = utils();
 const { getSubmissionTableStatus, getReviewTableStatus } = status();
+const { keys, values, entries, fromEntries } = Object;
 
 const Basename = "Cannabis Business Permit";
 const ScreendoorTableName = "SCREENDOOR_BUSINESS_PERMIT";
@@ -14,7 +15,6 @@ const ScreendoorFields = [
 	"SUBMITTED_AT",
 	"SCREENDOOR_FORM_ID",
 ];
-const EAFormID = "4717";
 const SubmissionsTableName = Basename + " Submissions";
 const SubmissionFields = {
 	ID: "RESPONSE_ID",
@@ -36,12 +36,13 @@ const ReviewFields = {
 	ResponseNum: "Screendoor Response Number",
 	OriginalDate: "Original Submission Date",
 };
+const IAFormID = "5804";
 const FormNamesByID = {
-	4209: "Temporary Permit",
-	4225: "Article 33",
-	4279: "Pre-inspection",
-	4717: "Equity Application",
-	6799: "Event Permit",
+//	4209: "Temporary Permit",
+//	4225: "Article 33",
+//	4279: "Pre-inspection",
+//	4717: "Equity Application",
+//	6799: "Event Permit",
 	5804: "Initial Application",
 	5885: "Community Outreach",
 	6447: "General Operations",
@@ -55,13 +56,13 @@ const FormNamesByID = {
 	9396: "Delivery",
 	6428: "Manufacturing",
 	6431: "Testing",
-	6682: "Legal Help",
-	8110: "Renewal",
-	9026: "Renewal",
-	9436: "Renewal"
+//	6682: "Legal Help",
+//	8110: "Renewal",
+//	9026: "Renewal",
+//	9436: "Renewal"
 };
-const FormNames = [...new Set(Object.values(FormNamesByID))];
-const MetadataTableName = Basename + " Screendoor Metadata";
+//const FormNames = [...new Set(values(FormNamesByID))];
+const MetadataTableName = "Screendoor Metadata";
 const MetadataTableFields = [
 	{
 		name: "Timestamp",
@@ -116,7 +117,6 @@ const MetadataTableFields = [
 //const ApprovalPattern = /(approved .+ edits|submitted edits for review\.)/;
 //const ApprovalPattern = /(approved .+ edits|edited the response\.|submitted edits for review\.)/;
 const ApprovalPattern = /(approved .+ edits|edited the response\.)/;
-const SubmissionsTablePattern = /^((?!test )[\w\s]+) Submissions$/i;
 const FieldNameMappings = getNameMappings();
 
 function getDataFromJSON(
@@ -126,7 +126,7 @@ function getDataFromJSON(
 {
 	const data = JSON.parse(json);
 
-	Object.entries(data).forEach(([key, value]) => {
+	entries(data).forEach(([key, value]) => {
 		const { type, values } = fieldMetadata[key];
 		const mappedKey = FieldNameMappings[key];
 
@@ -170,6 +170,9 @@ function getDataFromJSON(
 	};
 }
 
+// TODO: where tf does the Business Ownership form come from???
+//  ===========================================================
+
 output.markdown(`Starting at **${new Date().toLocaleString()}**`);
 
 const jsonFile = await input.fileAsync(
@@ -184,14 +187,13 @@ const startTime = Date.now();
 	// sort metadata newest to oldest, which is how we want the events to appear in the interface
 const metadataItems = jsonFile.parsedContents.sort(by(({ timestamp }) => new Date(timestamp), true));
 const approvalMetadataByNum = new GroupedArray();
-const approvalMetadataByNumByForm = {};
+const approvalMetadataByNumByFormID = new LazyMap(GroupedArray);
 
 for (const item of metadataItems) {
 	const { responseNumber, responseID, formID, timestamp, event } = item;
-	const group = approvalMetadataByNumByForm[formID] || (approvalMetadataByNumByForm[formID] = new GroupedArray());
 
 	if (ApprovalPattern.test(event)) {
-		group.push(responseNumber, {
+		approvalMetadataByNumByFormID.get(formID).push(responseNumber, {
 			responseNumber,
 			responseID,
 			formID,
@@ -201,13 +203,14 @@ for (const item of metadataItems) {
 	}
 }
 
-//const submissionsTables = base.tables.filter(({ name }) => SubmissionsTablePattern.test(name));
-//
-//console.log(submissionsTables.map(({ name }) => name));
-//return;
-//
-//
-const submissionsTable = base.getTable(SubmissionsTableName);
+const submissionsTablesByFormID = fromEntries(entries(FormNamesByID)
+	.map(([formID, formName]) => [formID, base.getTable(formName + " Submissions")]));
+const submissionsTableMetadataByFormID = fromEntries(entries(submissionsTablesByFormID)
+	.map(([formID, table]) => [formID, getFieldsByName(table)]));
+	// create an array of the submissions tables with no duplicates, since multiple forms can map to one table
+const submissionsTables = [...new Set(values(submissionsTablesByFormID))];
+
+//const submissionsTable = base.getTable(SubmissionsTableName);
 const reviewsTable = base.getTable(ReviewsTableName);
 const metadataTable = base.getTable(MetadataTableName);
 
@@ -215,18 +218,19 @@ if (!await confirm("Clear the submissions, reviews, and metadata tables?")) {
 	return;
 }
 
-await clearTable(submissionsTable);
+	// clear all of the submission tables
+await Promise.all(submissionsTables.map((table) => clearTable(table)));
+//await clearTable(submissionsTable);
 await clearTable(reviewsTable);
 await clearTable(metadataTable);
 
-const airtableDataByNum = new GroupedArray();
-
-const submissionLabelsByResponse = {};
+//const submissionLabelsByResponse = {};
 const screendoorTable = base.getTable(ScreendoorTableName);
 const screendoorRevTable = base.getTable(ScreendoorRevTableName);
-const submissionsTableMetadata = getFieldsByName(submissionsTable);
 
-// TODO: need to do this by form ID number?
+// TODO: need to group this by form, then num
+const airtableDataByNumByFormID = new LazyMap(GroupedArray);
+//const airtableDataByNum = new GroupedArray();
 
 (await getRecordObjects(screendoorRevTable, ScreendoorFields))
 		// confusingly, we have to sort the revisions by the SUBMITTED_AT field in the REV table *before* adding in the
@@ -238,9 +242,9 @@ const submissionsTableMetadata = getFieldsByName(submissionsTable);
 	.sort(by("SUBMITTED_AT"))
 //	.sort(by(({ SUBMITTED_AT }) => parseDate(SUBMITTED_AT)))
 	.concat(await getRecordObjects(screendoorTable, ScreendoorFields))
-// TODO: do this form ID filtering up front?
-//	.filter(({ AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => AIRTABLE_JSON && SCREENDOOR_FORM_ID == EAFormID)
-	.map(({ RESPONSE_ID, RESPONSE_NUM, RESPONSE_JSON, AIRTABLE_JSON }) => {
+// TODO: remove filtering for just the Initial Application submissions
+	.filter(({ AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => AIRTABLE_JSON && SCREENDOOR_FORM_ID == IAFormID)
+	.forEach(({ RESPONSE_ID, RESPONSE_NUM, RESPONSE_JSON, AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => {
 		const { initial_response_id, labels } = JSON.parse(RESPONSE_JSON);
 		const overrides = {
 				// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
@@ -252,20 +256,24 @@ const submissionsTableMetadata = getFieldsByName(submissionsTable);
 				// we want to give current submissions a blank SUBMISSION_ID, but a 0 to revisions.  this makes
 				// it possible to distinguish them when generating Form.io records.
 			SUBMISSION_ID: typeof initial_response_id !== "undefined" ? "" : "0",
-			...getSubmissionTableStatus(labels),
+//			...getSubmissionTableStatus(labels),
 		};
 
 			// the last submission to store its labels should be the most recent submission, since we're processing the
 			// revisions before the submissions below
-		submissionLabelsByResponse[RESPONSE_ID] = labels;
+//		submissionLabelsByResponse[RESPONSE_ID] = labels;
 
-		return getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadata, overrides);
+		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[SCREENDOOR_FORM_ID], overrides);
+
+		airtableDataByNumByFormID.get(SCREENDOOR_FORM_ID).push(RESPONSE_NUM, data);
 	})
-	.forEach((data) => airtableDataByNum.push(data.RESPONSE_NUM, data));
+// TODO: group this by form, first, then by num
+//	.forEach((data) => airtableDataByNumByFormID.get(data.SCREENDOOR_FORM_ID).push(data.RESPONSE_NUM, data));
 
+// TODO: group this by table
 const submissions = [];
 
-airtableDataByNum.forEach((num, items) => {
+airtableDataByNumByFormID.forEach((num, items) => {
 	const [firstSubmission, ...rest] = items;
 
 	submissions.push({ fields: firstSubmission });
@@ -291,12 +299,15 @@ airtableDataByNum.forEach((num, items) => {
 	// be the most recent submission when we store it in the loopChunks() below.  that way, it'll be the latestID that we
 	// use to get the latest submission when creating the review record in the for loop below.  we have to dig into the
 	// fields to get the date, and then call parseDate(), because the format isn't quite parseable with new Date().
-submissions.sort(by(({ fields: { Submitted } }) => parseDate(Submitted), true));
+// TODO: shouldn't need parseDate here?
+submissions.sort(by(({ fields: { Submitted } }) => Submitted, true));
+//submissions.sort(by(({ fields: { Submitted } }) => parseDate(Submitted), true));
 
 const submissionRecordIDsByResponse = new GroupedArray();
 
 output.markdown(`Starting import of ${submissions.length} submissions...`);
 
+// TODO: loop over all the submissions for each table
 await loopChunks(submissions, async (chunk) => {
 	const records = await submissionsTable.createRecordsAsync(chunk);
 
@@ -316,7 +327,7 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 		// get the created record for the most recent submission, so we can get any fields set by formulas
 		// that we need to use when generating the review data below
 	const latestRecord = await submissionsTable.selectRecordAsync(latestID.id);
-	const latest = getCellObject(latestRecord, Object.values(SubmissionFields));
+	const latest = getCellObject(latestRecord, values(SubmissionFields));
 	const responseID = latest[SubmissionFields.ID];
 	const labels = submissionLabelsByResponse[responseID];
 	const [reviewStatus, submissionStatus] = getReviewTableStatus(labels, previousIDs.length);
@@ -325,7 +336,7 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 	if (previousIDs.length) {
 			// with more than one record, the original submission date is from the oldest record, which is last in this array
 		const oldestRecord = await submissionsTable.selectRecordAsync(previousIDs.at(-1).id);
-		const oldest = getCellObject(oldestRecord, Object.values(SubmissionFields));
+		const oldest = getCellObject(oldestRecord, values(SubmissionFields));
 
 		originalSubmittedDate = oldest[SubmissionFields.Submitted];
 	}
@@ -516,6 +527,32 @@ function utils() {
 			iterator)
 		{
 			this.entries().forEach(([key, values]) => iterator(key, values));
+		}
+	}
+
+	class LazyMap {
+		constructor(
+			valueGenerator)
+		{
+			this.map = {};
+			this.valueGenerator = /^class\s/.test(String(valueGenerator))
+				? () => new valueGenerator()
+				: valueGenerator;
+		}
+
+		get(
+			key)
+		{
+			if (!(key in this.map)) {
+				this.map[key] = this.valueGenerator();
+			}
+
+			return this.map[key];
+		}
+
+		getAll()
+		{
+			return this.map;
 		}
 	}
 
@@ -735,6 +772,7 @@ function utils() {
 
 	return {
 		GroupedArray,
+		LazyMap,
 		Progress,
 		loopChunks,
 		getCell,
