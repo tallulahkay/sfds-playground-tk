@@ -1,6 +1,6 @@
 {
 	// "import" these utilities from the functions at the end of this script
-const { GroupedArray, LazyMap, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by } = utils();
+const { GroupedArray, LazyMap, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by, timeStart, timeEnd } = utils();
 const { getSubmissionTableStatus, getReviewTableStatus } = status();
 const { keys, values, entries, fromEntries } = Object;
 
@@ -37,6 +37,7 @@ const ReviewFields = {
 	OriginalDate: "Original Submission Date",
 };
 const IAFormID = "5804";
+const BOFormID = "5804BO";
 const FormNamesByID = {
 //	4209: "Temporary Permit",
 //	4225: "Article 33",
@@ -44,6 +45,7 @@ const FormNamesByID = {
 //	4717: "Equity Application",
 //	6799: "Event Permit",
 	5804: "Initial Application",
+	[BOFormID]: "Business Ownership",
 	5885: "Community Outreach",
 	6447: "General Operations",
 	5886: "General Operations",
@@ -127,6 +129,13 @@ function getDataFromJSON(
 	const data = JSON.parse(json);
 
 	entries(data).forEach(([key, value]) => {
+		if (!(key in fieldMetadata)) {
+			console.error(`Unknown key: ${key} ${data.RESPONSE_NUM} ${data.email}`);
+
+			return;
+		}
+// TODO: fix whatIsYourEquityIncubatorNumber, which isn't in the table
+
 		const { type, values } = fieldMetadata[key];
 		const mappedKey = FieldNameMappings[key];
 
@@ -171,6 +180,7 @@ function getDataFromJSON(
 }
 
 // TODO: where tf does the Business Ownership form come from???
+//  looks like we have to write fields from 5804 records into both tables
 //  ===========================================================
 
 output.markdown(`Starting at **${new Date().toLocaleString()}**`);
@@ -214,6 +224,7 @@ const submissionsTables = [...new Set(values(submissionsTablesByFormID))];
 const reviewsTable = base.getTable(ReviewsTableName);
 const metadataTable = base.getTable(MetadataTableName);
 
+/*
 if (!await confirm("Clear the submissions, reviews, and metadata tables?")) {
 	return;
 }
@@ -223,6 +234,7 @@ await Promise.all(submissionsTables.map((table) => clearTable(table)));
 //await clearTable(submissionsTable);
 await clearTable(reviewsTable);
 await clearTable(metadataTable);
+*/
 
 //const submissionLabelsByResponse = {};
 const screendoorTable = base.getTable(ScreendoorTableName);
@@ -231,6 +243,8 @@ const screendoorRevTable = base.getTable(ScreendoorRevTableName);
 // TODO: need to group this by form, then num
 const airtableDataByNumByFormID = new LazyMap(GroupedArray);
 //const airtableDataByNum = new GroupedArray();
+
+timeStart("Processing records");
 
 (await getRecordObjects(screendoorRevTable, ScreendoorFields))
 		// confusingly, we have to sort the revisions by the SUBMITTED_AT field in the REV table *before* adding in the
@@ -258,17 +272,21 @@ const airtableDataByNumByFormID = new LazyMap(GroupedArray);
 			SUBMISSION_ID: typeof initial_response_id !== "undefined" ? "" : "0",
 //			...getSubmissionTableStatus(labels),
 		};
+		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[SCREENDOOR_FORM_ID], overrides);
+
+		airtableDataByNumByFormID.get(SCREENDOOR_FORM_ID).push(RESPONSE_NUM, data);
 
 			// the last submission to store its labels should be the most recent submission, since we're processing the
 			// revisions before the submissions below
 //		submissionLabelsByResponse[RESPONSE_ID] = labels;
-
-		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[SCREENDOOR_FORM_ID], overrides);
-
-		airtableDataByNumByFormID.get(SCREENDOOR_FORM_ID).push(RESPONSE_NUM, data);
 	})
-// TODO: group this by form, first, then by num
-//	.forEach((data) => airtableDataByNumByFormID.get(data.SCREENDOOR_FORM_ID).push(data.RESPONSE_NUM, data));
+
+timeEnd("Processing records");
+
+console.log(airtableDataByNumByFormID.getAll());
+console.log(airtableDataByNumByFormID.get(5804).map((num, [{ Submitted }]) => Submitted).join("\n"));
+return;
+
 
 // TODO: group this by table
 const submissions = [];
@@ -528,6 +546,12 @@ function utils() {
 		{
 			this.entries().forEach(([key, values]) => iterator(key, values));
 		}
+
+		map(
+			iterator)
+		{
+			return this.entries().map(([key, values]) => iterator(key, values));
+		}
 	}
 
 	class LazyMap {
@@ -770,6 +794,36 @@ function utils() {
 		return answer === buttons[0];
 	}
 
+	const [timeStart, timeEnd] = (() => {
+		const times = {};
+
+		function timeStart(
+			name)
+		{
+			times[name] = Date.now();
+		}
+
+		function timeEnd(
+			name)
+		{
+			const startTime = times[name];
+
+			if (startTime) {
+				const totalTime = Date.now() - startTime;
+				const totalTimeString = totalTime > 1000
+					? (totalTime / 1000).toFixed(2) + "s"
+					: totalTime + "ms";
+
+				output.markdown(`**${name}** took **${totalTimeString}**.`);
+				delete times[name];
+			} else {
+				output.markdown(`Timer called **${name}** not found.`);
+			}
+		}
+
+		return [timeStart, timeEnd];
+	})();
+
 	return {
 		GroupedArray,
 		LazyMap,
@@ -785,6 +839,8 @@ function utils() {
 		parseDate,
 		by,
 		confirm,
+		timeStart,
+		timeEnd,
 	};
 }
 
