@@ -1,6 +1,6 @@
 {
 	// "import" these utilities from the functions at the end of this script
-const { GroupedArray, LazyMap, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by, timeStart, timeEnd } = utils();
+const { GroupedArray, DefaultMap, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by, timeStart, timeEnd } = utils();
 const { getSubmissionTableStatus, getReviewTableStatus } = status();
 const { keys, values, entries, fromEntries } = Object;
 
@@ -36,34 +36,53 @@ const ReviewFields = {
 	ResponseNum: "Screendoor Response Number",
 	OriginalDate: "Original Submission Date",
 };
-const IAFormID = "5804";
-const BOFormID = "5804BO";
-const FormNamesByID = {
-//	4209: "Temporary Permit",
-//	4225: "Article 33",
-//	4279: "Pre-inspection",
-//	4717: "Equity Application",
-//	6799: "Event Permit",
-	5804: "Initial Application",
-	[BOFormID]: "Business Ownership",
-	5885: "Community Outreach",
-	6447: "General Operations",
-	5886: "General Operations",
-	5887: "Security Plan",
-	6162: "General Operations",
-	6419: "Storefront Retail",
-	6425: "Distributor",
-	6437: "Cultivation",
-	6420: "Delivery",
-	9396: "Delivery",
-	6428: "Manufacturing",
-	6431: "Testing",
-//	6682: "Legal Help",
-//	8110: "Renewal",
-//	9026: "Renewal",
-//	9436: "Renewal"
-};
-//const FormNames = [...new Set(values(FormNamesByID))];
+const Forms = [
+	["4209", "Temporary Permit"],
+	["4225", "Article 33"],
+	["4279", "Pre-inspection"],
+	["4717", "Equity Application", "ea"],
+	["6799", "Event Permit", "ea"],
+	["5804", "Initial Application", "biz", "IA"],
+	["5804BO", "Business Ownership", "biz", "BO"],
+	["5885", "Community Outreach", "biz", "CO"],
+	["6447", "General Operations", "biz", "GO"],
+	["5886", "General Operations", "biz", "GO"],
+	["5887", "Security Plan", "biz"],
+	["6162", "General Operations", "biz", "GO"],
+	["6419", "Storefront Retail", "biz", "SR"],
+	["6425", "Distributor", "biz", "Dis"],
+	["6437", "Cultivation", "biz", "Cult"],
+	["6420", "Delivery", "biz", "Del"],
+	["9396", "Delivery", "biz", "Del"],
+	["6428", "Manufacturing", "biz", "Mfg"],
+	["6431", "Testing", "biz", "Test"],
+	["6682", "Legal Help"],
+	["8110", "Renewal"],
+	["9026", "Renewal"],
+	["9436", "Renewal"]
+].reduce((result, [id, name, base, shortName]) => {
+	const info = { id, name, base, shortName };
+
+	result[id] = result[name] = info;
+	shortName && (result[shortName] = info);
+
+	return result;
+}, {
+	info(base)
+	{
+		return Object.values(this)
+			.filter((form) => form.base === base);
+	},
+
+	names(base)
+	{
+		const names = Object.values(this)
+			.filter((form) => form.base === base)
+			.map(({ name }) => name);
+
+		return [...new Set(names)];
+	}
+});
 const MetadataTableName = "Screendoor Metadata";
 const MetadataTableFields = [
 	{
@@ -196,8 +215,8 @@ const startTime = Date.now();
 
 	// sort metadata newest to oldest, which is how we want the events to appear in the interface
 const metadataItems = jsonFile.parsedContents.sort(by(({ timestamp }) => new Date(timestamp), true));
-const approvalMetadataByNum = new GroupedArray();
-const approvalMetadataByNumByFormID = new LazyMap(GroupedArray);
+//const approvalMetadataByNum = new GroupedArray();
+const approvalMetadataByNumByFormID = new DefaultMap(GroupedArray);
 
 for (const item of metadataItems) {
 	const { responseNumber, responseID, formID, timestamp, event } = item;
@@ -213,14 +232,13 @@ for (const item of metadataItems) {
 	}
 }
 
-const submissionsTablesByFormID = fromEntries(entries(FormNamesByID)
-	.map(([formID, formName]) => [formID, base.getTable(formName + " Submissions")]));
+const submissionsTablesByFormID = fromEntries(Forms.info("biz")
+	.map(({ id, name }) => [id, base.getTable(name + " Submissions")]));
 const submissionsTableMetadataByFormID = fromEntries(entries(submissionsTablesByFormID)
 	.map(([formID, table]) => [formID, getFieldsByName(table)]));
 	// create an array of the submissions tables with no duplicates, since multiple forms can map to one table
-const submissionsTables = [...new Set(values(submissionsTablesByFormID))];
 
-//const submissionsTable = base.getTable(SubmissionsTableName);
+const submissionsTables = [...new Set(values(submissionsTablesByFormID))];
 const reviewsTable = base.getTable(ReviewsTableName);
 const metadataTable = base.getTable(MetadataTableName);
 
@@ -231,7 +249,6 @@ if (!await confirm("Clear the submissions, reviews, and metadata tables?")) {
 
 	// clear all of the submission tables
 await Promise.all(submissionsTables.map((table) => clearTable(table)));
-//await clearTable(submissionsTable);
 await clearTable(reviewsTable);
 await clearTable(metadataTable);
 */
@@ -240,9 +257,7 @@ await clearTable(metadataTable);
 const screendoorTable = base.getTable(ScreendoorTableName);
 const screendoorRevTable = base.getTable(ScreendoorRevTableName);
 
-// TODO: need to group this by form, then num
-const airtableDataByNumByFormID = new LazyMap(GroupedArray);
-//const airtableDataByNum = new GroupedArray();
+const airtableDataByNumByFormID = new DefaultMap(GroupedArray);
 
 timeStart("Processing records");
 
@@ -257,7 +272,7 @@ timeStart("Processing records");
 //	.sort(by(({ SUBMITTED_AT }) => parseDate(SUBMITTED_AT)))
 	.concat(await getRecordObjects(screendoorTable, ScreendoorFields))
 // TODO: remove filtering for just the Initial Application submissions
-	.filter(({ AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => AIRTABLE_JSON && SCREENDOOR_FORM_ID == IAFormID)
+	.filter(({ AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => AIRTABLE_JSON && SCREENDOOR_FORM_ID == Forms.IA.id)
 	.forEach(({ RESPONSE_ID, RESPONSE_NUM, RESPONSE_JSON, AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => {
 		const { initial_response_id, labels } = JSON.parse(RESPONSE_JSON);
 		const overrides = {
@@ -283,12 +298,13 @@ timeStart("Processing records");
 
 timeEnd("Processing records");
 
-console.log(airtableDataByNumByFormID.getAll());
-console.log(airtableDataByNumByFormID.get(5804).map((num, [{ Submitted }]) => Submitted).join("\n"));
+//console.log(airtableDataByNumByFormID.getAll());
+console.log(airtableDataByNumByFormID.get(5804).keys().length);
+//console.log(airtableDataByNumByFormID.get(5804).map((num, [{ Submitted }]) => Submitted).join("\n"));
 return;
 
 
-// TODO: group this by table
+// TODO: start a loop here over the forms
 const submissions = [];
 
 airtableDataByNumByFormID.forEach((num, items) => {
@@ -554,21 +570,21 @@ function utils() {
 		}
 	}
 
-	class LazyMap {
+	class DefaultMap {
 		constructor(
-			valueGenerator)
+			defaultGenerator)
 		{
 			this.map = {};
-			this.valueGenerator = /^class\s/.test(String(valueGenerator))
-				? () => new valueGenerator()
-				: valueGenerator;
+			this.defaultGenerator = /^class\s/.test(String(defaultGenerator))
+				? () => new defaultGenerator()
+				: defaultGenerator;
 		}
 
 		get(
 			key)
 		{
 			if (!(key in this.map)) {
-				this.map[key] = this.valueGenerator();
+				this.map[key] = this.defaultGenerator(key);
 			}
 
 			return this.map[key];
@@ -826,7 +842,7 @@ function utils() {
 
 	return {
 		GroupedArray,
-		LazyMap,
+		DefaultMap,
 		Progress,
 		loopChunks,
 		getCell,
