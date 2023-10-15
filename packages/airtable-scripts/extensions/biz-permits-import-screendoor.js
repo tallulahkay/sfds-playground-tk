@@ -6,7 +6,7 @@ const { keys, values, entries, fromEntries } = Object;
 
 const Basename = "Cannabis Business Permit";
 const ScreendoorTableName = "SCREENDOOR_BUSINESS_PERMIT";
-const ScreendoorRevTableName = "SCREENDOOR_BUSINESS_PERMIT_REV";
+const ScreendoorRevTableName = ScreendoorTableName + "_REV";
 const ScreendoorFields = [
 	"RESPONSE_ID",
 	"RESPONSE_NUM",
@@ -15,7 +15,6 @@ const ScreendoorFields = [
 	"SUBMITTED_AT",
 	"SCREENDOOR_FORM_ID",
 ];
-const SubmissionsTableName = Basename + " Submissions";
 const SubmissionFields = {
 	ID: "RESPONSE_ID",
 	Num: "RESPONSE_NUM",
@@ -145,7 +144,9 @@ function getDataFromJSON(
 	fieldMetadata,
 	overrides = {})
 {
-	const data = JSON.parse(json);
+	const data = typeof json === "string"
+		? JSON.parse(json)
+		: json;
 
 	entries(data).forEach(([key, value]) => {
 		if (!(key in fieldMetadata)) {
@@ -214,6 +215,7 @@ const jsonFile = await input.fileAsync(
 const startTime = Date.now();
 
 	// sort metadata newest to oldest, which is how we want the events to appear in the interface
+// TODO: can't we sort these by the ISO string timestamps?
 const metadataItems = jsonFile.parsedContents.sort(by(({ timestamp }) => new Date(timestamp), true));
 //const approvalMetadataByNum = new GroupedArray();
 const approvalMetadataByNumByFormID = new DefaultMap(GroupedArray);
@@ -253,13 +255,14 @@ await clearTable(reviewsTable);
 await clearTable(metadataTable);
 */
 
+// TODO: if we need this, will have to be a GroupedArray
 //const submissionLabelsByResponse = {};
 const screendoorTable = base.getTable(ScreendoorTableName);
 const screendoorRevTable = base.getTable(ScreendoorRevTableName);
 
 const airtableDataByNumByFormID = new DefaultMap(GroupedArray);
 
-timeStart("Processing records");
+timeStart("Processing Screendoor records");
 
 (await getRecordObjects(screendoorRevTable, ScreendoorFields))
 		// confusingly, we have to sort the revisions by the SUBMITTED_AT field in the REV table *before* adding in the
@@ -269,11 +272,10 @@ timeStart("Processing records");
 		// will guarantee the most recent submission will come last if we sort by it, so that's why we just append the
 		// submissions after the sorted revisions.
 	.sort(by("SUBMITTED_AT"))
-//	.sort(by(({ SUBMITTED_AT }) => parseDate(SUBMITTED_AT)))
 	.concat(await getRecordObjects(screendoorTable, ScreendoorFields))
 // TODO: remove filtering for just the Initial Application submissions
 	.filter(({ AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => AIRTABLE_JSON && SCREENDOOR_FORM_ID == Forms.IA.id)
-	.forEach(({ RESPONSE_ID, RESPONSE_NUM, RESPONSE_JSON, AIRTABLE_JSON, SCREENDOOR_FORM_ID }) => {
+	.forEach(({ RESPONSE_ID, RESPONSE_NUM, RESPONSE_JSON, AIRTABLE_JSON, SCREENDOOR_FORM_ID: formID }) => {
 		const { initial_response_id, labels } = JSON.parse(RESPONSE_JSON);
 		const overrides = {
 				// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
@@ -285,72 +287,96 @@ timeStart("Processing records");
 				// we want to give current submissions a blank SUBMISSION_ID, but a 0 to revisions.  this makes
 				// it possible to distinguish them when generating Form.io records.
 			SUBMISSION_ID: typeof initial_response_id !== "undefined" ? "" : "0",
-//			...getSubmissionTableStatus(labels),
 		};
-		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[SCREENDOOR_FORM_ID], overrides);
+		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[formID], overrides);
 
-		airtableDataByNumByFormID.get(SCREENDOOR_FORM_ID).push(RESPONSE_NUM, data);
+		airtableDataByNumByFormID.get(formID).push(RESPONSE_NUM, data);
 
-			// the last submission to store its labels should be the most recent submission, since we're processing the
-			// revisions before the submissions below
-//		submissionLabelsByResponse[RESPONSE_ID] = labels;
-	})
+			// 5804 forms need to be split between the IA and BO tables, so filter out any data in the Airtable JSON that
+			// doesn't have a field in the BO table
+		if (formID == Forms.IA.id) {
+			formID = Forms.BO.id;
 
-timeEnd("Processing records");
+			const airtableData = JSON.parse(AIRTABLE_JSON);
+			const metadata = submissionsTableMetadataByFormID[formID];
+			const filteredData = fromEntries(entries(airtableData)
+				.filter(([key]) => key in metadata)
+			);
+			const data = getDataFromJSON(filteredData, metadata, overrides);
 
-//console.log(airtableDataByNumByFormID.getAll());
+			airtableDataByNumByFormID.get(formID).push(RESPONSE_NUM, data);
+		}
+	});
+
+// TODO: maybe create a copy of the 5804 forms with filtered keys before the foreach above is run, instead of the if block.
+
+timeEnd("Processing Screendoor records");
+
+
+console.log(airtableDataByNumByFormID.getAll());
 console.log(airtableDataByNumByFormID.get(5804).keys().length);
-//console.log(airtableDataByNumByFormID.get(5804).map((num, [{ Submitted }]) => Submitted).join("\n"));
+
+
+const submissionRecordIDsByResponseByFormID = {};
+const submissionsByFormID = {};
+
+for (const [formID, airtableDataByNum] of airtableDataByNumByFormID.entries()) {
+	const submissions = [];
+
+	airtableDataByNum.forEach((num, items) => {
+		const [firstSubmission, ...rest] = items;
+
+		submissions.push({ fields: firstSubmission });
+
+		if (rest.length) {
+			if (!approvalMetadataByNum.has(num)) {
+				console.log(num, firstSubmission, rest);
+				throw new Error(`No metadata for response ${num}.`);
+			}
+
+			const newestSubmittedDate = approvalMetadataByNum.get(num)[0];
+
+				// when there are revisions, the submission date of the "current" submission is not included in the JSON, so we
+				// have to pull it from the metadata.  the most recent metadata date is when the current submission was approved.
+			rest.at(-1).Submitted = newestSubmittedDate.timestamp;
+
+				// store each of the submissions on a fields key so it's ready to be used to create a new record
+			submissions.push(...(rest.map((fields) => ({ fields }))));
+		}
+	});
+
+		// we now need to sort the submissions in descending order so that the first record in each GroupedArray value will
+		// be the most recent submission when we store it in the loopChunks() below.  that way, it'll be the latestID that we
+		// use to get the latest submission when creating the review record in the for loop below.  we have to dig into the
+		// fields to get the date, and then call parseDate(), because the format isn't quite parseable with new Date().
+// TODO: shouldn't need parseDate here?
+	submissions.sort(by(({ fields: { Submitted } }) => Submitted, true));
+	//submissions.sort(by(({ fields: { Submitted } }) => parseDate(Submitted), true));
+
+	const recordIDsByResponse = new GroupedArray();
+	const submissionsTable = submissionsTablesByFormID[formID];
+
+	output.markdown(`Starting import of **${submissions.length}** submissions for **${Forms[formID].name}**...`);
+
+//	await loopChunks(submissions, async (chunk) => {
+//		const records = await submissionsTable.createRecordsAsync(chunk);
+//
+//		chunk.forEach((submission, i) => {
+//			const { fields: { [SubmissionFields.ID]: id } } = submission;
+//
+//			recordIDsByResponse.push(id, { id: records[i] });
+//		});
+//	});
+
+submissionsByFormID[formID] = submissions;
+	submissionRecordIDsByResponseByFormID[formID] = recordIDsByResponse;
+}
+
+console.log(submissionsByFormID);
 return;
 
 
-// TODO: start a loop here over the forms
-const submissions = [];
-
-airtableDataByNumByFormID.forEach((num, items) => {
-	const [firstSubmission, ...rest] = items;
-
-	submissions.push({ fields: firstSubmission });
-
-	if (rest.length) {
-		if (!approvalMetadataByNum.has(num)) {
-			console.log(num, firstSubmission, rest);
-			throw new Error(`No metadata for response ${num}.`);
-		}
-
-		const newestSubmittedDate = approvalMetadataByNum.get(num)[0];
-
-			// when there are revisions, the submission date of the "current" submission is not included in the JSON, so we
-			// have to pull it from the metadata.  the most recent metadata date is when the current submission was approved.
-		rest.at(-1).Submitted = newestSubmittedDate.timestamp;
-
-			// store each of the submissions on a fields key so it's ready to be used to create a new record
-		submissions.push(...(rest.map((fields) => ({ fields }))));
-	}
-});
-
-	// we now need to sort the submissions in descending order so that the first record in each GroupedArray value will
-	// be the most recent submission when we store it in the loopChunks() below.  that way, it'll be the latestID that we
-	// use to get the latest submission when creating the review record in the for loop below.  we have to dig into the
-	// fields to get the date, and then call parseDate(), because the format isn't quite parseable with new Date().
-// TODO: shouldn't need parseDate here?
-submissions.sort(by(({ fields: { Submitted } }) => Submitted, true));
-//submissions.sort(by(({ fields: { Submitted } }) => parseDate(Submitted), true));
-
-const submissionRecordIDsByResponse = new GroupedArray();
-
-output.markdown(`Starting import of ${submissions.length} submissions...`);
-
-// TODO: loop over all the submissions for each table
-await loopChunks(submissions, async (chunk) => {
-	const records = await submissionsTable.createRecordsAsync(chunk);
-
-	chunk.forEach((submission, i) => {
-		const { fields: { [SubmissionFields.ID]: id } } = submission;
-
-		submissionRecordIDsByResponse.push(id, { id: records[i] });
-	});
-});
+// TODO: loop over the submissions just for the IA form and create reviews from that?
 
 const reviews = [];
 
@@ -374,6 +400,8 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 
 		originalSubmittedDate = oldest[SubmissionFields.Submitted];
 	}
+
+// TODO: check the migration automations for any other changes applied to a new record
 
 	reviews.push({
 		fields: {
@@ -511,16 +539,16 @@ function utils() {
 
 	class GroupedArray {
 		constructor(
-			initialGroups = {})
+			initialData = {})
 		{
-			this.groups = { ...initialGroups };
+			this.data = { ...initialData };
 		}
 
 		push(
 			key,
 			value)
 		{
-			const arr = this.groups[key] || (this.groups[key] = []);
+			const arr = this.data[key] || (this.data[key] = []);
 
 			arr.push(value);
 		}
@@ -528,33 +556,33 @@ function utils() {
 		get(
 			key)
 		{
-			return this.groups[key];
+			return this.data[key];
 		}
 
 		getAll()
 		{
-			return this.groups;
+			return this.data;
 		}
 
 		has(
 			key)
 		{
-			return key in this.groups;
+			return key in this.data;
 		}
 
 		keys()
 		{
-			return Object.keys(this.groups);
+			return Object.keys(this.data);
 		}
 
 		values()
 		{
-			return Object.values(this.groups);
+			return Object.values(this.data);
 		}
 
 		entries()
 		{
-			return Object.entries(this.groups);
+			return Object.entries(this.data);
 		}
 
 		forEach(
@@ -570,11 +598,12 @@ function utils() {
 		}
 	}
 
-	class DefaultMap {
+	class DefaultMap extends GroupedArray {
 		constructor(
-			defaultGenerator)
+			defaultGenerator,
+			initialData)
 		{
-			this.map = {};
+			super(initialData);
 			this.defaultGenerator = /^class\s/.test(String(defaultGenerator))
 				? () => new defaultGenerator()
 				: defaultGenerator;
@@ -583,16 +612,11 @@ function utils() {
 		get(
 			key)
 		{
-			if (!(key in this.map)) {
-				this.map[key] = this.defaultGenerator(key);
+			if (!(key in this.data)) {
+				this.data[key] = this.defaultGenerator(key);
 			}
 
-			return this.map[key];
-		}
-
-		getAll()
-		{
-			return this.map;
+			return this.data[key];
 		}
 	}
 
