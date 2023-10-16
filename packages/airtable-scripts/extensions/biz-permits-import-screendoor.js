@@ -46,19 +46,18 @@ const Forms = [
 	["5885", "Community Outreach", "biz", "CO"],
 	["6447", "General Operations", "biz", "GO"],
 	["5886", "General Operations", "biz", "GO"],
-	["5887", "Security Plan", "biz"],
+	["5887", "Security Plan", "biz", "Sec"],
 	["6162", "General Operations", "biz", "GO"],
 	["6419", "Storefront Retail", "biz", "SR"],
 	["6425", "Distributor", "biz", "Dis"],
 	["6437", "Cultivation", "biz", "Cult"],
 	["6420", "Delivery", "biz", "Del"],
-	["9396", "Delivery", "biz", "Del"],
 	["6428", "Manufacturing", "biz", "Mfg"],
 	["6431", "Testing", "biz", "Test"],
 	["6682", "Legal Help"],
-	["8110", "Renewal"],
-	["9026", "Renewal"],
-	["9436", "Renewal"]
+	["8110", "Renewal", "biz", "Ren1"],
+	["9026", "Renewal", "biz", "Ren2"],
+	["9436", "Renewal", "biz", "Ren3"]
 ].reduce((result, [id, name, base, shortName]) => {
 	const info = { id, name, base, shortName };
 
@@ -1299,7 +1298,7 @@ ownershipDocument.2.ownershipDocument1.{UPLOAD}.1\townershipDocument2
 ownershipDocument.3.ownershipDocument1.{UPLOAD}.1\townershipDocument3
 partneringWithIncubator\tpartneringWithIncubator
 equityIncubatorName\tequityIncubatorName
-whatIsYourEquityIncubatorNumber\twhatIsYourEquityIncubatorNumber
+equityIncubatorNumber\twhatIsYourEquityIncubatorNumber
 equityAgreement.{UPLOAD}.1\tequityAgreement
 affidavitNumber\taffidavitNumber
 tempPermitNumber\ttempPermitNumber
