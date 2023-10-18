@@ -20,20 +20,20 @@ const SubmissionFields = {
 	Num: "RESPONSE_NUM",
 	SubmissionID: "SUBMISSION_ID",
 	Submitted: "Submitted",
-	NameID: "Name ID",
+//	NameID: "Name ID",
 	Email: "email",
 };
 const ReviewsTableName = Basename + " Reviews";
 const ReviewFields = {
-	NameID: "Name ID",
-	MostRecent: "Most Recent Submission",
-	Previous: "Previous Submissions",
-	ReviewStatus: "Review Status",
-	SubmissionStatus: "Submission Status",
-	SubmissionID: "Submission ID",
-	ResponseID: "Screendoor Response ID",
-	ResponseNum: "Screendoor Response Number",
-	OriginalDate: "Original Submission Date",
+//	NameID: "Name ID",
+	MostRecent: "Initial Application - Latest Submission",
+	Previous: "Initial Application - Previous Submissions",
+//	ReviewStatus: "Review Status",
+//	SubmissionStatus: "Submission Status",
+	SubmissionID: "Initial Application Submission ID",
+//	ResponseID: "Screendoor Response ID",
+	ResponseNum: "Initial Application Screendoor Number",
+//	OriginalDate: "Original Submission Date",
 };
 const Forms = [
 	["4209", "Temporary Permit"],
@@ -77,7 +77,7 @@ const Forms = [
 
 	names(base)
 	{
-		const names = Object.values(this)
+		const names = values(this)
 			.filter((form) => form.base === base)
 			.map(({ name }) => name);
 
@@ -87,7 +87,7 @@ const Forms = [
 const MetadataTableName = "Screendoor Metadata";
 const MetadataTableFields = [
 	{
-		name: "Timestamp",
+		name: "Activity Date",
 		key: "timestamp",
 		type: "dateTime",
 		options: {
@@ -121,13 +121,13 @@ const MetadataTableFields = [
 	{
 		name: "Response Number",
 		key: "responseNumber",
-		type: "number",
+		type: "string",
 		options: {
 			precision: 0
 		},
 	},
 	{
-		name: ReviewsTableName,
+		name: "Permit Reviews Metadata",
 		key: "",
 		type: "multipleRecordLinks",
 		options: {
@@ -136,11 +136,28 @@ const MetadataTableFields = [
 		}
 	},
 ];
+const StringFieldTypes = [
+	"singleLineText",
+	"multilineText",
+	"richText",
+	"email",
+	"phoneNumber",
+	"url",
+];
 //const ApprovalPattern = /(approved .+ edits|submitted edits for review\.)/;
 //const ApprovalPattern = /(approved .+ edits|edited the response\.|submitted edits for review\.)/;
 const ApprovalPattern = /(approved .+ edits|edited the response\.)/;
 // TODO: also match `changed the status to **Submitted**`?
 const FieldNameMappings = getNameMappings();
+
+function getSelectFromName(
+	name)
+{
+		// don't convert falsy, non-zero values to a name object; just return null instead, which is a valid option
+	return name || name === 0
+		? { name }
+		: null;
+}
 
 function getDataFromJSON(
 	json,
@@ -165,31 +182,43 @@ function getDataFromJSON(
 
 		if (!(key in fieldMetadata)) {
 			console.error(`Unknown key: ${key} ${data.RESPONSE_NUM} ${data.email}`);
+// TODO: this should probably throw to stop the processing instead of skipping a key and losing the data
 
 			return;
 		}
 
-		const { type, values } = fieldMetadata[key];
+		const { type, choices } = fieldMetadata[key];
 
-			// the JSON is coming in with bare strings for select values, so fix those.  also check that the selected options
+			// the JSON is coming in with bare strings for select choices, so fix those.  also check that the selected options
 			// exist in the field, and throw if not.
 		if (type === "singleSelect") {
-			if (values && !values.includes(value)) {
+			if (value && choices && !choices.includes(value)) {
 				console.error(data);
 				throw new Error(`Unknown option for single-select field "${key}": "${value}"`);
 			}
 
-			data[key] = { value };
+			data[key] = getSelectFromName(value);
 		} else if (type === "multipleSelects") {
-			data[key] = value.map((name) => ({ name }));
+				// the value for a multipleSelects needs to be in an array, and not all form mappings seem to provide that,
+				// so make sure it's wrapped
+			const valueArray = [].concat(value);
 
-			if (values && !value.every(name => values.includes(name))) {
+			if (choices && !valueArray.every(name => !name || choices.includes(name))) {
+				const unknownOptions = valueArray.filter((name) => !choices.includes(name));
+
 				console.error(data);
-				throw new Error(`Unknown option for multi-select field "${key}": "${value}"`);
+				throw new Error(`Unknown option for multi-select field "${key}": "${unknownOptions}"`);
 			}
-		} else if (typeof value === "string") {
+
+				// make sure that the array of values is unique, since Airtable will complain otherwise
+			data[key] = [...new Set(valueArray)].map((name) => getSelectFromName(name));
+		} else if (type === "multipleRecordLinks") {
+			data[key] = value.map((id) => ({ id }));
+		} else if (StringFieldTypes.includes(type)) {
 				// extra spaces at the beginning or end of some fields can cause issues, so trim them
-			data[key] = value.trim();
+			data[key] = value == undefined
+				? ""
+				: String(value).trim();
 		}
 	});
 
@@ -230,14 +259,17 @@ for (const item of metadataItems) {
 
 const submissionsTablesByFormID = fromEntries(Forms.info("biz")
 	.map(({ id, name }) => [id, base.getTable(name + " Submissions")]));
+// TODO: this is maybe confusing with Screendoor metadata.  this is table field metadata.
 const submissionsTableMetadataByFormID = fromEntries(entries(submissionsTablesByFormID)
 	.map(([formID, table]) => [formID, getFieldsByName(table)]));
-	// create an array of the submissions tables with no duplicates, since multiple forms can map to one table
 
+	// create an array of the submissions tables with no duplicates, since multiple forms can map to one table
 const submissionsTables = [...new Set(values(submissionsTablesByFormID))];
 const reviewsTable = base.getTable(ReviewsTableName);
 const metadataTable = base.getTable(MetadataTableName);
 
+// TODO: don't delete records that have RESPONSE_NUM >= 10000, which are test records
+//  add a filter param to clearTable
 /*
 if (!await confirm("Clear the submissions, reviews, and metadata tables?")) {
 	return;
@@ -279,16 +311,21 @@ timeStart("Processing Screendoor records");
 				// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
 				// other, unrelated ID.  but we need the original response ID to link the revisions to the originals.  so overwrite
 				// the RESPONSE_ID field in the Airtable data with the one from Screendoor.  the revisions also won't have the
-				// sequential_id in the JSON, so take it from the RESPONSE_NUM field in the record.
+				// sequential_id in the JSON, so take it from the RESPONSE_NUM field in the record and make sure it's a string,
+				// since that's what submission tables expect.
 			RESPONSE_ID,
-			RESPONSE_NUM,
+			RESPONSE_NUM: String(RESPONSE_NUM),
 				// we want to give current submissions a blank SUBMISSION_ID, but a 0 to revisions.  this makes
 				// it possible to distinguish them when generating Form.io records.
 			SUBMISSION_ID: typeof initial_response_id !== "undefined" ? "" : "0",
+// TODO: override this value because the table currently points at the initial submission table, but the record ID
+//  might actually come from the _REV table
+SCREENDOOR_BUSINESS_PERMIT: null,
 		};
 		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[formID], overrides);
 
 		airtableDataByNumByFormID.get(formID).push(RESPONSE_NUM, data);
+// TODO: need to use initial_response_id to group these, so can find them when looping through the IA table
 
 		if (AIRTABLE_JSON_BO) {
 				// 5804 records return the Initial Application data in the AIRTABLE_JSON field and have another JSON field
@@ -311,7 +348,9 @@ console.log(approvalMetadataByNumByFormID);
 const submissionRecordIDsByResponseByFormID = {};
 const submissionsByFormID = {};
 
-for (const [formID, airtableDataByNum] of airtableDataByNumByFormID.entries()) {
+for (const [formID, airtableDataByNum] of [[Forms.IA.id, airtableDataByNumByFormID.get(Forms.IA.id)]]) {
+//for (const [formID, airtableDataByNum] of [[Forms.Del.id, airtableDataByNumByFormID.get(Forms.Del.id)]]) {
+//for (const [formID, airtableDataByNum] of airtableDataByNumByFormID.entries()) {
 		// the IA and BO forms share the same metadata, but it's been stored under 5804.  so use that form ID to look up
 		// the metadata in the special BO case.
 	const metadataFormID = formID === Forms.BO.id ? Forms.IA.id : formID;
@@ -321,6 +360,10 @@ const missingMetadata = [];
 console.log("approvalMetadataByNum", approvalMetadataByNum);
 
 	airtableDataByNum.forEach((num, items) => {
+// TODO: remove this
+if (num > 75) {
+	return;
+}
 		const [firstSubmission, ...rest] = items;
 
 		submissions.push({ fields: firstSubmission });
@@ -359,42 +402,56 @@ missingMetadata.push([formID, num, firstSubmission, rest]);
 missingMetadata.length && console.error(`missingMetadata: ${missingMetadata.length}, total: ${airtableDataByNum.keys().length}`);
 missingMetadata.length && console.error(missingMetadata);
 
-//	await loopChunks(submissions, async (chunk) => {
-//		const records = await submissionsTable.createRecordsAsync(chunk);
-//
-//		chunk.forEach((submission, i) => {
-//			const { fields: { [SubmissionFields.ID]: id } } = submission;
-//
-//			recordIDsByResponse.push(id, { id: records[i] });
-//		});
-//	});
+	await loopChunks(submissions, async (chunk) => {
+//console.log(chunk);
+		const records = await submissionsTable.createRecordsAsync(chunk);
+
+		chunk.forEach((submission, i) => {
+			const { fields: { [SubmissionFields.ID]: responseID } } = submission;
+
+			recordIDsByResponse.push(responseID, { id: records[i] });
+		});
+	});
 
 submissionsByFormID[formID] = submissions;
 	submissionRecordIDsByResponseByFormID[formID] = recordIDsByResponse;
 }
 
 console.log(submissionsByFormID);
-return;
+//return;
 
 
-// TODO: loop over the submissions just for the IA form and create reviews from that?
 
+console.log(submissionRecordIDsByResponseByFormID);
+
+const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values();
 const reviews = [];
 
-output.markdown(`Starting creation of ${submissionRecordIDsByResponse.keys().length} reviews...`);
+console.log(iaRecordIDs);
+//return;
 
+
+// TODO: why are we using response IDs here instead of nums?  because they're unique across forms?
+output.markdown(`Starting creation of ${iaRecordIDs.length} reviews...`);
+//output.markdown(`Starting creation of ${submissionRecordIDsByResponseByFormID.keys().length} reviews...`);
+
+// TODO: loop over the submissions just for the IA form and create reviews from that?
 	// step through each set of related submissions
-for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values()) {
+for (const [latestRecordID, ...previousRecordIDs] of iaRecordIDs) {
+//for (const [latestRecordID, ...previousRecordIDs] of submissionRecordIDsByResponseByFormID.values()) {
+	const submissionsTable = submissionsTablesByFormID[Forms.IA.id];
 		// get the created record for the most recent submission, so we can get any fields set by formulas
 		// that we need to use when generating the review data below
-	const latestRecord = await submissionsTable.selectRecordAsync(latestID.id);
+	const latestRecord = await submissionsTable.selectRecordAsync(latestRecordID.id);
 	const latest = getCellObject(latestRecord, values(SubmissionFields));
 	const responseID = latest[SubmissionFields.ID];
 	let originalSubmittedDate = latest[SubmissionFields.Submitted];
 
-	if (previousIDs.length) {
+// TODO: loop through all the form tables and get any associated submissions
+
+	if (previousRecordIDs.length) {
 			// with more than one record, the original submission date is from the oldest record, which is last in this array
-		const oldestRecord = await submissionsTable.selectRecordAsync(previousIDs.at(-1).id);
+		const oldestRecord = await submissionsTable.selectRecordAsync(previousRecordIDs.at(-1).id);
 		const oldest = getCellObject(oldestRecord, values(SubmissionFields));
 
 		originalSubmittedDate = oldest[SubmissionFields.Submitted];
@@ -404,13 +461,13 @@ for (const [latestID, ...previousIDs] of submissionRecordIDsByResponse.values())
 
 	reviews.push({
 		fields: {
-			[ReviewFields.NameID]: latest[SubmissionFields.NameID],
-			[ReviewFields.MostRecent]: [latestID],
-			[ReviewFields.Previous]: previousIDs,
+//			[ReviewFields.NameID]: latest[SubmissionFields.NameID],
+			[ReviewFields.MostRecent]: [latestRecordID],
+			[ReviewFields.Previous]: previousRecordIDs,
 			[ReviewFields.SubmissionID]: latest[SubmissionFields.SubmissionID],
-			[ReviewFields.ResponseID]: responseID,
+//			[ReviewFields.ResponseID]: responseID,
 			[ReviewFields.ResponseNum]: latest[SubmissionFields.Num],
-			[ReviewFields.OriginalDate]: parseDate(originalSubmittedDate).toISOString(),
+//			[ReviewFields.OriginalDate]: parseDate(originalSubmittedDate).toISOString(),
 		}
 	});
 }
@@ -430,6 +487,7 @@ await loopChunks(reviews, async (chunk) => {
 const metadataRecords = [];
 const skippedNumbers = new Set();
 
+// TODO: are the response nums unique across all the forms?  this assumes they are.
 for (const item of metadataItems) {
 	const num = item.responseNumber;
 	const reviewRecord = reviewRecordsByNum[num];
@@ -444,15 +502,19 @@ for (const item of metadataItems) {
 				: [reviewRecord]
 		}), {});
 
+		fields["Response Number"] = String(fields["Response Number"]);
 		metadataRecords.push({ fields });
 	} else {
 		skippedNumbers.add(num);
 	}
 }
 
-if (skippedNumbers.size > 0) {
-	output.markdown(`Skipping metadata response numbers with no matching reviews in \`${reviewsTable.name}\`:\n\n${[...skippedNumbers].join(", ")}`);
-}
+// TODO: too many skipped at the moment
+//if (skippedNumbers.size > 0) {
+//	output.markdown(`Skipping metadata response numbers with no matching reviews in \`${reviewsTable.name}\`:\n\n${[...skippedNumbers].join(", ")}`);
+//}
+
+console.log(metadataRecords);
 
 output.markdown(`Starting metadata import...`);
 
@@ -661,7 +723,7 @@ function utils() {
 
 			if (options?.choices) {
 					// extract the name strings from each choice so they're easier to access
-				field.values = options.choices.map(({ name }) => name);
+				field.choices = options.choices.map(({ name }) => name);
 			}
 
 			result[field.name] = field;
@@ -818,6 +880,93 @@ function utils() {
 function getNameMappings()
 {
 	const mappings = {
+		"Initial Application": `
+firstName\tfirstName
+lastName\tlastName
+title\ttitle
+email\temail
+phoneNumber\tphoneNumber
+authorizationToApply\tauthorizationToApply
+equityID\tequityID
+ownershipDocument.1.ownershipDocument1.{UPLOAD}.1\townershipDocument1
+ownershipDocument.2.ownershipDocument1.{UPLOAD}.1\townershipDocument2
+ownershipDocument.3.ownershipDocument1.{UPLOAD}.1\townershipDocument3
+partneringWithIncubator\tpartneringWithIncubator
+equityIncubatorName\tequityIncubatorName
+equityIncubatorNumber\twhatIsYourEquityIncubatorNumber
+equityAgreement.{UPLOAD}.1\tequityAgreement
+affidavitNumber\taffidavitNumber
+tempPermitNumber\ttempPermitNumber
+complyUseActTemp\tcomplyUseActTemp
+article33PermitNumber\tarticle33PermitNumber
+complyUseActMCD\tcomplyUseActMCD
+additionalContacts\tadditionalContacts
+additionalContact.1.fullName\tadditionalContact1.fullName
+additionalContact.1.email\tadditionalContact1.email
+additionalContact.1.phone\tadditionalContact1.phone
+additionalContact.2.fullName\tadditionalContact2.fullName
+additionalContact.2.email\tadditionalContact2.email
+additionalContact.2.phone\tadditionalContact2.phone
+BAN\tBAN
+OWNERS\tOWNERS
+BusinessName\tBusinessName
+DBAName\tDBAName
+StreetAddress\tStreetAddress
+City\tCity
+State\tState
+PostalCd\tPostalCd
+LIN\tLIN
+BusstartDate\tBusstartDate
+BusEndDate\tBusEndDate
+LocstartDate\tLocstartDate
+LocEndDate\tLocEndDate
+MailingAddress\tMailingAddress
+MailCityStateZip\tMailCityStateZip
+LocationNumber\tLocationNumber
+OrgType\tOrgType
+licclasscodes\tlicclasscodes
+fyfind\tfyfind
+pointlocation\tpointlocation
+noLIN\tnoLIN
+unverifiedAddress.street\tunverifiedAddress.street
+unverifiedAddress.city\tunverifiedAddress.city
+unverifiedAddress.state\tunverifiedAddress.state
+unverifiedAddress.zip\tunverifiedAddress.zip
+operationHours\thoursOfOperation
+numberRetailLocations\tnumberOfRetailLocations
+hasBPA\tbpa
+bpaNumber\tbpaNumber
+hasCUA\tcua
+cuaNumber\tcuaNumber
+hasPlanningDocs\tplanningDocs
+planningDocUpload.{UPLOAD}.1\tplanningDocUpload
+planningContact\tplanningContact
+planningContactAdditional\tplanningContactAdditional
+planningContactName\tplanningContactName
+planningContactEmail\tplanningContactEmail
+planningContactPhone\tplanningContactPhone
+ownOrRent\townOrRent
+uploadTitleOrDeed.{UPLOAD}.1\tuploadTitleOrDeed
+rent\trent
+lease.{UPLOAD}.1\tlease
+landlordActivityAuthorization.{UPLOAD}.1\tlandlordActivityAuthorization
+buyLOI.{UPLOAD}.1\tbuyLOI
+rentLOI.{UPLOAD}.1\trentLOI
+squareFootage\tsquareFootage
+proposedUse\tproposedUse
+floor\tfloor
+previousUse\tpreviousUse
+isVacant\tvacant
+vacancyLength\tvacancyLength
+businessStructure\tbusinessStructure
+businessFormation.{UPLOAD}.1\tbusinessFormation
+microbusiness\tmicrobusiness
+businessActivity\tbusinessActivity
+additionalActivity\tadditionalActivity
+stateLicense\tstateLicense
+legalTrue\tlegalTrue
+legalInformation\tlegalInformation
+`,
 		"Business Ownership": `
 firstName\tfirstName
 lastName\tlastName
@@ -1217,92 +1366,74 @@ investors.overflow\tinvestors.overflow
 legalTrue\tlegalTrue
 legalOmit\tlegalOmit
 `,
-		"Initial Application": `
+		"Community Outreach": `
 firstName\tfirstName
 lastName\tlastName
-title\ttitle
 email\temail
-phoneNumber\tphoneNumber
-authorizationToApply\tauthorizationToApply
-equityID\tequityID
-ownershipDocument.1.ownershipDocument1.{UPLOAD}.1\townershipDocument1
-ownershipDocument.2.ownershipDocument1.{UPLOAD}.1\townershipDocument2
-ownershipDocument.3.ownershipDocument1.{UPLOAD}.1\townershipDocument3
-partneringWithIncubator\tpartneringWithIncubator
-equityIncubatorName\tequityIncubatorName
-equityIncubatorNumber\twhatIsYourEquityIncubatorNumber
-equityAgreement.{UPLOAD}.1\tequityAgreement
-affidavitNumber\taffidavitNumber
-tempPermitNumber\ttempPermitNumber
-complyUseActTemp\tcomplyUseActTemp
-article33PermitNumber\tarticle33PermitNumber
-complyUseActMCD\tcomplyUseActMCD
-additionalContacts\tadditionalContacts
-additionalContact.1.fullName\tadditionalContact1.fullName
-additionalContact.1.email\tadditionalContact1.email
-additionalContact.1.phone\tadditionalContact1.phone
-additionalContact.2.fullName\tadditionalContact2.fullName
-additionalContact.2.email\tadditionalContact2.email
-additionalContact.2.phone\tadditionalContact2.phone
-BAN\tBAN
-OWNERS\tOWNERS
-BusinessName\tBusinessName
 DBAName\tDBAName
 StreetAddress\tStreetAddress
-City\tCity
-State\tState
-PostalCd\tPostalCd
-LIN\tLIN
-BusstartDate\tBusstartDate
-BusEndDate\tBusEndDate
-LocstartDate\tLocstartDate
-LocEndDate\tLocEndDate
-MailingAddress\tMailingAddress
-MailCityStateZip\tMailCityStateZip
-LocationNumber\tLocationNumber
-OrgType\tOrgType
-licclasscodes\tlicclasscodes
-fyfind\tfyfind
-pointlocation\tpointlocation
-noLIN\tnoLIN
-unverifiedAddress.street\tunverifiedAddress.street
-unverifiedAddress.city\tunverifiedAddress.city
-unverifiedAddress.state\tunverifiedAddress.state
-unverifiedAddress.zip\tunverifiedAddress.zip
-operationHours\thoursOfOperation
-numberRetailLocations\tnumberOfRetailLocations
-hasBPA\tbpa
-bpaNumber\tbpaNumber
-hasCUA\tcua
-cuaNumber\tcuaNumber
-hasPlanningDocs\tplanningDocs
-planningDocUpload.{UPLOAD}.1\tplanningDocUpload
-planningContact\tplanningContact
-planningContactAdditional\tplanningContactAdditional
-planningContactName\tplanningContactName
-planningContactEmail\tplanningContactEmail
-planningContactPhone\tplanningContactPhone
-ownOrRent\townOrRent
-uploadTitleOrDeed.{UPLOAD}.1\tuploadTitleOrDeed
-rent\trent
-lease.{UPLOAD}.1\tlease
-landlordActivityAuthorization.{UPLOAD}.1\tlandlordActivityAuthorization
-buyLOI.{UPLOAD}.1\tbuyLOI
-rentLOI.{UPLOAD}.1\trentLOI
-squareFootage\tsquareFootage
-proposedUse\tproposedUse
-floor\tfloor
-previousUse\tpreviousUse
-isVacant\tvacant
-vacancyLength\tvacancyLength
-businessStructure\tbusinessStructure
-businessFormation.{UPLOAD}.1\tbusinessFormation
-microbusiness\tmicrobusiness
-businessActivity\tbusinessActivity
-additionalActivity\tadditionalActivity
-stateLicense\tstateLicense
-legalTrue\tlegalTrue
-legalInformation\tlegalInformation
+\tScreendoorAddress
+haveYouInformedYourNeighbors\thaveYouInformedYourNeighbors
+dateOfYourOutreachMeeting\tdateOfYourOutreachMeeting
+howDidYouLetYourDistrictSupervisorKnow\thowDidYouLetYourDistrictSupervisorKnow
+dateYouContactedYourDistrictSupervisor\tdateYouContactedYourDistrictSupervisor
+howDidYouLetOfficeOfCannabisKnow\thowDidYouLetOfficeOfCannabisKnow
+dateYouContactedOfficeOfCannabis\tdateYouContactedOfficeOfCannabis
+neighborhoodNotice.1.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice1
+neighborhoodNotice.2.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice2
+neighborhoodNotice.3.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice3
+neighborhoodNotice.4.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice4
+uploadSignInSheetsFromNeighborhoodMeetings.{UPLOAD}.1\tuploadSignInSheetsFromNeighborhoodMeetings
+uploadMinutesFromNeighborhoodMeetings.{UPLOAD}.1\tuploadMinutesFromNeighborhoodMeetings
+meetingMaterials.1.uploadMeetingMaterials.{UPLOAD}.1\tuploadMeetingMaterials1
+meetingMaterials.2.uploadMeetingMaterials.{UPLOAD}.1\tuploadMeetingMaterials2
+uploadWrittenInputFromNeighbors.{UPLOAD}.1\tuploadWrittenInputFromNeighbors
+uploadListOfNeighborsSentNoticeTo.{UPLOAD}.1\tuploadListOfNeighborsSentNoticeTo
+communityLiaisonFullName\tcommunityLiaisonFullName
+communityLiaisonTitle\tcommunityLiaisonTitle
+communityLiaisonPhoneNumber\tcommunityLiaisonPhoneNumber
+communityLiaisonEmail\tcommunityLiaisonEmail
+whereDoesTheLiaisonReceiveMail.line1\twhereDoesTheLiaisonReceiveMail.line1
+whereDoesTheLiaisonReceiveMail.line2\twhereDoesTheLiaisonReceiveMail.line2
+whereDoesTheLiaisonReceiveMail.city\twhereDoesTheLiaisonReceiveMail.city
+whereDoesTheLiaisonReceiveMail.state\twhereDoesTheLiaisonReceiveMail.state
+whereDoesTheLiaisonReceiveMail.zip\twhereDoesTheLiaisonReceiveMail.zip
+selectTypesOfActivitiesChoosing\tselectTypesOfActivitiesChoosing
+willYouAllowOnsiteConsumption\twillYouAllowOnsiteConsumption
+commitToAboveGoodNeighborRequirements\tcommitToAboveGoodNeighborRequirements
+commitToAboveGoodNeighborRequirementsStorefront\tcommitToAboveGoodNeighborRequirementsStorefront
+commitToAboveGoodNeighborRequirementsOnsite\tcommitToAboveGoodNeighborRequirementsOnsite
+haveYouMadeMoreCommitments\thaveYouMadeMoreCommitments
+describeOtherCommitmentsMade\tdescribeOtherCommitmentsMade
+commitToAboveAdditionalGoodNeighbor\tcommitToAboveAdditionalGoodNeighbor
+uploadFinalExecutedGoodNeighborPolicy.{UPLOAD}.1\tuploadFinalExecutedGoodNeighborPolicy
+willYouHaveCompassionProgram\twillYouHaveCompassionProgram
+populationsWillYouServe\tpopulationsWillYouServe
+otherPopulation\totherPopulation
+patientsServedPerYear\tpatientsServedPerYear
+keepRecordsEnsurePatientPrivacy\tkeepRecordsEnsurePatientPrivacy
+percentageOfInventoryReservedForMedicinal\tpercentageOfInventoryReservedForMedicinal
+percentageOfMedicalForCompassionPatients\tpercentageOfMedicalForCompassionPatients
+planOnSupportingCompassionPatients\tplanOnSupportingCompassionPatients
+hadCompassionProgramBeforeJan2018\thadCompassionProgramBeforeJanTwoZeroOneEight
+describeTermsOfPreviousCompassionProgram\tdescribeTermsOfPreviousCompassionProgram
+existingMedicalCannabisDispensary\texistingMedicalCannabisDispensary
+specificSupportForEquityApplicants\tspecificSupportForEquityApplicants
+otherEquityApplicantSupport\totherEquityApplicantSupport
+provideOpportunitiesForWarOnDrugsImpacted\tprovideOpportunitiesForWarOnDrugsImpacted
+otherOpportunitiesSupport\totherOpportunitiesSupport
+supportSanFranciscoEquityGoals\tsupportSanFranciscoEquityGoals
+otherSupport\totherSupport
+moreAgreements\tmoreAgreements
+additionalAgreementDescription\tadditionalAgreementDescription
+understandMisrepresentationPenaltyPerjury\tunderstandMisrepresentationPenaltyPerjury
+\tProof of Outreach Section Notes
+\tCommunity Liaison Section Notes
+\tGood Neighbor Policy Section Notes
+\tCompassion Program Section Notes
+\tEquity Goals Section Notes
+\tOther Community Benefits Section Notes
+\tLegal Agreements Section Notes
 `,
 		"General Operations": `
 firstName\tfirstName
@@ -1349,98 +1480,6 @@ underPenaltyOfPerjury\tunderPenaltyOfPerjury
 \tHiring for Entry Level Positions Section Notes
 \tUpload Documents Section Notes
 \tLegal Agreements Section Notes`,
-		"Delivery": `
-firstName\tfirstName
-lastName\tlastName
-email\temail
-DBAName\tDBAName
-StreetAddress\tStreetAddress
-\tScreendoorAddress
-processOrdersForDelivery\tprocessOrdersForDelivery
-stepsBeforeLeavingForDeliveries\tstepsBeforeLeavingForDeliveries
-storeCannabisInVehicle\tstoreCannabisInVehicle
-navigationSoftware\tnavigationSoftware
-stepsBeforeHandingToCustomer\tstepsBeforeHandingToCustomer
-stepsAfterDeliveries\tstepsAfterDeliveries
-communicateWithBusiness\tcommunicateWithBusiness
-otherCommunication\totherCommunication
-mobileAppName\tmobileAppName
-staffAllowedDuringDeliveries\tstaffAllowedDuringDeliveries
-ensureStaffSafety\tensureStaffSafety
-trainStaffOnCannabisLaws\ttrainStaffOnCannabisLaws
-deliveryVehicleInformation.1.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber1
-deliveryVehicleInformation.1.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance1
-deliveryVehicleInformation.2.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber2
-deliveryVehicleInformation.2.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance2
-deliveryVehicleInformation.3.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber3
-deliveryVehicleInformation.3.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance3
-deliveryVehicleInformation.4.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber4
-deliveryVehicleInformation.4.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance4
-deliveryVehicleInformation.5.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber5
-deliveryVehicleInformation.5.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance5
-deliveryVehicleInformation.6.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber6
-deliveryVehicleInformation.6.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance6
-deliveryVehicleInformation.7.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber7
-deliveryVehicleInformation.7.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance7
-deliveryVehicleInformation.8.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber8
-deliveryVehicleInformation.8.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance8
-deliveryVehicleInformation.9.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber9
-deliveryVehicleInformation.9.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance9
-deliveryVehicleInformation.10.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber10
-deliveryVehicleInformation.10.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance10
-\tscreendoorVINOverflow
-moreThanTenVehicles\tmoreThanTenVehicles
-perjuryStatement\tperjuryStatement
-acknowledgeManifestCreation\tacknowledgeManifestCreation
-perjuryDeclaration\tperjuryDeclaration
-\tProcessing Orders Section Notes
-\tMaking Deliveries Section Notes
-\tManaging Delivery Section Notes
-\tManaging Delivery Staff Section Notes
-\tLegal Agreements Section Notes
-`,
-		"Cultivation": `
-totalSquareFeetOfSpaceYouPlanOn\ttotalSquareFeetOfSpaceYouPlanOn
-totalWattageUsedByYourLighting\ttotalWattageUsedByYourLighting
-doYouPlanOnApplyingForANursery\tdoYouPlanOnApplyingForANursery
-doYouPlanOnUsingAWaterSource\tdoYouPlanOnUsingAWaterSource
-nameOfYourPlannedWaterSource\tnameOfYourPlannedWaterSource
-nameOfYourPlannedWaterSupplier\tnameOfYourPlannedWaterSupplier
-pointOfDiversionForYourWater\tpointOfDiversionForYourWater
-selectAnyHazardousMaterialsYou\tselectAnyHazardousMaterialsYou
-otherHazardousMaterial\totherHazardousMaterial
-howWillYouStoreTheseMaterials\thowWillYouStoreTheseMaterials
-selectTheInsecticidesYouPlanOn\tselectTheInsecticidesYouPlanOn
-selectTheFungicidesAnd\tselectTheFungicidesAnd
-selectTheRepellantsYouPlanOn\tselectTheRepellantsYouPlanOn
-fertilizersDataGrid.1.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer1
-fertilizersDataGrid.2.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer2
-fertilizersDataGrid.3.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer3
-fertilizersDataGrid.4.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer4
-fertilizersDataGrid.5.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer5
-fertilizersDataGrid.6.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer6
-fertilizersDataGrid.7.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer7
-fertilizersDataGrid.8.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer8
-fertilizersDataGrid.9.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer9
-fertilizersDataGrid.10.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer10
-ScreedoorChemicalOverflow\tScreedoorChemicalOverflow
-describeHowYouWillDiluteAndStore\tdescribeHowYouWillDiluteAndStore
-selectWhatYouPlanToUseWhen\tselectWhatYouPlanToUseWhen
-otherGrowingMethod\totherGrowingMethod
-selectTheMethodsOfPropagationYou\tselectTheMethodsOfPropagationYou
-willYouUseCharcoalFiltersFor\twillYouUseCharcoalFiltersFor
-describeOtherMethodsYouWillUseTo\tdescribeOtherMethodsYouWillUseTo
-underPenaltyOfPerjuryIHereby\tunderPenaltyOfPerjuryIHereby
-\tCanopy Space Section Notes
-\tNursery Section Notes
-\tWater Use Section Notes
-\tHazardous Materials Section Notes
-\tPesticides Section Notes
-\tFertilizers Section Notes
-\tPropagation Materials Section Notes
-\tReducing Odors Section Notes
-\tLegal Agreements Section Notes
-`,
 		"Security Plan": `
 firstName\tfirstName
 lastName\tlastName
@@ -1578,74 +1617,106 @@ informationDeclarationUnderPenalty\tinformationDeclarationUnderPenalty
 \tPremises Diagram Section Notes
 \tLegal Agreements Section Notes
 `,
-		"Community Outreach": `
+		"Distributor": `
+contractWithTransportSecurityCompany.{UPLOAD}.1\tcontractWithTransportSecurityCompany
+`,
+		"Cultivation": `
+totalSquareFeetOfSpaceYouPlanOn\ttotalSquareFeetOfSpaceYouPlanOn
+totalWattageUsedByYourLighting\ttotalWattageUsedByYourLighting
+doYouPlanOnApplyingForANursery\tdoYouPlanOnApplyingForANursery
+doYouPlanOnUsingAWaterSource\tdoYouPlanOnUsingAWaterSource
+nameOfYourPlannedWaterSource\tnameOfYourPlannedWaterSource
+nameOfYourPlannedWaterSupplier\tnameOfYourPlannedWaterSupplier
+pointOfDiversionForYourWater\tpointOfDiversionForYourWater
+selectAnyHazardousMaterialsYou\tselectAnyHazardousMaterialsYou
+otherHazardousMaterial\totherHazardousMaterial
+howWillYouStoreTheseMaterials\thowWillYouStoreTheseMaterials
+selectTheInsecticidesYouPlanOn\tselectTheInsecticidesYouPlanOn
+selectTheFungicidesAnd\tselectTheFungicidesAnd
+selectTheRepellantsYouPlanOn\tselectTheRepellantsYouPlanOn
+fertilizersDataGrid.1.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer1
+fertilizersDataGrid.2.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer2
+fertilizersDataGrid.3.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer3
+fertilizersDataGrid.4.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer4
+fertilizersDataGrid.5.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer5
+fertilizersDataGrid.6.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer6
+fertilizersDataGrid.7.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer7
+fertilizersDataGrid.8.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer8
+fertilizersDataGrid.9.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer9
+fertilizersDataGrid.10.chemicalNameOfFertilizer\tfertilizersDataGrid.chemicalNameOfFertilizer10
+ScreedoorChemicalOverflow\tScreedoorChemicalOverflow
+describeHowYouWillDiluteAndStore\tdescribeHowYouWillDiluteAndStore
+selectWhatYouPlanToUseWhen\tselectWhatYouPlanToUseWhen
+otherGrowingMethod\totherGrowingMethod
+selectTheMethodsOfPropagationYou\tselectTheMethodsOfPropagationYou
+willYouUseCharcoalFiltersFor\twillYouUseCharcoalFiltersFor
+describeOtherMethodsYouWillUseTo\tdescribeOtherMethodsYouWillUseTo
+underPenaltyOfPerjuryIHereby\tunderPenaltyOfPerjuryIHereby
+\tCanopy Space Section Notes
+\tNursery Section Notes
+\tWater Use Section Notes
+\tHazardous Materials Section Notes
+\tPesticides Section Notes
+\tFertilizers Section Notes
+\tPropagation Materials Section Notes
+\tReducing Odors Section Notes
+\tLegal Agreements Section Notes
+`,
+		"Delivery": `
 firstName\tfirstName
 lastName\tlastName
 email\temail
 DBAName\tDBAName
 StreetAddress\tStreetAddress
 \tScreendoorAddress
-haveYouInformedYourNeighbors\thaveYouInformedYourNeighbors
-dateOfYourOutreachMeeting\tdateOfYourOutreachMeeting
-howDidYouLetYourDistrictSupervisorKnow\thowDidYouLetYourDistrictSupervisorKnow
-dateYouContactedYourDistrictSupervisor\tdateYouContactedYourDistrictSupervisor
-howDidYouLetOfficeOfCannabisKnow\thowDidYouLetOfficeOfCannabisKnow
-dateYouContactedOfficeOfCannabis\tdateYouContactedOfficeOfCannabis
-neighborhoodNotice.1.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice1
-neighborhoodNotice.2.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice2
-neighborhoodNotice.3.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice3
-neighborhoodNotice.4.uploadYourNeighborhoodNotice.{UPLOAD}.1\tuploadYourNeighborhoodNotice4
-uploadSignInSheetsFromNeighborhoodMeetings.{UPLOAD}.1\tuploadSignInSheetsFromNeighborhoodMeetings
-uploadMinutesFromNeighborhoodMeetings.{UPLOAD}.1\tuploadMinutesFromNeighborhoodMeetings
-meetingMaterials.1.uploadMeetingMaterials.{UPLOAD}.1\tuploadMeetingMaterials1
-meetingMaterials.2.uploadMeetingMaterials.{UPLOAD}.1\tuploadMeetingMaterials2
-uploadWrittenInputFromNeighbors.{UPLOAD}.1\tuploadWrittenInputFromNeighbors
-uploadListOfNeighborsSentNoticeTo.{UPLOAD}.1\tuploadListOfNeighborsSentNoticeTo
-communityLiaisonFullName\tcommunityLiaisonFullName
-communityLiaisonTitle\tcommunityLiaisonTitle
-communityLiaisonPhoneNumber\tcommunityLiaisonPhoneNumber
-communityLiaisonEmail\tcommunityLiaisonEmail
-whereDoesTheLiaisonReceiveMail.line1\twhereDoesTheLiaisonReceiveMail.line1
-whereDoesTheLiaisonReceiveMail.line2\twhereDoesTheLiaisonReceiveMail.line2
-whereDoesTheLiaisonReceiveMail.city\twhereDoesTheLiaisonReceiveMail.city
-whereDoesTheLiaisonReceiveMail.state\twhereDoesTheLiaisonReceiveMail.state
-whereDoesTheLiaisonReceiveMail.zip\twhereDoesTheLiaisonReceiveMail.zip
-selectTypesOfActivitiesChoosing\tselectTypesOfActivitiesChoosing
-willYouAllowOnsiteConsumption\twillYouAllowOnsiteConsumption
-commitToAboveGoodNeighborRequirements\tcommitToAboveGoodNeighborRequirements
-commitToAboveGoodNeighborRequirementsStorefront\tcommitToAboveGoodNeighborRequirementsStorefront
-commitToAboveGoodNeighborRequirementsOnsite\tcommitToAboveGoodNeighborRequirementsOnsite
-haveYouMadeMoreCommitments\thaveYouMadeMoreCommitments
-describeOtherCommitmentsMade\tdescribeOtherCommitmentsMade
-commitToAboveAdditionalGoodNeighbor\tcommitToAboveAdditionalGoodNeighbor
-uploadFinalExecutedGoodNeighborPolicy.{UPLOAD}.1\tuploadFinalExecutedGoodNeighborPolicy
-willYouHaveCompassionProgram\twillYouHaveCompassionProgram
-populationsWillYouServe\tpopulationsWillYouServe
-otherPopulation\totherPopulation
-patientsServedPerYear\tpatientsServedPerYear
-keepRecordsEnsurePatientPrivacy\tkeepRecordsEnsurePatientPrivacy
-percentageOfInventoryReservedForMedicinal\tpercentageOfInventoryReservedForMedicinal
-percentageOfMedicalForCompassionPatients\tpercentageOfMedicalForCompassionPatients
-planOnSupportingCompassionPatients\tplanOnSupportingCompassionPatients
-hadCompassionProgramBeforeJan2018\thadCompassionProgramBeforeJanTwoZeroOneEight
-describeTermsOfPreviousCompassionProgram\tdescribeTermsOfPreviousCompassionProgram
-existingMedicalCannabisDispensary\texistingMedicalCannabisDispensary
-specificSupportForEquityApplicants\tspecificSupportForEquityApplicants
-otherEquityApplicantSupport\totherEquityApplicantSupport
-provideOpportunitiesForWarOnDrugsImpacted\tprovideOpportunitiesForWarOnDrugsImpacted
-otherOpportunitiesSupport\totherOpportunitiesSupport
-supportSanFranciscoEquityGoals\tsupportSanFranciscoEquityGoals
-otherSupport\totherSupport
-moreAgreements\tmoreAgreements
-additionalAgreementDescription\tadditionalAgreementDescription
-understandMisrepresentationPenaltyPerjury\tunderstandMisrepresentationPenaltyPerjury
-\tProof of Outreach Section Notes
-\tCommunity Liaison Section Notes
-\tGood Neighbor Policy Section Notes
-\tCompassion Program Section Notes
-\tEquity Goals Section Notes
-\tOther Community Benefits Section Notes
+processOrdersForDelivery\tprocessOrdersForDelivery
+stepsBeforeLeavingForDeliveries\tstepsBeforeLeavingForDeliveries
+storeCannabisInVehicle\tstoreCannabisInVehicle
+navigationSoftware\tnavigationSoftware
+stepsBeforeHandingToCustomer\tstepsBeforeHandingToCustomer
+stepsAfterDeliveries\tstepsAfterDeliveries
+communicateWithBusiness\tcommunicateWithBusiness
+otherCommunication\totherCommunication
+mobileAppName\tmobileAppName
+staffAllowedDuringDeliveries\tstaffAllowedDuringDeliveries
+ensureStaffSafety\tensureStaffSafety
+trainStaffOnCannabisLaws\ttrainStaffOnCannabisLaws
+deliveryVehicleInformation.1.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber1
+deliveryVehicleInformation.1.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance1
+deliveryVehicleInformation.2.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber2
+deliveryVehicleInformation.2.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance2
+deliveryVehicleInformation.3.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber3
+deliveryVehicleInformation.3.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance3
+deliveryVehicleInformation.4.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber4
+deliveryVehicleInformation.4.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance4
+deliveryVehicleInformation.5.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber5
+deliveryVehicleInformation.5.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance5
+deliveryVehicleInformation.6.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber6
+deliveryVehicleInformation.6.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance6
+deliveryVehicleInformation.7.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber7
+deliveryVehicleInformation.7.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance7
+deliveryVehicleInformation.8.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber8
+deliveryVehicleInformation.8.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance8
+deliveryVehicleInformation.9.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber9
+deliveryVehicleInformation.9.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance9
+deliveryVehicleInformation.10.vehicleIdentificationNumber\tdeliveryVehicleInformation.vehicleIdentificationNumber10
+deliveryVehicleInformation.10.uploadProofOfAutomobileInsurance.{UPLOAD}.1\tdeliveryVehicleInformation.uploadProofOfAutomobileInsurance10
+\tscreendoorVINOverflow
+moreThanTenVehicles\tmoreThanTenVehicles
+perjuryStatement\tperjuryStatement
+acknowledgeManifestCreation\tacknowledgeManifestCreation
+perjuryDeclaration\tperjuryDeclaration
+\tProcessing Orders Section Notes
+\tMaking Deliveries Section Notes
+\tManaging Delivery Section Notes
+\tManaging Delivery Staff Section Notes
 \tLegal Agreements Section Notes
+`,
+		"Manufacturing": `
+uploadPackagingDiagram.{UPLOAD}.1\tuploadPackagingDiagram
+`,
+		"Testing": `
+uploadProofOfAccreditationOrApplication.{UPLOAD}.1\tuploadProofOfAccreditationOrApplication
 `,
 	};
 	const entries = Object.values(mappings)
