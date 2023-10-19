@@ -54,6 +54,7 @@ const Forms = [
 	["8110", "Renewal", "ren", "Ren1"],
 	["9026", "Renewal", "ren", "Ren2"],
 	["9436", "Renewal", "ren", "Ren3"]
+// TODO: what is form 9396?
 //	["8110", "Renewal", "biz", "Ren1"],
 //	["9026", "Renewal", "biz", "Ren2"],
 //	["9436", "Renewal", "biz", "Ren3"]
@@ -237,15 +238,16 @@ const startTime = Date.now();
 
 	// sort metadata newest to oldest, which is how we want the events to appear in the interface
 const metadataItems = jsonFile.parsedContents.sort(by("timestamp", true));
-const approvalMetadataByNumByFormID = new DefaultMap(GroupedArray);
+const approvalMetadataByInitialIDByFormID = new DefaultMap(GroupedArray);
 
 for (const item of metadataItems) {
-	const { responseNumber, responseID, formID, timestamp, event } = item;
+	const { responseNumber, responseID, initialID, formID, timestamp, event } = item;
 
 	if (ApprovalPattern.test(event)) {
-		approvalMetadataByNumByFormID.get(formID).push(responseNumber, {
+		approvalMetadataByInitialIDByFormID.get(formID).push(initialID ?? responseID, {
 			responseNumber,
 			responseID,
+			initialID,
 			formID,
 			event,
 			timestamp,
@@ -279,7 +281,7 @@ await clearTable(metadataTable);
 
 const screendoorTable = base.getTable(ScreendoorTableName);
 const screendoorRevTable = base.getTable(ScreendoorRevTableName);
-const airtableDataByNumByFormID = new DefaultMap(GroupedArray);
+const airtableDataByInitialIDByFormID = new DefaultMap(GroupedArray);
 
 timeStart("Processing Screendoor records");
 
@@ -314,7 +316,7 @@ SCREENDOOR_BUSINESS_PERMIT: null,
 		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[formID], overrides);
 		const initialID = initial_response_id ?? RESPONSE_ID;
 
-		airtableDataByNumByFormID.get(formID).push(initialID, data);
+		airtableDataByInitialIDByFormID.get(formID).push(initialID, data);
 
 		if (AIRTABLE_JSON_BO) {
 				// 5804 records return the Initial Application data in the AIRTABLE_JSON field and have another JSON field
@@ -323,50 +325,45 @@ SCREENDOOR_BUSINESS_PERMIT: null,
 			const metadata = submissionsTableMetadataByFormID[boFormID];
 			const data = getDataFromJSON(AIRTABLE_JSON_BO, metadata, overrides);
 
-			airtableDataByNumByFormID.get(boFormID).push(initialID, data);
+			airtableDataByInitialIDByFormID.get(boFormID).push(initialID, data);
 		}
 	});
 
 timeEnd("Processing Screendoor records");
 
 
-console.log(airtableDataByNumByFormID.getAll());
-console.log(approvalMetadataByNumByFormID);
+console.log(airtableDataByInitialIDByFormID.getAll());
+console.log(approvalMetadataByInitialIDByFormID.getAll());
 
 
 const submissionRecordIDsByResponseByFormID = {};
-const submissionsByFormID = {};
 
-for (const [formID, airtableDataByNum] of [[Forms.IA.id, airtableDataByNumByFormID.get(Forms.IA.id)]]) {
-//for (const [formID, airtableDataByNum] of [[Forms.Del.id, airtableDataByNumByFormID.get(Forms.Del.id)]]) {
-//for (const [formID, airtableDataByNum] of airtableDataByNumByFormID.entries()) {
+for (const [formID, airtableDataByInitialID] of [[Forms.IA.id, airtableDataByInitialIDByFormID.get(Forms.IA.id)]]) {
+//for (const [formID, airtableDataByInitialID] of [[Forms.Del.id, airtableDataByInitialIDByFormID.get(Forms.Del.id)]]) {
+//for (const [formID, airtableDataByInitialID] of airtableDataByInitialIDByFormID.entries()) {
 		// the IA and BO forms share the same metadata, but it's been stored under 5804.  so use that form ID to look up
 		// the metadata in the special BO case.
 	const metadataFormID = formID === Forms.BO.id ? Forms.IA.id : formID;
-	const approvalMetadataByNum = approvalMetadataByNumByFormID.get(metadataFormID);
+	const approvalMetadataByInitialID = approvalMetadataByInitialIDByFormID.get(metadataFormID);
 	const submissions = [];
 // TODO: solve The Case of the Missing Metadata
 const missingMetadata = [];
-console.log("approvalMetadataByNum", approvalMetadataByNum);
+console.log("approvalMetadataByInitialID", approvalMetadataByInitialID);
 
-	airtableDataByNum.forEach((num, items) => {
-// TODO: remove this
-if (num > 75) {
-	return;
-}
+	airtableDataByInitialID.forEach((initialID, items) => {
 		const [firstSubmission, ...rest] = items;
 
 		submissions.push({ fields: firstSubmission });
 
 		if (rest.length) {
-			if (!approvalMetadataByNum.has(num)) {
-//				console.log(`No approval metadata for response ${num} in form ${formID}.`, firstSubmission, rest);
-missingMetadata.push([formID, num, firstSubmission, rest]);
+			if (!approvalMetadataByInitialID.has(initialID)) {
+//				console.log(`No approval metadata for response ${initialID} in form ${formID}.`, firstSubmission, rest);
+missingMetadata.push([formID, initialID, firstSubmission, rest]);
 //return;
-//				throw new Error(`No metadata for response ${num} in form ${formID}.`);
+//				throw new Error(`No metadata for response ${initialID} in form ${formID}.`);
 			} else {
 
-			const newestSubmittedDate = approvalMetadataByNum.get(num)[0];
+			const newestSubmittedDate = approvalMetadataByInitialID.get(initialID)[0];
 
 				// when there are revisions, the submission date of the "current" submission is not included in the JSON, so we
 				// have to pull it from the metadata.  the most recent metadata date is when the current submission was approved.
@@ -389,7 +386,7 @@ missingMetadata.push([formID, num, firstSubmission, rest]);
 
 	output.markdown(`Starting import of **${submissions.length}** submissions for **${Forms[formID].name}**...`);
 
-missingMetadata.length && console.error(`missingMetadata: ${missingMetadata.length}, total: ${airtableDataByNum.keys().length}`);
+missingMetadata.length && console.error(`missingMetadata: ${missingMetadata.length}, total: ${airtableDataByInitialID.keys().length}`);
 missingMetadata.length && console.error(missingMetadata);
 
 	await loopChunks(submissions, async (chunk) => {
@@ -402,11 +399,9 @@ missingMetadata.length && console.error(missingMetadata);
 		});
 	});
 
-submissionsByFormID[formID] = submissions;
 	submissionRecordIDsByResponseByFormID[formID] = recordIDsByResponse;
 }
 
-console.log(submissionsByFormID);
 console.log(submissionRecordIDsByResponseByFormID);
 
 const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values();
@@ -489,7 +484,15 @@ for (const item of metadataItems) {
 			// this field is expecting a string, so convert the number
 		fields["Response Number"] = String(fields["Response Number"]);
 		fields["Response ID"] = initialID;
-		fields["Form"] = { name: Forms[item.formID].name };
+
+// TODO: fix missing form or filter these
+		if (Forms[item.formID]) {
+			fields["Form"] = { name: Forms[item.formID].name };
+		} else {
+			console.error(`Bad form: ${item.formID} in ${initialID}`);
+		}
+
+//		fields["Form"] = { name: Forms[item.formID].name };
 		metadataRecords.push({ fields });
 	} else {
 		skippedNumbers.add(initialID);
