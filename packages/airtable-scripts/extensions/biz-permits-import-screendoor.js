@@ -1,6 +1,6 @@
 {
 	// "import" these utilities from the functions at the end of this script
-const { GroupedArray, DefaultMap, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by, timeStart, timeEnd } = utils();
+const { GroupedArray, DefaultMap, getCell, getCellObject, getFieldsByName, getRecordObjects, loopChunks, confirm, clearTable, parseDate, by, timeStart, timeEnd } = utils();
 const { values, entries, fromEntries } = Object;
 
 const Basename = "Cannabis Business Permit";
@@ -19,6 +19,7 @@ const SubmissionFields = {
 	ID: "RESPONSE_ID",
 	Num: "RESPONSE_NUM",
 	SubmissionID: "SUBMISSION_ID",
+	ProjectID: "PROJECT_ID",
 	Submitted: "Submitted",
 	Email: "email",
 };
@@ -234,6 +235,10 @@ const jsonFile = await input.fileAsync(
 	}
 );
 
+// ====================================================================================================================
+// import metadata from JSON file
+// ====================================================================================================================
+
 const startTime = Date.now();
 
 	// sort metadata newest to oldest, which is how we want the events to appear in the interface
@@ -241,17 +246,10 @@ const metadataItems = jsonFile.parsedContents.sort(by("timestamp", true));
 const approvalMetadataByInitialIDByFormID = new DefaultMap(GroupedArray);
 
 for (const item of metadataItems) {
-	const { responseNumber, responseID, initialID, formID, timestamp, event } = item;
+	const { responseID, initialID, formID, event } = item;
 
 	if (ApprovalPattern.test(event)) {
-		approvalMetadataByInitialIDByFormID.get(formID).push(initialID ?? responseID, {
-			responseNumber,
-			responseID,
-			initialID,
-			formID,
-			event,
-			timestamp,
-		});
+		approvalMetadataByInitialIDByFormID.get(formID).push(initialID ?? responseID, item);
 	}
 }
 
@@ -266,6 +264,10 @@ const submissionsTables = [...new Set(values(submissionsTablesByFormID))];
 const reviewsTable = base.getTable(ReviewsTableName);
 const metadataTable = base.getTable(MetadataTableName);
 
+// ====================================================================================================================
+// clear existing records in all tables
+// ====================================================================================================================
+
 // TODO: don't delete records that have RESPONSE_NUM >= 10000, which are test records
 //  add a filter param to clearTable
 /*
@@ -278,6 +280,10 @@ await Promise.all(submissionsTables.map((table) => clearTable(table)));
 await clearTable(reviewsTable);
 await clearTable(metadataTable);
 */
+
+// ====================================================================================================================
+// parse and sort submission JSON
+// ====================================================================================================================
 
 const screendoorTable = base.getTable(ScreendoorTableName);
 const screendoorRevTable = base.getTable(ScreendoorRevTableName);
@@ -298,6 +304,8 @@ timeStart("Processing Screendoor records");
 	.filter(({ AIRTABLE_JSON }) => AIRTABLE_JSON)
 	.forEach(({ RESPONSE_ID, RESPONSE_NUM, RESPONSE_JSON, AIRTABLE_JSON, AIRTABLE_JSON_BO, SCREENDOOR_FORM_ID: formID }) => {
 		const { initial_response_id } = JSON.parse(RESPONSE_JSON);
+// TODO: RESPONSE_ID from the Airtable record should be the same as initial_response_id?
+//  in that case, don't need to parse RESPONSE_JSON at all, which would save time
 		const overrides = {
 				// this key is in the Airtable JSON, but for the revisions, it's not the ID of the original submission; it's some
 				// other, unrelated ID.  but we need the original response ID to link the revisions to the originals.  so overwrite
@@ -336,6 +344,10 @@ console.log(airtableDataByInitialIDByFormID.getAll());
 console.log(approvalMetadataByInitialIDByFormID.getAll());
 
 
+// ====================================================================================================================
+// create Initial Application submissions
+// ====================================================================================================================
+
 const submissionRecordIDsByResponseByFormID = {};
 
 for (const [formID, airtableDataByInitialID] of [[Forms.IA.id, airtableDataByInitialIDByFormID.get(Forms.IA.id)]]) {
@@ -351,6 +363,10 @@ const missingMetadata = [];
 console.log("approvalMetadataByInitialID", approvalMetadataByInitialID);
 
 	airtableDataByInitialID.forEach((initialID, items) => {
+// TODO: remove this
+if (items[0].RESPONSE_NUM < 1120) {
+	return;
+}
 		const [firstSubmission, ...rest] = items;
 
 		submissions.push({ fields: firstSubmission });
@@ -404,6 +420,10 @@ missingMetadata.length && console.error(missingMetadata);
 
 console.log(submissionRecordIDsByResponseByFormID);
 
+// ====================================================================================================================
+// create reviews from Initial Application submissions
+// ====================================================================================================================
+
 const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values();
 const reviews = [];
 
@@ -448,6 +468,10 @@ for (const [latestRecordID, ...previousRecordIDs] of iaRecordIDs) {
 	});
 }
 
+// ====================================================================================================================
+// create review records
+// ====================================================================================================================
+
 const reviewRecordsByInitialID = {};
 
 await loopChunks(reviews, async (chunk) => {
@@ -460,9 +484,31 @@ await loopChunks(reviews, async (chunk) => {
 	});
 });
 
-// TODO: after creating the records, have to go back and update all the linked records with the project ID
+// ====================================================================================================================
+// update submissions with associated Project ID
+// ====================================================================================================================
 
-const metadataRecords = [];
+const updatedSubmissions = [];
+
+for (const [initialID, reviewRecordID] of entries(reviewRecordsByInitialID)) {
+	const record = await reviewsTable.selectRecordAsync(reviewRecordID.id);
+	const projectID = record.getCellValue("Project ID");
+	const submissionRecords = submissionRecordIDsByResponseByFormID[Forms.IA.id].get(initialID);
+	const fields = {
+			// the Project ID on the review is a number, but the PROJECT_ID field on the submissions is a string.  ffs.
+		[SubmissionFields.ProjectID]: String(projectID)
+	};
+
+	submissionRecords.forEach(({ id }) => updatedSubmissions.push({ id, fields }));
+}
+
+await loopChunks(updatedSubmissions, async (chunk) => submissionsTablesByFormID[Forms.IA.id].updateRecordsAsync(chunk));
+
+// ====================================================================================================================
+// create metadata items associated with the reviews we created above
+// ====================================================================================================================
+
+	const metadataRecords = [];
 const skippedNumbers = new Set();
 
 console.log(reviewRecordsByInitialID);
@@ -513,9 +559,9 @@ await loopChunks(metadataRecords, (chunk) => metadataTable.createRecordsAsync(ch
 output.markdown(`Total time: **${((Date.now() - startTime) / 1000).toFixed(2)}s** at **${new Date().toLocaleString()}**`);
 }
 
-// =======================================================================================
+// ====================================================================================================================
 // these reusable utility functions can be "imported" by destructuring the functions below
-// =======================================================================================
+// ====================================================================================================================
 
 function utils() {
 	const MaxChunkSize = 50;
