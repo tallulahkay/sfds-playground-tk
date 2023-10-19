@@ -20,20 +20,16 @@ const SubmissionFields = {
 	Num: "RESPONSE_NUM",
 	SubmissionID: "SUBMISSION_ID",
 	Submitted: "Submitted",
-//	NameID: "Name ID",
 	Email: "email",
 };
 const ReviewsTableName = Basename + " Reviews";
 const ReviewFields = {
-//	NameID: "Name ID",
 	MostRecent: "Initial Application - Latest Submission",
 	Previous: "Initial Application - Previous Submissions",
-//	ReviewStatus: "Review Status",
-//	SubmissionStatus: "Submission Status",
 	SubmissionID: "Initial Application Submission ID",
-//	ResponseID: "Screendoor Response ID",
+	InitialID: "Initial Response ID",
 	ResponseNum: "Initial Application Screendoor Number",
-//	OriginalDate: "Original Submission Date",
+	OriginalDate: "Project Submission Date",
 };
 const Forms = [
 	["4209", "Temporary Permit"],
@@ -287,13 +283,6 @@ const airtableDataByNumByFormID = new DefaultMap(GroupedArray);
 
 timeStart("Processing Screendoor records");
 
-//console.log(
-//(await getRecordObjects(screendoorRevTable, ScreendoorFields))
-//	.sort(by("SUBMITTED_AT"))
-//	.slice(0, 50)
-//	.map(({ SUBMITTED_AT, RESPONSE_NUM }) => [SUBMITTED_AT, RESPONSE_NUM])
-//);
-
 (await getRecordObjects(screendoorRevTable, ScreendoorFields))
 		// confusingly, we have to sort the revisions by the SUBMITTED_AT field in the REV table *before* adding in the
 		// unsorted submission records.  this is because the submissions will have a SUBMITTED_AT date from the original
@@ -323,9 +312,9 @@ timeStart("Processing Screendoor records");
 SCREENDOOR_BUSINESS_PERMIT: null,
 		};
 		const data = getDataFromJSON(AIRTABLE_JSON, submissionsTableMetadataByFormID[formID], overrides);
+		const initialID = initial_response_id ?? RESPONSE_ID;
 
-		airtableDataByNumByFormID.get(formID).push(RESPONSE_NUM, data);
-// TODO: need to use initial_response_id to group these, so can find them when looping through the IA table
+		airtableDataByNumByFormID.get(formID).push(initialID, data);
 
 		if (AIRTABLE_JSON_BO) {
 				// 5804 records return the Initial Application data in the AIRTABLE_JSON field and have another JSON field
@@ -334,7 +323,7 @@ SCREENDOOR_BUSINESS_PERMIT: null,
 			const metadata = submissionsTableMetadataByFormID[boFormID];
 			const data = getDataFromJSON(AIRTABLE_JSON_BO, metadata, overrides);
 
-			airtableDataByNumByFormID.get(boFormID).push(RESPONSE_NUM, data);
+			airtableDataByNumByFormID.get(boFormID).push(initialID, data);
 		}
 	});
 
@@ -356,6 +345,7 @@ for (const [formID, airtableDataByNum] of [[Forms.IA.id, airtableDataByNumByForm
 	const metadataFormID = formID === Forms.BO.id ? Forms.IA.id : formID;
 	const approvalMetadataByNum = approvalMetadataByNumByFormID.get(metadataFormID);
 	const submissions = [];
+// TODO: solve The Case of the Missing Metadata
 const missingMetadata = [];
 console.log("approvalMetadataByNum", approvalMetadataByNum);
 
@@ -403,7 +393,6 @@ missingMetadata.length && console.error(`missingMetadata: ${missingMetadata.leng
 missingMetadata.length && console.error(missingMetadata);
 
 	await loopChunks(submissions, async (chunk) => {
-//console.log(chunk);
 		const records = await submissionsTable.createRecordsAsync(chunk);
 
 		chunk.forEach((submission, i) => {
@@ -418,20 +407,13 @@ submissionsByFormID[formID] = submissions;
 }
 
 console.log(submissionsByFormID);
-//return;
-
-
-
 console.log(submissionRecordIDsByResponseByFormID);
 
 const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values();
 const reviews = [];
 
 console.log(iaRecordIDs);
-//return;
 
-
-// TODO: why are we using response IDs here instead of nums?  because they're unique across forms?
 output.markdown(`Starting creation of ${iaRecordIDs.length} reviews...`);
 //output.markdown(`Starting creation of ${submissionRecordIDsByResponseByFormID.keys().length} reviews...`);
 
@@ -461,36 +443,38 @@ for (const [latestRecordID, ...previousRecordIDs] of iaRecordIDs) {
 
 	reviews.push({
 		fields: {
-//			[ReviewFields.NameID]: latest[SubmissionFields.NameID],
 			[ReviewFields.MostRecent]: [latestRecordID],
 			[ReviewFields.Previous]: previousRecordIDs,
 			[ReviewFields.SubmissionID]: latest[SubmissionFields.SubmissionID],
-//			[ReviewFields.ResponseID]: responseID,
+			[ReviewFields.InitialID]: responseID,
 			[ReviewFields.ResponseNum]: latest[SubmissionFields.Num],
-//			[ReviewFields.OriginalDate]: parseDate(originalSubmittedDate).toISOString(),
+			[ReviewFields.OriginalDate]: parseDate(originalSubmittedDate).toISOString(),
 		}
 	});
 }
 
-const reviewRecordsByNum = {};
+const reviewRecordsByInitialID = {};
 
 await loopChunks(reviews, async (chunk) => {
 	const records = await reviewsTable.createRecordsAsync(chunk);
 
 	chunk.forEach((review, i) => {
-		const { fields: { [ReviewFields.ResponseNum]: num } } = review;
+		const { fields: { [ReviewFields.InitialID]: initialID } } = review;
 
-		reviewRecordsByNum[num] = { id: records[i] };
+		reviewRecordsByInitialID[initialID] = { id: records[i] };
 	});
 });
+
+// TODO: after creating the records, have to go back and update all the linked records with the project ID
 
 const metadataRecords = [];
 const skippedNumbers = new Set();
 
-// TODO: are the response nums unique across all the forms?  this assumes they are.
+console.log(reviewRecordsByInitialID);
+
 for (const item of metadataItems) {
-	const num = item.responseNumber;
-	const reviewRecord = reviewRecordsByNum[num];
+	const initialID = item.initialID ?? item.responseID;
+	const reviewRecord = reviewRecordsByInitialID[initialID];
 
 	if (reviewRecord) {
 		const fields = MetadataTableFields.reduce((result, { name, key }) => ({
@@ -502,10 +486,13 @@ for (const item of metadataItems) {
 				: [reviewRecord]
 		}), {});
 
+			// this field is expecting a string, so convert the number
 		fields["Response Number"] = String(fields["Response Number"]);
+		fields["Response ID"] = initialID;
+		fields["Form"] = { name: Forms[item.formID].name };
 		metadataRecords.push({ fields });
 	} else {
-		skippedNumbers.add(num);
+		skippedNumbers.add(initialID);
 	}
 }
 
@@ -877,8 +864,7 @@ function utils() {
 	};
 }
 
-function getNameMappings()
-{
+function getNameMappings() {
 	const mappings = {
 		"Initial Application": `
 firstName\tfirstName
