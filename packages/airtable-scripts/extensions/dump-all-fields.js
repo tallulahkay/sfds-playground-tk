@@ -1,5 +1,5 @@
 {
-const { clearTable, loopChunks } = utils();
+const { confirmClearTable, loopChunks } = utils();
 
 const OutputTableName = "📂 All Table Fields";
 const OutputTableFields = [
@@ -30,7 +30,7 @@ const allTables = base.tables.filter(({ name }) => name !== OutputTableName);
 	// calling getTable() on a table that doesn't exist throws an exception, because Airtable...  but if base.tables is
 	// longer than allTables, then we know the output table exists and was filtered out.
 if (base.tables.length > allTables.length) {
-	if (!clearTable(OutputTableName)) {
+	if (!(await confirmClearTable(base.getTable(OutputTableName)))) {
 		return;
 	}
 } else {
