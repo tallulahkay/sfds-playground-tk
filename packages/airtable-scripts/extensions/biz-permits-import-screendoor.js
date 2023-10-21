@@ -70,18 +70,23 @@ const Forms = [
 }, {
 	info(base)
 	{
-		return Object.values(this)
-			.filter((form) => form.base === base);
+		const baseString = base === "part2" ? "biz" : base;
+		let info = values(this)
+			.filter((form) => form.base === baseString);
+
+		if (base === "part2") {
+				// treat IA as part 1, and everything else, including BO, as part 2
+			info = info.filter(({ name }) => name !== this.IA.name);
+		}
+
+		return info;
 	},
 
 	names(base)
 	{
-		const names = values(this)
-			.filter((form) => form.base === base)
-			.map(({ name }) => name);
-
-		return [...new Set(names)];
-	}
+			// make sure the names are unique
+		return [...new Set(this.info(base).map(({ name }) => name))];
+	},
 });
 const MetadataTableName = "Screendoor Metadata";
 const MetadataTableFields = [
@@ -458,20 +463,27 @@ console.log(submissionRecordIDsByResponseByFormID);
 // create reviews from Initial Application submissions
 // ====================================================================================================================
 
-//const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values().slice(0, 10);
 // TODO: for some reason, when we create the reviews in the loop above, iaRecordIDs is just one item with all the records in an inner array
-const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values();
+const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values().slice(-22);
+//const iaRecordIDs = submissionRecordIDsByResponseByFormID[Forms.IA.id].values();
 const reviews = [];
 
 console.log(iaRecordIDs);
 
 output.markdown(`Creating ${iaRecordIDs.length} reviews...`);
 
-const latestLink = (record) => record ? [record] : null;
-const previousLinks = (records) => records.length ? records : null;
+function normalizeLink(
+	record)
+{
+		// linked records need to be wrapped in an array, unless the list is empty/null
+	if (Array.isArray(record)) {
+		return record.length ? record : null;
+	} else {
+		return record ? [record] : null;
+	}
+}
 
-// TODO: loop over the submissions just for the IA form and create reviews from that?
-	// step through each set of related submissions
+	// create a review for each of the Initial Application submissions
 for (const [latestRecordID, ...previousRecordIDs] of iaRecordIDs) {
 //for (const [latestRecordID, ...previousRecordIDs] of submissionRecordIDsByResponseByFormID.values()) {
 	const submissionsTable = submissionsTablesByFormID[Forms.IA.id];
@@ -480,22 +492,19 @@ for (const [latestRecordID, ...previousRecordIDs] of iaRecordIDs) {
 	const latestRecord = await submissionsTable.selectRecordAsync(latestRecordID.id);
 	const latest = getCellObject(latestRecord, values(SubmissionFields));
 	const responseID = latest[SubmissionFields.ID];
+// TODO: this will link only one of the three GO submission forms
+		// link to all of the part 2 submissions related to this review
+	const linkFields = Forms.info("part2")
+		.reduce((result, { name, id }) => {
+				// if we got no submissions at all for a form, this could be undefined
+			const [latest, ...previous] = submissionRecordIDsByResponseByFormID[id]?.get(responseID) || [];
+
+			result[`${name} - Latest Submission`] = normalizeLink(latest);
+			result[`${name} - Previous Submissions`] = normalizeLink(previous);
+
+			return result;
+		}, {});
 	let originalSubmittedDate = latest[SubmissionFields.Submitted];
-
-	const [latestBO, ...previousBO] = submissionRecordIDsByResponseByFormID[Forms.BO.id]?.get(responseID) || [];
-	const [latestCO, ...previousCO] = submissionRecordIDsByResponseByFormID[Forms.CO.id]?.get(responseID) || [];
-	const [latestSec, ...previousSec] = submissionRecordIDsByResponseByFormID[Forms.Sec.id]?.get(responseID) || [];
-	const [latestGO, ...previousGO] = submissionRecordIDsByResponseByFormID[Forms.GO.id]?.get(responseID) || [];
-	const [latestSR, ...previousSR] = submissionRecordIDsByResponseByFormID[Forms.SR.id]?.get(responseID) || [];
-	const [latestDis, ...previousDis] = submissionRecordIDsByResponseByFormID[Forms.Dis.id]?.get(responseID) || [];
-	const [latestCult, ...previousCult] = submissionRecordIDsByResponseByFormID[Forms.Cult.id]?.get(responseID) || [];
-	const [latestDel, ...previousDel] = submissionRecordIDsByResponseByFormID[Forms.Del.id]?.get(responseID) || [];
-	const [latestMfg, ...previousMfg] = submissionRecordIDsByResponseByFormID[Forms.Mfg.id]?.get(responseID) || [];
-//	const [latestTest, ...previousTest] = submissionRecordIDsByResponseByFormID[Forms.Test.id]?.get(responseID) || [];
-
-//console.log(responseID, latestCO, previousCO, latestSec, previousSec);
-
-// TODO: loop through all the form tables and get any associated submissions
 
 	if (previousRecordIDs.length) {
 			// with more than one record, the original submission date is from the oldest record, which is last in this array
@@ -505,36 +514,15 @@ for (const [latestRecordID, ...previousRecordIDs] of iaRecordIDs) {
 		originalSubmittedDate = oldest[SubmissionFields.Submitted];
 	}
 
-// TODO: check the migration automations for any other changes applied to a new record
-
 	reviews.push({
 		fields: {
-			[ReviewFields.MostRecent]: [latestRecordID],
-			[ReviewFields.Previous]: previousRecordIDs,
-			"Business Ownership - Latest Submission": latestLink(latestBO),
-			"Business Ownership - Previous Submissions": previousLinks(previousBO),
-			"Community Outreach - Latest Submission": latestLink(latestCO),
-			"Community Outreach - Previous Submissions": previousLinks(previousCO),
-			"Security Plan - Latest Submission": latestLink(latestSec),
-			"Security Plan - Previous Submissions": previousLinks(previousSec),
-			"General Operations - Latest Submission": latestLink(latestGO),
-			"General Operations - Previous Submissions": previousLinks(previousGO),
-			"Storefront Retail - Latest Submission": latestLink(latestSR),
-			"Storefront Retail - Previous Submissions": previousLinks(previousSR),
-			"Distributor - Latest Submission": latestLink(latestDis),
-			"Distributor - Previous Submissions": previousLinks(previousDis),
-			"Cultivation - Latest Submission": latestLink(latestCult),
-			"Cultivation - Previous Submissions": previousLinks(previousCult),
-			"Delivery - Latest Submission": latestLink(latestDel),
-			"Delivery - Previous Submissions": previousLinks(previousDel),
-			"Manufacturing - Latest Submission": latestLink(latestMfg),
-			"Manufacturing - Previous Submissions": previousLinks(previousMfg),
-//			"Testing - Latest Submission": latestLink(latestTest),
-//			"Testing - Previous Submissions": previousLinks(previousTest),
 			[ReviewFields.SubmissionID]: latest[SubmissionFields.SubmissionID],
 			[ReviewFields.InitialID]: responseID,
 			[ReviewFields.ResponseNum]: latest[SubmissionFields.Num],
 			[ReviewFields.OriginalDate]: parseDate(originalSubmittedDate).toISOString(),
+			[ReviewFields.MostRecent]: normalizeLink(latestRecordID),
+			[ReviewFields.Previous]: normalizeLink(previousRecordIDs),
+			...linkFields,
 		}
 	});
 }
@@ -582,8 +570,6 @@ for (const [formID, submissionRecordIDsByResponse] of entries(submissionRecordID
 		await loopChunks(updatedSubmissions, async (chunk) => submissionsTablesByFormID[formID].updateRecordsAsync(chunk));
 	}
 }
-
-return;
 
 // ====================================================================================================================
 // create metadata items associated with the reviews we created above
