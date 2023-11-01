@@ -6,7 +6,7 @@ Scrapes metadata from form responses in Screendoor.
 
 `npm run start-metadata:dev -- --projectName=apply-for-a-cannabis-business-permit --projectID=6360 --output=biz-permits.json`
 
-`npm run start-metadata:dev -- --projectName=sell-cannabis-at-your-event --projectID=6799 --output=events.json`
+`npm run start-metadata:dev -- --projectName=sell-cannabis-at-your-event --projectID=7229 --output=events.json`
 
 `npm run start-metadata:dev -- --projectName=equity-applicant-form --projectID=5301 --output=equity-applicant.json`
 

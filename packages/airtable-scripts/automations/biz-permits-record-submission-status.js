@@ -1,7 +1,7 @@
 {
 
 	// "import" these utilities from the functions at the end of this script
-const { getCellObject, getFieldNames } = utils();
+const { getCellObject, getFieldNames, chain } = utils();
 const { keys, values, fromEntries } = Object;
 const zip = (a, b) => a.map((value, i) => [value, b[i]]);
 const nameRange = (count, name) => Array.from(Array(count), (_, i) => i + 1).map(name);
@@ -37,11 +37,10 @@ const StatusFieldMappings = {
 	"Business Ownership": "Business Ownership"
 };
 const StatusFieldNames = keys(StatusFieldMappings).map(name => `${name} Status`);
-// TODO: do we need to get all these fields, if we call getCellObject with just the changed date fields below?
+// TODO: do we need to get all these fields, if we call getCellObject with just the changed date fields below for targetFields
 const ReviewFieldPattern = new RegExp([
 	...values(ReviewFields),
 	...StatusFieldNames,
-//	...(keys(StatusFieldMappings).map(name => `${name} Status`)),
 	"sent to",
 	"New Edits",
 ].join("|"), "i");
@@ -60,141 +59,181 @@ const AddressFilter = /test/i;
 
 const isEditStatus = (status) => ReviewStatusStrings.includes(status);
 
-	// this is the ID of the review record that changed and caused the automation to run
-const { id } = input.config();
-const reviewsTable = base.getTable(ReviewsTableName);
-const activityTable = base.getTable(ActivityTableName);
-const reviewTableFields = getFieldNames(reviewsTable, ReviewFieldPattern);
+// TODO: add option to not log the times of each function in the chain?
+await chain([
+	init,
+	createStatusChangeDateUpdates,
+	console.log,
+	updateReview,
+]);
 
-const reviewRecord = await reviewsTable.selectRecordAsync(id);
+async function init(
+	context)
+{
+		// this is the ID of the review record that changed and caused the automation to run
+	const { id } = input.config();
+	const reviewsTable = base.getTable(ReviewsTableName);
+	const reviewTableFields = getFieldNames(reviewsTable, ReviewFieldPattern);
+	const reviewRecord = await reviewsTable.selectRecordAsync(id);
 
-if (!reviewRecord) {
-	throw new Error(`Could not find Review record '${id}'.`);
+	if (!reviewRecord) {
+		throw new Error(`Could not find Review record '${id}'.`);
+	}
+
+	return {
+		...context,
+		reviewsTable,
+		reviewRecord,
+		review: getCellObject(reviewRecord, reviewTableFields)
+	};
 }
 
-const review = getCellObject(reviewRecord, reviewTableFields);
+async function createStatusChangeDateUpdates(
+	context)
+{
+	const { review, reviewRecord } = context;
 // TODO: add try/catch
-const previousValues = JSON.parse(review[ReviewFields.JSON] || "{}");
-const changedFields = StatusFieldNames.filter((name) => {
-	const current = review[name];
-	const previous = previousValues[name];
+	const previousValues = JSON.parse(review[ReviewFields.JSON] || "{}");
+	const changedFields = StatusFieldNames.filter((name) => {
+		const current = review[name];
+		const previous = previousValues[name];
 
-	return isEditStatus(current) && current !== previous;
-});
+		return isEditStatus(current) && current !== previous;
+	});
 
-if (!changedFields.length) {
-		// the automation is triggered whenever any of the fields it's watching change to any status, but we only care
-		// about the sent and received statuses.  so if we haven't found any changes, just bail.
-	console.log("No sent/received status changes detected.");
+	if (!changedFields.length) {
+			// the automation is triggered whenever any of the fields it's watching change to any status, but we only care
+			// about the sent and received statuses.  so if we haven't found any changes, just bail.
+		console.log("No sent/received status changes detected.");
 
-	return;
-} else if (changedFields.length > 1) {
-	console.error(`Multiple changed fields detected:\n${changedFields.join("\n")}`);
-}
+		return true;
+	} else if (changedFields.length > 1) {
+		console.error(`Multiple changed fields detected:\n${changedFields.join("\n")}`);
+// TODO: do we need to log all these changes in this case?  normally shouldn't happen
+	}
 
-const [changedStatusName] = changedFields;
-console.log(changedFields, changedStatusName);
+	const [changedStatusName] = changedFields;
 
-if (!changedStatusName) {
-	throw new Error(`Bad changedStatusName: ${changedStatusName}`);
-}
+	if (!changedStatusName) {
+		throw new Error(`Bad changedStatusName: ${changedStatusName}`);
+	}
 
-const targetBaseName = StatusFieldMappings[changedStatusName.replace(" Status", "")];
-const targetFieldNames = {
-	sent: nameRange(DateFieldCount, i => `${targetBaseName} - Sent to Applicant for Edits ${i} Date`),
-	received: nameRange(DateFieldCount, i => `${targetBaseName} - New Edits Received ${i} Date`),
-};
-const status = review[changedStatusName];
+	const targetBaseName = StatusFieldMappings[changedStatusName.replace(" Status", "")];
+	const targetFieldNames = {
+		sent: nameRange(DateFieldCount, i => `${targetBaseName} - Sent to Applicant for Edits ${i} Date`),
+		received: nameRange(DateFieldCount, i => `${targetBaseName} - New Edits Received ${i} Date`),
+	};
+	const status = review[changedStatusName];
 
 console.log(changedFields, changedStatusName, targetBaseName, status);
-console.log(review.Address, AddressFilter.test(review.Address));
-console.log(targetFieldNames);
 
-if (!isEditStatus(status)) {
-	throw new Error(`Unrecognized status: ${status}.`);
+	if (!isEditStatus(status)) {
+		throw new Error(`Unrecognized status: ${status}.`);
+	}
+
+// TODO: remove this filter
+	if (!AddressFilter.test(review.Address)) {
+		console.error(`Skipping non-test address: ${review.Address}`);
+
+		return true;
+	}
+
+	const direction = status === ReviewStatus.Sent
+		? "sent"
+		: "received";
+	const targetFields = {
+		sent: getCellObject(reviewRecord, targetFieldNames.sent),
+		received: getCellObject(reviewRecord, targetFieldNames.received),
+	};
+	const targetDirectionValues = values(targetFields[direction]);
+		// find the first empty field.  default to the last field if we don't find an empty one.
+	const availableFieldIndex = targetDirectionValues.findIndex((value, i, array) => !value || i === array.length - 1);
+	const lastModified = review[ReviewFields.LastModified];
+	let updatedFields;
+
+	if (!targetDirectionValues[availableFieldIndex]) {
+			// there is a blank field available, so we don't have to copy and shift any other fields
+		updatedFields = {
+			[keys(targetFields[direction])[availableFieldIndex]]: lastModified
+		};
+	} else if (direction === "sent") {
+			// take the 3 most recent sent fields and append the new sent date.  then take the 3 most recent received dates
+			// but append a null, since we're holding that field empty for when the edits are sent back.  the goal is to have
+			// the sent and received fields with the same number represent the start and end of the same transaction.
+		const newValues = {
+			sent: [...(values(targetFields.sent).slice(2)), lastModified],
+			received: [...(values(targetFields.received).slice(2)), null],
+		};
+		const sentKeys = keys(targetFields.sent).slice(1);
+		const receivedKeys = keys(targetFields.received).slice(1);
+
+			// create a new object with updated field values.  we combine the array of values created above with an array of
+			// the 2nd through 5th sent and received date labels to build the key/value pairs.
+		updatedFields = {
+			...fromEntries(zip(sentKeys, newValues.sent)),
+			...fromEntries(zip(receivedKeys, newValues.received)),
+		};
+	} else {
+			// there should always be an empty received edits field available, since when the form is sent for edits and
+			// there is no available field, both the sent and received dates should be shifted over one, leaving an empty
+			// field for the received date, when the edits come back
+		throw new Error(`No empty received edits date field available for ${reviewRecord.id}, ${lastModified}`);
+	}
+
+		// add the new activity record at the beginning of the link list in the review record, so that the activity events
+		// appear newest to oldest in the interface
+//	updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
+
+	previousValues[changedStatusName] = status;
+	updatedFields[ReviewFields.JSON] = JSON.stringify(previousValues, null, "\t");
+
+	return {
+		...context,
+		status,
+		updatedFields,
+	};
 }
 
-if (!AddressFilter.test(review.Address)) {
-	console.error(`Skipping non-test address: ${review.Address}`);
+async function insertActivityRecord(
+	context)
+{
+	const { status, review, reviewRecord, updatedFields } = context;
+	const activityTable = base.getTable(ActivityTableName);
 
-	return;
+		// link record fields return an array, even with just one link
+// TODO: this ID needs to be the actual changed status field name
+	const [linkedSubmissionID] = review[ReviewFields.LinkedSubmissionID];
+// TODO: sometimes we do need an object returned from getCellObject()
+	const linkedActivityRecords = reviewRecord.getCellValue(ReviewFields.ActivityRecords) || [];
+	//const linkedActivityRecords = review[ReviewFields.ActivityRecords];
+
+	console.log(linkedActivityRecords);
+
+	const newActivityID = await activityTable.createRecordAsync({
+// TODO: fix activity title
+		[ActivityFields.Title]: `Initial Application Submission status changed to: ${status}`,
+		[ActivityFields.Link]: [reviewRecord],
+		[ActivityFields.Time]: review[ReviewFields.LastModified],
+		[ActivityFields.ID]: linkedSubmissionID,
+		[ActivityFields.ProjectID]: reviewRecord.id,
+		[ActivityFields.Form]: { name: "Initial Application" },
+		[ActivityFields.Type]: { name: "Status" },
+	//	[ActivityFields.NewStatus]: { name: status },
+		[ActivityFields.StatusType]: { name: "Submission" },
+	});
+
+		// add the new activity record at the beginning of the link list in the review record, so that the activity events
+		// appear newest to oldest in the interface
+	updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
 }
 
-const lastModified = review[ReviewFields.LastModified];
+async function updateReview(
+	context)
+{
+	const { reviewsTable, reviewRecord, updatedFields } = context;
 
-//	// link record fields return an array, even with just one link
-//const [linkedSubmissionID] = review[ReviewFields.LinkedSubmissionID];
-//// TODO: sometimes we do need an object returned from getCellObject()
-//const linkedActivityRecords = reviewRecord.getCellValue(ReviewFields.ActivityRecords) || [];
-////const linkedActivityRecords = review[ReviewFields.ActivityRecords];
-//
-//console.log(linkedActivityRecords);
-//
-//const newActivityID = await activityTable.createRecordAsync({
-//	[ActivityFields.Title]: `Initial Application Submission status changed to: ${status}`,
-//	[ActivityFields.Link]: [reviewRecord],
-//	[ActivityFields.Time]: lastModified,
-//	[ActivityFields.ID]: linkedSubmissionID,
-//	[ActivityFields.ProjectID]: reviewRecord.id,
-//	[ActivityFields.Form]: { name: "Initial Application" },
-//	[ActivityFields.Type]: { name: "Status" },
-////	[ActivityFields.NewStatus]: { name: status },
-//	[ActivityFields.StatusType]: { name: "Submission" },
-//});
-
-// TODO: move this into a function and creating the activity record into another
-const direction = status === ReviewStatus.Sent
-	? "sent"
-	: "received";
-const targetFields = {
-	sent: getCellObject(reviewRecord, targetFieldNames.sent),
-	received: getCellObject(reviewRecord, targetFieldNames.received),
-};
-const targetDirectionValues = values(targetFields[direction]);
-
-	// find the first empty field.  default to the last field if we don't find an empty one.
-const availableFieldIndex = targetDirectionValues.findIndex((value, i, array) => !value || i === array.length - 1);
-let updatedFields;
-
-if (!targetDirectionValues[availableFieldIndex]) {
-		// there is a blank field available, so we don't have to copy and shift any other fields
-	updatedFields = {
-		[keys(targetFields[direction])[availableFieldIndex]]: lastModified
-	};
-} else if (direction === "sent") {
-		// take the 3 most recent sent fields and append the new sent date.  then take the 3 most recent received dates
-		// but append a null, since we're holding that field empty for when the edits are sent back.  the goal is to have
-		// the sent and received fields with the same number represent the start and end of the same transaction.
-	const newValues = {
-		sent: [...(values(targetFields.sent).slice(2)), lastModified],
-		received: [...(values(targetFields.received).slice(2)), null],
-	};
-	const sentKeys = keys(targetFields.sent).slice(1);
-	const receivedKeys = keys(targetFields.received).slice(1);
-
-		// create a new object with updated field values.  we combine the array of values created above with an array of
-		// the 2nd through 5th sent and received date labels to build the key/value pairs.
-	updatedFields = {
-		...fromEntries(zip(sentKeys, newValues.sent)),
-		...fromEntries(zip(receivedKeys, newValues.received)),
-	};
-} else {
-		// there should always be an empty received edits field available, since when the form is sent for edits and
-		// there is no available field, both the sent and received dates should be shifted over one, leaving an empty
-		// field for the received date, when the edits come back
-	throw new Error(`No empty received edits date field available for ${reviewRecord.id}, ${lastModified}`);
+	await reviewsTable.updateRecordAsync(reviewRecord, updatedFields);
 }
-
-	// add the new activity record at the beginning of the link list in the review record, so that the activity events
-	// appear newest to oldest in the interface
-//updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
-
-previousValues[changedStatusName] = status;
-updatedFields[ReviewFields.JSON] = JSON.stringify(previousValues, null, "\t");
-
-console.log(updatedFields);
-
-await reviewsTable.updateRecordAsync(reviewRecord, updatedFields);
 
 }
 
@@ -533,6 +572,8 @@ function utils() {
 
 	const [timeStart, timeEnd] = (() => {
 		const times = {};
+			// the output API isn't available in an automation script
+		const print = output?.markdown || console.log;
 
 		function timeStart(
 			name = "timer")
@@ -551,10 +592,10 @@ function utils() {
 					? (totalTime / 1000).toFixed(2) + "s"
 					: totalTime + "ms";
 
-				output.markdown(`**${name}** took **${totalTimeString}**.`);
+				print(`**${name}** took **${totalTimeString}**.`);
 				delete times[name];
 			} else {
-				output.markdown(`Timer called **${name}** not found.`);
+				print(`Timer called **${name}** not found.`);
 			}
 		}
 
