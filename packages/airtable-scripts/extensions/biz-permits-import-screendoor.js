@@ -1153,6 +1153,19 @@ function utils() {
 		}, {});
 	}
 
+	function getFieldNames(
+		table,
+		filterPattern)
+	{
+		let names = table.fields.map(({ name }) => name);
+
+		if (filterPattern instanceof RegExp) {
+			names = names.filter((name) => filterPattern.test(name));
+		}
+
+		return names;
+	}
+
 	async function getRecords(
 		table,
 		fields = [])
@@ -1162,8 +1175,16 @@ function utils() {
 
 	async function getRecordObjects(
 		table,
-		fieldNames)
+		fieldNames = table.fields.map(({ name }) => name))
 	{
+		if (fieldNames instanceof RegExp) {
+			const pattern = fieldNames;
+
+			fieldNames = table.fields
+				.map(({ name }) => name)
+				.filter((name) => pattern.test(name));
+		}
+
 		return (await getRecords(table, fieldNames))
 			.map((record) => getCellObject(record, fieldNames));
 	}
@@ -1319,6 +1340,7 @@ function utils() {
 		getCell,
 		getCellObject,
 		getFieldsByName,
+		getFieldNames,
 		getRecords,
 		getRecordObjects,
 		clearTable,

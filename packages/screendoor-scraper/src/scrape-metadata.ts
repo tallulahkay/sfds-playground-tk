@@ -73,7 +73,7 @@ async function getAllRequests(
 
 		if (!responses || responses.error) {
 			responseCount = 0;
-			console.error(responses.error);
+			console.error("ERROR:", responses.error);
 
 			break;
 		} else {

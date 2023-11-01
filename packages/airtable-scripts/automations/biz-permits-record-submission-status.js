@@ -1,7 +1,7 @@
 {
 
 	// "import" these utilities from the functions at the end of this script
-const { getCellObject } = utils();
+const { getCellObject, getFieldNames } = utils();
 const { keys, values, fromEntries } = Object;
 const zip = (a, b) => a.map((value, i) => [value, b[i]]);
 const nameRange = (count, name) => Array.from(Array(count), (_, i) => i + 1).map(name);
@@ -11,22 +11,40 @@ const ReviewsTableName = Basename + " Reviews";
 const ActivityTableName = "Activity History";
 
 const ReviewStatus = {
-	SentForEdits: "Sent to applicant for edits",
-	EditsReceived: "New edits received",
+	Sent: "Sent to applicant for edits",
+	Received: "New edits received",
 };
+const ReviewStatusStrings = values(ReviewStatus);
 const DateFieldCount = 5;
-	// generate a list of numbered fields, 1 to 5, so we can access and change their values in the table
-const ReviewTargetFields = {
-	sent: nameRange(DateFieldCount, i => `Initial Application - Sent to Applicant for Edits ${i} Date`),
-	received: nameRange(DateFieldCount, i => `Initial Application - New Edits Received ${i} Date`),
-};
 const ReviewFields = {
-	SubmissionStatus: "Initial Application Status",
 	LastModified: "Last Modified - Reviews",
 	LinkedSubmissionID: "SUBMISSION_ID (from Initial Application - Latest Submission)",
 	ActivityRecords: "Activity History",
 	Address: "Address",
+	JSON: "Previous Status JSON",
 };
+const StatusFieldMappings = {
+	"Initial Application": "Initial Application",
+	"Community Outreach": "Community Outreach",
+	"General Operations": "General Ops",
+	"Security Plan": "Security",
+	"Storefront Retail": "Storefront Retail",
+	"Delivery": "Delivery",
+	"Distributor": "Distributor",
+	"Manufacturing": "Manufacturing",
+	"Testing": "Testing",
+	"Cultivation": "Cultivation",
+	"Business Ownership": "Business Ownership"
+};
+const StatusFieldNames = keys(StatusFieldMappings).map(name => `${name} Status`);
+// TODO: do we need to get all these fields, if we call getCellObject with just the changed date fields below?
+const ReviewFieldPattern = new RegExp([
+	...values(ReviewFields),
+	...StatusFieldNames,
+//	...(keys(StatusFieldMappings).map(name => `${name} Status`)),
+	"sent to",
+	"New Edits",
+].join("|"), "i");
 const ActivityFields = {
 	ProjectID: "Project ID",
 	Title: "Activity Title",
@@ -40,10 +58,13 @@ const ActivityFields = {
 };
 const AddressFilter = /test/i;
 
+const isEditStatus = (status) => ReviewStatusStrings.includes(status);
+
 	// this is the ID of the review record that changed and caused the automation to run
 const { id } = input.config();
 const reviewsTable = base.getTable(ReviewsTableName);
 const activityTable = base.getTable(ActivityTableName);
+const reviewTableFields = getFieldNames(reviewsTable, ReviewFieldPattern);
 
 const reviewRecord = await reviewsTable.selectRecordAsync(id);
 
@@ -51,49 +72,83 @@ if (!reviewRecord) {
 	throw new Error(`Could not find Review record '${id}'.`);
 }
 
-const review = getCellObject(reviewRecord, values(ReviewFields));
-const status = review[ReviewFields.SubmissionStatus];
+const review = getCellObject(reviewRecord, reviewTableFields);
+// TODO: add try/catch
+const previousValues = JSON.parse(review[ReviewFields.JSON] || "{}");
+const changedFields = StatusFieldNames.filter((name) => {
+	const current = review[name];
+	const previous = previousValues[name];
 
-console.log(review, status);
+	return isEditStatus(current) && current !== previous;
+});
+
+if (!changedFields.length) {
+		// the automation is triggered whenever any of the fields it's watching change to any status, but we only care
+		// about the sent and received statuses.  so if we haven't found any changes, just bail.
+	console.log("No sent/received status changes detected.");
+
+	return;
+} else if (changedFields.length > 1) {
+	console.error(`Multiple changed fields detected:\n${changedFields.join("\n")}`);
+}
+
+const [changedStatusName] = changedFields;
+console.log(changedFields, changedStatusName);
+
+if (!changedStatusName) {
+	throw new Error(`Bad changedStatusName: ${changedStatusName}`);
+}
+
+const targetBaseName = StatusFieldMappings[changedStatusName.replace(" Status", "")];
+const targetFieldNames = {
+	sent: nameRange(DateFieldCount, i => `${targetBaseName} - Sent to Applicant for Edits ${i} Date`),
+	received: nameRange(DateFieldCount, i => `${targetBaseName} - New Edits Received ${i} Date`),
+};
+const status = review[changedStatusName];
+
+console.log(changedFields, changedStatusName, targetBaseName, status);
 console.log(review.Address, AddressFilter.test(review.Address));
+console.log(targetFieldNames);
 
-if (!values(ReviewStatus).includes(status)) {
+if (!isEditStatus(status)) {
 	throw new Error(`Unrecognized status: ${status}.`);
 }
 
 if (!AddressFilter.test(review.Address)) {
-	console.log(`Skipping non-test address: ${review.Address}`);
+	console.error(`Skipping non-test address: ${review.Address}`);
 
 	return;
 }
 
 const lastModified = review[ReviewFields.LastModified];
-	// link record fields return an array, even with just one link
-const [linkedSubmissionID] = review[ReviewFields.LinkedSubmissionID];
-// TODO: sometimes we do need an object returned from getCellObject()
-const linkedActivityRecords = reviewRecord.getCellValue(ReviewFields.ActivityRecords) || [];
-//const linkedActivityRecords = review[ReviewFields.ActivityRecords];
 
-console.log(linkedActivityRecords);
+//	// link record fields return an array, even with just one link
+//const [linkedSubmissionID] = review[ReviewFields.LinkedSubmissionID];
+//// TODO: sometimes we do need an object returned from getCellObject()
+//const linkedActivityRecords = reviewRecord.getCellValue(ReviewFields.ActivityRecords) || [];
+////const linkedActivityRecords = review[ReviewFields.ActivityRecords];
+//
+//console.log(linkedActivityRecords);
+//
+//const newActivityID = await activityTable.createRecordAsync({
+//	[ActivityFields.Title]: `Initial Application Submission status changed to: ${status}`,
+//	[ActivityFields.Link]: [reviewRecord],
+//	[ActivityFields.Time]: lastModified,
+//	[ActivityFields.ID]: linkedSubmissionID,
+//	[ActivityFields.ProjectID]: reviewRecord.id,
+//	[ActivityFields.Form]: { name: "Initial Application" },
+//	[ActivityFields.Type]: { name: "Status" },
+////	[ActivityFields.NewStatus]: { name: status },
+//	[ActivityFields.StatusType]: { name: "Submission" },
+//});
 
-const newActivityID = await activityTable.createRecordAsync({
-	[ActivityFields.Title]: `Initial Application Submission status changed to: ${status}`,
-	[ActivityFields.Link]: [reviewRecord],
-	[ActivityFields.Time]: lastModified,
-	[ActivityFields.ID]: linkedSubmissionID,
-	[ActivityFields.ProjectID]: reviewRecord.id,
-	[ActivityFields.Form]: { name: "Initial Application" },
-	[ActivityFields.Type]: { name: "Status" },
-//	[ActivityFields.NewStatus]: { name: status },
-	[ActivityFields.StatusType]: { name: "Submission" },
-});
-
-const direction = status === ReviewStatus.SentForEdits
+// TODO: move this into a function and creating the activity record into another
+const direction = status === ReviewStatus.Sent
 	? "sent"
 	: "received";
 const targetFields = {
-	sent: getCellObject(reviewRecord, ReviewTargetFields.sent),
-	received: getCellObject(reviewRecord, ReviewTargetFields.received),
+	sent: getCellObject(reviewRecord, targetFieldNames.sent),
+	received: getCellObject(reviewRecord, targetFieldNames.received),
 };
 const targetDirectionValues = values(targetFields[direction]);
 
@@ -132,7 +187,10 @@ if (!targetDirectionValues[availableFieldIndex]) {
 
 	// add the new activity record at the beginning of the link list in the review record, so that the activity events
 	// appear newest to oldest in the interface
-updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
+//updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
+
+previousValues[changedStatusName] = status;
+updatedFields[ReviewFields.JSON] = JSON.stringify(previousValues, null, "\t");
 
 console.log(updatedFields);
 
@@ -357,6 +415,19 @@ function utils() {
 		}, {});
 	}
 
+	function getFieldNames(
+		table,
+		filterPattern)
+	{
+		let names = table.fields.map(({ name }) => name);
+
+		if (filterPattern instanceof RegExp) {
+			names = names.filter((name) => filterPattern.test(name));
+		}
+
+		return names;
+	}
+
 	async function getRecords(
 		table,
 		fields = [])
@@ -366,8 +437,16 @@ function utils() {
 
 	async function getRecordObjects(
 		table,
-		fieldNames)
+		fieldNames = table.fields.map(({ name }) => name))
 	{
+		if (fieldNames instanceof RegExp) {
+			const pattern = fieldNames;
+
+			fieldNames = table.fields
+				.map(({ name }) => name)
+				.filter((name) => pattern.test(name));
+		}
+
 		return (await getRecords(table, fieldNames))
 			.map((record) => getCellObject(record, fieldNames));
 	}
@@ -523,6 +602,7 @@ function utils() {
 		getCell,
 		getCellObject,
 		getFieldsByName,
+		getFieldNames,
 		getRecords,
 		getRecordObjects,
 		clearTable,
