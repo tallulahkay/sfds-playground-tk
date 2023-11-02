@@ -1308,14 +1308,20 @@ function utils() {
 			context = {};
 		}
 
+		const chainName = `${fns.length}-function chain`;
+		let lastFnName = "";
+
+		timeStart(chainName);
+
 		for (const fn of fns) {
 			if (typeof fn !== "function") {
 				continue;
 			} else if (fn === console.log) {
-				console.log("current context:\n", context);
+				console.log(`Context after ${lastFnName}:\n`, context);
 				continue;
 			}
 
+			lastFnName = fn.name;
 			timeStart(fn.name);
 
 			const result = await fn(context);
@@ -1328,6 +1334,8 @@ function utils() {
 				context = result;
 			}
 		}
+
+		timeEnd(chainName);
 
 		return context;
 	}

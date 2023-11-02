@@ -3,8 +3,10 @@
 	// "import" these utilities from the functions at the end of this script
 const { getCellObject, getFieldNames, chain } = utils();
 const { keys, values, fromEntries } = Object;
+
 const zip = (a, b) => a.map((value, i) => [value, b[i]]);
 const nameRange = (count, name) => Array.from(Array(count), (_, i) => i + 1).map(name);
+const escapeRegExp = (string) => string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
 const Basename = "Cannabis Business Permit";
 const ReviewsTableName = Basename + " Reviews";
@@ -37,13 +39,13 @@ const StatusFieldMappings = {
 	"Business Ownership": "Business Ownership"
 };
 const StatusFieldNames = keys(StatusFieldMappings).map(name => `${name} Status`);
-// TODO: do we need to get all these fields, if we call getCellObject with just the changed date fields below for targetFields
+// TODO: do we need to get all these fields, if we call getCellObject with just the changed date fields below for targetFields?
 const ReviewFieldPattern = new RegExp([
 	...values(ReviewFields),
 	...StatusFieldNames,
 	"sent to",
 	"New Edits",
-].join("|"), "i");
+].map(escapeRegExp).join("|"), "i");
 const ActivityFields = {
 	ProjectID: "Project ID",
 	Title: "Activity Title",
@@ -63,6 +65,8 @@ const isEditStatus = (status) => ReviewStatusStrings.includes(status);
 await chain([
 	init,
 	createStatusChangeDateUpdates,
+	console.log,
+	insertActivityRecord,
 	console.log,
 	updateReview,
 ]);
@@ -112,20 +116,20 @@ async function createStatusChangeDateUpdates(
 // TODO: do we need to log all these changes in this case?  normally shouldn't happen
 	}
 
-	const [changedStatusName] = changedFields;
+	const [changedStatusField] = changedFields;
 
-	if (!changedStatusName) {
-		throw new Error(`Bad changedStatusName: ${changedStatusName}`);
+	if (!changedStatusField) {
+		throw new Error(`Bad changedStatusName: ${changedStatusField}`);
 	}
 
-	const targetBaseName = StatusFieldMappings[changedStatusName.replace(" Status", "")];
+	const targetBaseName = StatusFieldMappings[changedStatusField.replace(" Status", "")];
 	const targetFieldNames = {
 		sent: nameRange(DateFieldCount, i => `${targetBaseName} - Sent to Applicant for Edits ${i} Date`),
 		received: nameRange(DateFieldCount, i => `${targetBaseName} - New Edits Received ${i} Date`),
 	};
-	const status = review[changedStatusName];
+	const status = review[changedStatusField];
 
-console.log(changedFields, changedStatusName, targetBaseName, status);
+console.log(changedFields, changedStatusField, targetBaseName, status);
 
 	if (!isEditStatus(status)) {
 		throw new Error(`Unrecognized status: ${status}.`);
@@ -184,20 +188,21 @@ console.log(changedFields, changedStatusName, targetBaseName, status);
 		// appear newest to oldest in the interface
 //	updatedFields[ReviewFields.ActivityRecords] = [{ id: newActivityID }, ...linkedActivityRecords];
 
-	previousValues[changedStatusName] = status;
+	previousValues[changedStatusField] = status;
 	updatedFields[ReviewFields.JSON] = JSON.stringify(previousValues, null, "\t");
 
 	return {
 		...context,
 		status,
 		updatedFields,
+		changedStatusField,
 	};
 }
 
 async function insertActivityRecord(
 	context)
 {
-	const { status, review, reviewRecord, updatedFields } = context;
+	const { status, review, reviewRecord, updatedFields, changedStatusField } = context;
 	const activityTable = base.getTable(ActivityTableName);
 
 		// link record fields return an array, even with just one link
@@ -211,7 +216,7 @@ async function insertActivityRecord(
 
 	const newActivityID = await activityTable.createRecordAsync({
 // TODO: fix activity title
-		[ActivityFields.Title]: `Initial Application Submission status changed to: ${status}`,
+		[ActivityFields.Title]: `${changedStatusField} changed to: ${status}`,
 		[ActivityFields.Link]: [reviewRecord],
 		[ActivityFields.Time]: review[ReviewFields.LastModified],
 		[ActivityFields.ID]: linkedSubmissionID,
@@ -611,14 +616,20 @@ function utils() {
 			context = {};
 		}
 
+		const chainName = `${fns.length}-function chain`;
+		let lastFnName = "";
+
+		timeStart(chainName);
+
 		for (const fn of fns) {
 			if (typeof fn !== "function") {
 				continue;
 			} else if (fn === console.log) {
-				console.log("current context:\n", context);
+				console.log(`Context after ${lastFnName}:\n`, context);
 				continue;
 			}
 
+			lastFnName = fn.name;
 			timeStart(fn.name);
 
 			const result = await fn(context);
@@ -631,6 +642,8 @@ function utils() {
 				context = result;
 			}
 		}
+
+		timeEnd(chainName);
 
 		return context;
 	}
