@@ -1,5 +1,5 @@
 {
-const { confirmClearTable, loopChunks } = utils();
+const { confirmClearTable, loopMegaChunks, timeStart, timeEnd } = utils();
 
 const OutputTableName = "📂 All Table Fields";
 const OutputTableFields = [
@@ -26,6 +26,8 @@ const OutputTableFields = [
 ];
 
 const allTables = base.tables.filter(({ name }) => name !== OutputTableName);
+
+timeStart("Print all fields");
 
 	// calling getTable() on a table that doesn't exist throws an exception, because Airtable...  but if base.tables is
 	// longer than allTables, then we know the output table exists and was filtered out.
@@ -58,12 +60,14 @@ for (const table of allTables) {
 
 console.log(allFields);
 
-await loopChunks(allFields, (chunk) => outputTable.createRecordsAsync(chunk));
+await output.markdown(`Creating **${allFields.length}** records in the **${outputTable.name}** table.`);
+
+await loopMegaChunks(allFields, (chunk) => outputTable.createRecordsAsync(chunk));
+
+timeEnd("Print all fields");
 }
 
 function utils() {
-	const MaxChunkSize = 50;
-
 	class GroupedArray {
 		constructor(
 			initialData = {})
@@ -189,36 +193,113 @@ function utils() {
 		}
 	}
 
-	async function loopChunks(
-		items,
-		chunkSize,
-		loopFn)
-	{
-		if (typeof chunkSize === "function") {
-			loopFn = chunkSize;
-			chunkSize = MaxChunkSize;
-		}
+	const { loopChunks, loopMegaChunks } = (() => {
+		const MaxChunkSize = 50;
+			// this is supposed to be 15, but it seems like Airtable throws an exception when the recent async request count
+			// gets to 15, so limit it to something smaller
+		const MaxPromiseAll = 14;
 
-		const updateProgress = new Progress({
-			total: items.length,
-			printStep: 10
-		});
+		async function loopChunks(
+			items,
+			chunkSize,
+			loopFn)
+		{
+			if (typeof chunkSize === "function") {
+				loopFn = chunkSize;
+				chunkSize = MaxChunkSize;
+			}
 
-			// we don't have any try/catch around the loopFn because trying to catch errors and then log what they are just
-			// prints `name: "j"`, which is obviously useless (and par for the course with Airtable).  so let the inner loop
-			// fail, which will print a better error message.
-		for (let i = 0, len = items.length; i < len; i += chunkSize) {
-			const chunk = items.slice(i, i + chunkSize);
-			const result = await loopFn(chunk, i);
+			const updateProgress = new Progress({
+				total: items.length,
+				printStep: 10
+			});
 
-			updateProgress.increment(chunk.length);
+				// we don't have any try/catch around the loopFn because trying to catch errors and then log what they are just
+				// prints `name: "j"`, which is obviously useless (and par for the course with Airtable).  so let the inner loop
+				// fail, which will print a better error message.
+			for (let i = 0, len = items.length; i < len; i += chunkSize) {
+				const chunk = items.slice(i, i + chunkSize);
+				const result = await loopFn(chunk, i);
 
-			if (result === true) {
-					// return true to break out of the loop early
-				return;
+				updateProgress.increment(chunk.length);
+
+				if (result === true) {
+						// return true to break out of the loop early
+					return;
+				}
 			}
 		}
-	}
+
+		const lastSecond = {
+			times: [],
+
+			add()
+			{
+				this.times.push(Date.now());
+			},
+
+			count()
+			{
+				const lastSec = Date.now() - 1000;
+
+				this.times = this.times.filter(t => t > lastSec);
+
+				return this.times.length;
+			}
+		};
+
+		async function loopMegaChunks(
+			items,
+			loopFn)
+		{
+			const updateProgress = new Progress({
+				total: items.length,
+				printStep: 10
+			});
+			const len = items.length;
+			const promises = [];
+			let promisedItemCount = 0;
+			let i = 0;
+
+			while (i < len) {
+					// in most cases, these will be the same, but just in case a previous call to loopMegaChunks() recently
+					// finished, track both previously triggered async calls and the current ones, whichever is larger
+				if (Math.max(lastSecond.count(), promises.length) < MaxPromiseAll) {
+					const chunk = items.slice(i, i + MaxChunkSize);
+					const result = loopFn(chunk, i);
+
+					lastSecond.add();
+
+					if (result === true) {
+							// if loopFn returns true instead of a promise, break out of the loop
+						return;
+					}
+
+					promises.push(result);
+					promisedItemCount += chunk.length;
+					i += chunk.length;
+				} else {
+					const results = await Promise.all(promises);
+
+					updateProgress.increment(promisedItemCount);
+					promises.length = 0;
+					promisedItemCount = 0;
+
+					if (results.some((res) => res === true)) {
+							// if any of the promises resolves to a true, break out of the loop
+						return;
+					}
+				}
+			}
+
+			if (promises.length) {
+				await Promise.all(promises);
+				updateProgress.increment(promisedItemCount);
+			}
+		}
+
+		return { loopChunks, loopMegaChunks };
+	})();
 
 	function getCell(
 		record,
@@ -246,7 +327,10 @@ function utils() {
 	{
 		const result = [].concat(getCell(record, fieldNames));
 
-		return Object.fromEntries(result.map((value, i) => [fieldNames[i], value]));
+		return Object.fromEntries([
+			["_id", record.id],
+			...result.map((value, i) => [fieldNames[i], value])
+		]);
 	}
 
 	function getFieldsByName(
@@ -257,13 +341,26 @@ function utils() {
 
 			if (options?.choices) {
 					// extract the name strings from each choice so they're easier to access
-				field.values = options.choices.map(({ name }) => name);
+				field.choices = options.choices.map(({ name }) => name);
 			}
 
 			result[field.name] = field;
 
 			return result;
 		}, {});
+	}
+
+	function getFieldNames(
+		table,
+		filterPattern)
+	{
+		let names = table.fields.map(({ name }) => name);
+
+		if (filterPattern instanceof RegExp) {
+			names = names.filter((name) => filterPattern.test(name));
+		}
+
+		return names;
 	}
 
 	async function getRecords(
@@ -275,8 +372,16 @@ function utils() {
 
 	async function getRecordObjects(
 		table,
-		fieldNames)
+		fieldNames = table.fields.map(({ name }) => name))
 	{
+		if (fieldNames instanceof RegExp) {
+			const pattern = fieldNames;
+
+			fieldNames = table.fields
+				.map(({ name }) => name)
+				.filter((name) => pattern.test(name));
+		}
+
 		return (await getRecords(table, fieldNames))
 			.map((record) => getCellObject(record, fieldNames));
 	}
@@ -286,9 +391,9 @@ function utils() {
 	{
 		const { records } = await table.selectRecordsAsync({ fields: [] });
 
-		output.markdown(`Deleting **${records.length}** records in the **${table.name}** table.`);
+		await output.markdown(`Deleting **${records.length}** records in the **${table.name}** table.`);
 
-		await loopChunks(records, MaxChunkSize, (chunk) => table.deleteRecordsAsync(chunk));
+		await loopMegaChunks(records, (chunk) => table.deleteRecordsAsync(chunk));
 	}
 
 	async function confirmClearTable(
@@ -365,13 +470,13 @@ function utils() {
 		const times = {};
 
 		function timeStart(
-			name)
+			name = "timer")
 		{
 			times[name] = Date.now();
 		}
 
 		function timeEnd(
-			name)
+			name = "timer")
 		{
 			const startTime = times[name];
 
@@ -391,14 +496,57 @@ function utils() {
 		return [timeStart, timeEnd];
 	})();
 
+	async function chain(
+		context,
+		fns)
+	{
+		if (Array.isArray(context)) {
+			fns = context;
+			context = {};
+		}
+
+		const chainName = `${fns.length}-function chain`;
+		let lastFnName = "";
+
+		timeStart(chainName);
+
+		for (const fn of fns) {
+			if (typeof fn !== "function") {
+				continue;
+			} else if (fn === console.log) {
+				console.log(`Context after ${lastFnName}:\n`, context);
+				continue;
+			}
+
+			lastFnName = fn.name;
+			timeStart(fn.name);
+
+			const result = await fn(context);
+
+			timeEnd(fn.name);
+
+			if (result === true) {
+				break;
+			} else if (result && typeof result === "object") {
+				context = result;
+			}
+		}
+
+		timeEnd(chainName);
+
+		return context;
+	}
+
 	return {
 		GroupedArray,
 		DefaultMap,
 		Progress,
 		loopChunks,
+		loopMegaChunks,
 		getCell,
 		getCellObject,
 		getFieldsByName,
+		getFieldNames,
 		getRecords,
 		getRecordObjects,
 		clearTable,
@@ -408,5 +556,6 @@ function utils() {
 		confirm,
 		timeStart,
 		timeEnd,
+		chain,
 	};
 }

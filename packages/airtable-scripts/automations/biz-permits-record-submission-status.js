@@ -215,7 +215,6 @@ async function insertActivityRecord(
 	console.log(linkedActivityRecords);
 
 	const newActivityID = await activityTable.createRecordAsync({
-// TODO: fix activity title
 		[ActivityFields.Title]: `${changedStatusField} changed to: ${status}`,
 		[ActivityFields.Link]: [reviewRecord],
 		[ActivityFields.Time]: review[ReviewFields.LastModified],
