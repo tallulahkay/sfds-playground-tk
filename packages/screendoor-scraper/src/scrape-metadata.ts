@@ -181,16 +181,10 @@ await crawler.run(requests);
 
 const dataset = await Dataset.open();
 const { items } = await dataset.getData();
-let metadataItems: object[] = [];
-
-items.forEach((item) => {
-	const { activity } = item;
-
-	metadataItems = metadataItems.concat(activity);
-});
+const metadataItems = items.map(({ activity }) => activity).flat();
 
 	// sort by descending date/time and then by the response ID
-metadataItems = metadataItems.sort((a, b) => (b.timestamp - a.timestamp));
-metadataItems = metadataItems.sort((a, b) => (a.responseID - b.responseID));
+metadataItems.sort((a, b) => (b.timestamp - a.timestamp));
+metadataItems.sort((a, b) => (a.responseID - b.responseID));
 
 fs.writeJSONSync(resolve("./out", output), metadataItems, { spaces: "\t" });
