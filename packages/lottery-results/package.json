@@ -1,0 +1,19 @@
+{
+  "name": "lottery-results",
+  "version": "1.0.0",
+  "description": "",
+  "author": "John Dunning",
+  "keywords": [],
+  "license": "ISC",
+  "type": "module",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/convert-raw.js"
+  },
+  "dependencies": {
+    "glob": "^10.2.3",
+    "jmespath": "^0.16.0",
+    "minimist": "^1.2.8",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.19.3/xlsx-0.19.3.tgz"
+  }
+}
