@@ -1,0 +1,7 @@
+node_modules
+.airtableAPIKey
+build
+cypress/screenshots/
+cypress/videos/
+.tmp/
+test/
