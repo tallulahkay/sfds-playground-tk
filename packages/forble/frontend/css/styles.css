@@ -6991,6 +6991,14 @@ span.flatpickr-weekday {
 	width: 100%;
 }
 
+.sr-only {
+	display: none;
+}
+
+.formio-select-autocomplete-input {
+	display: none !important;
+}
+
 input::-webkit-outer-spin-button,input::-webkit-inner-spin-button,input::-webkit-calendar-picker-indicator {
     -webkit-appearance: none;
     margin: 0;
