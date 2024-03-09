@@ -19,6 +19,7 @@ import { FieldType } from "@airtable/blocks/models";
 import { Form } from "@formio/react";
 import { getCellObject, getFieldNames } from "./utils/airtable";
 import { createUniqueKeyFn } from "./utils/unique";
+import mailingAddress from "./formio/mailingAddress";
 
 const FormioTypes = {
 	"Text Field": "textfield",
@@ -30,6 +31,7 @@ const FormioTypes = {
 	"Select": "select",
 	"Checkbox": "checkbox",
 	"HTML": "htmlelement",
+	"Mailing Address": "mailingAddress",
 } as const;
 
 function createValues(
@@ -49,10 +51,10 @@ export default function App()
 {
 	const base = useBase();
 	const cursor = useCursor();
-	const tableID = cursor.activeTableId ?? "";
-	const viewID = cursor.activeViewId ?? "";
-	const table = base.getTableById(tableID);
-	const view = table.getViewById(viewID);
+	const tableID = cursor?.activeTableId ?? "";
+	const viewID = cursor?.activeViewId ?? "";
+	const table = base.getTableByIdIfExists(tableID);
+	const view = table.getViewByIdIfExists(viewID);
 	const records = useRecords(view);
 	const fieldNames = getFieldNames(table);
 	const formDefinition = { components: [] };
@@ -61,8 +63,9 @@ export default function App()
 	if (records) {
 		formDefinition.components = records.map(record => {
 			const { Type, ID, Label, Items, Required = false, Logic } = getCellObject(record, fieldNames);
-			const component = {
-				type: FormioTypes[Type],
+			const type = FormioTypes[Type];
+			let component = {
+				type,
 				key: uniqueKey(ID),
 				label: Label,
 				input: true,
@@ -71,25 +74,37 @@ export default function App()
 				}
 			};
 
-			if (Type === "Select Boxes") {
-				component.values = createValues(Items, uniqueKey);
-			} else if (Type === "Select") {
-				component.dataSrc = "values";
-				component.data = {
-					values: createValues(Items, uniqueKey)
-				};
-			} else if (Type === "HTML") {
-				component.content = Label;
-				component.className = "mb-40";
-				delete component.key;
-				delete component.input;
-				delete component.validate;
-			} else if (Type === "Text Area") {
-				component.autoExpand = true;
+			if (!type) {
+				return null;
 			}
 
-			if (!component.type) {
-				return null;
+			switch (Type) {
+				case "Select Boxes":
+					component.values = createValues(Items, uniqueKey);
+					break;
+
+				case "Select":
+					component.dataSrc = "values";
+					component.data = {
+						values: createValues(Items, uniqueKey)
+					};
+					break;
+
+				case "HTML":
+					component.content = Label;
+					component.className = "mb-40";
+					delete component.key;
+					delete component.input;
+					delete component.validate;
+					break;
+
+				case "Text Area":
+					component.autoExpand = true;
+					break;
+
+				case "Mailing Address":
+					component = mailingAddress(ID, Label, uniqueKey);
+					break;
 			}
 
 			if (Logic) {
@@ -98,7 +113,7 @@ export default function App()
 
 			return component;
 		})
-			.filter(o => o);
+			.filter(Boolean);
 	}
 
 	return (
