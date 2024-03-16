@@ -12,4 +12,4 @@ try {
 	process.exit(1);
 }
 
-console.log(generateForm(form))
+console.log(JSON.stringify(generateForm(form), null, 2));

@@ -1,5 +1,10 @@
 const ComponentDefaults = {
 	form: {},
+	panel: {
+		collapsible: false,
+		tableView: false,
+		input: false,
+	},
 	textfield: {
 		tableView: true,
 		input: true,
