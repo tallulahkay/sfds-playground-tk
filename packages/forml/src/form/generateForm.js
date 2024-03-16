@@ -1,5 +1,5 @@
 import { createUniqueKeyFn } from "./string.js";
-import { processComponent } from "./processComponents.js";
+import { processComponent } from "./processComponent.js";
 
 export function generateForm(
 	data)

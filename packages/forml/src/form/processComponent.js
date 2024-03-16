@@ -13,6 +13,11 @@ const ComponentDefaults = {
 		tableView: true,
 		input: true,
 	},
+	phoneNumber: {
+		tableView: true,
+		input: true,
+		inputMask: "999-999-9999",
+	},
 	checkbox: {
 		tableView: true,
 		input: true,
@@ -20,6 +25,20 @@ const ComponentDefaults = {
 	selectboxes: {
 		tableView: false,
 		inputType: "checkbox",
+	},
+	select: {
+		widget: "html5",
+		searchEnabled: false,
+		tableView: true,
+		input: true,
+	},
+	fieldSet: {
+		tableView: false,
+		input: false,
+	},
+	htmlelement: {
+		tableView: false,
+		input: false,
 	},
 };
 

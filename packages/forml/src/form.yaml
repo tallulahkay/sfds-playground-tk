@@ -6,16 +6,22 @@ components:
   - type: panel
     title: You
     components:
-      - type: textfield
-        label: First Name
-        required: true
+      - type: fieldSet
+        label: Your Name
+        components:
+          - type: textfield
+            label: First Name
+            required: true
 
-      - type: textfield
-        label: Middle Name (optional)
+          - type: textfield
+            label: Middle Name (optional)
 
-      - type: textfield
-        label: Last Name
-        required: true
+          - type: textfield
+            label: Last Name
+            required: true
+
+      - type: htmlelement
+        tag: hr
 
       - type: email
         label: Your Email Address
@@ -38,15 +44,84 @@ components:
         key: noEmail
         label: I don't have an email address
 
-      - type: selectboxes
-        label: Select something
-        values:
-          - label: Option 1
-            value: 1
-          - label: Option 2
-            value: 2
-          - label: Option 3
-            value: 3
+  - type: panel
+    title: Contact
+    components:
+      - type: fieldSet
+        label:
+        logic:
+          - trigger:
+              type: simple
+              simple:
+                show: true
+                when: noPhone
+                eq: true
+            actions:
+              - type: property
+                property:
+                  value: disabled
+                  type: boolean
+                state: true
+        components:
+          - type: phoneNumber
+            label: Your Phone Number
+
+          - type: select
+            label: What type of number is this?
+            data:
+              values:
+                - label: Mobile
+                  value: mobile
+                - label: Work
+                  value: work
+                - label: Home
+                  value: home
+
+      - type: checkbox
+        key: noPhone
+        label: I don't have a phone number
+
+      - type: checkbox
+        key: anotherPhone
+        label: I have an additional phone number
+        logic:
+          - trigger:
+              type: simple
+              simple:
+                show: true
+                when: noPhone
+                eq: true
+            actions:
+              - type: property
+                property:
+                  value: disabled
+                  type: boolean
+                state: true
+
+      - type: fieldSet
+        label: Additional Phone Number
+        conditional:
+          show: true
+          when: anotherPhone
+          eq: true
+        components:
+          - type: phoneNumber
+            key: additionalPhone
+            label: Your Phone Number
+
+          - type: select
+            label: What type of number is this?
+            data:
+              values:
+                - label: Mobile
+                  value: mobile
+                - label: Work
+                  value: work
+                - label: Home
+                  value: home
+
+      - type: htmlelement
+        tag: hr
 
   - type: panel
     title: Another panel
