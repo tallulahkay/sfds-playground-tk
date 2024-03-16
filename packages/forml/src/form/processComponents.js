@@ -9,11 +9,21 @@ const ComponentDefaults = {
 		tableView: true,
 		input: true,
 	},
+	email: {
+		tableView: true,
+		input: true,
+	},
+	checkbox: {
+		tableView: true,
+		input: true,
+	},
 	selectboxes: {
 		tableView: false,
 		inputType: "checkbox",
 	},
 };
+
+// TODO: add support for horizontal rules, date fields
 
 export function processComponent(
 	data,
@@ -33,6 +43,14 @@ export function processComponent(
 
 	if (type !== "form") {
 		result.key = uniqueKey(key ?? label);
+	}
+
+	if ("required" in data) {
+		result.validate = {
+			...(result.validate ?? {}),
+			required: data.required,
+		};
+		delete result.required;
 	}
 
 	if (components) {
