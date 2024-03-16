@@ -1,0 +1,37 @@
+title: Forml Test
+name: formlTest
+type: form
+display: wizard
+components:
+  - type: panel
+    title: This is a panel
+    components:
+      - type: textfield
+        label: Input some stuff
+        validate:
+          required: true
+
+      - type: selectboxes
+        label: Select something
+        values:
+          - label: Option 1
+            value: 1
+          - label: Option 2
+            value: 2
+          - label: Option 3
+            value: 3
+        validate:
+          required: true
+
+  - type: panel
+    title: Another panel
+    components:
+      - type: selectboxes
+        label: Select something
+        values:
+          - label: Derp
+            value: 1
+          - label: Derpy derp
+            value: 2
+          - label: Whatev
+            value: 3

@@ -1,7 +1,6 @@
 const CamelPattern = /^\w|[A-Z]|\b\w/g;
 const CamelSplitPattern = /([a-z\d])([A-Z])/g;
 const IllegalCamelPattern = /[\s\W]+/g;
-const UUIDPattern = /#[\d:]+$/;
 
 let uniqueIDs = new Map();
 

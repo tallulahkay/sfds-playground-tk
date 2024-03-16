@@ -1,6 +1,6 @@
 import fs from "node:fs/promises";
 import { parse } from "yaml";
-import { generateForm } from "./generateForm.js";
+import { generateForm } from "./form/generateForm.js";
 
 const yaml = await fs.readFile("test.yaml", "utf8");
 let form;
