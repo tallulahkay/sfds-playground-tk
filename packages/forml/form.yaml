@@ -1,5 +1,5 @@
 title: Housing Application
-name: formlTest
+name: housingShortForm
 type: form
 display: wizard
 aliases:
@@ -16,6 +16,11 @@ aliases:
               value: disabled
               type: boolean
             state: true
+          - type: property
+            property:
+              value: validate.required
+              type: boolean
+            state: false
 components:
   - type: panel
     title: You
@@ -74,15 +79,16 @@ components:
           Thanks, {{data.firstName}}. Now we need to know how to contact you.
 
       - type: fieldSet
-        logic: *disabledOnNoPhone
         components:
           - type: phoneNumber
             label: Your Phone Number
             required: true
+            logic: *disabledOnNoPhone
 
           - type: select
             label: What type of number is this?
             required: true
+            logic: *disabledOnNoPhone
             data:
               values:
                 - label: Mobile
@@ -260,6 +266,12 @@ components:
                 - type: textfield
                   label: Zip Code
                   required: true
+                  validateOn: blur
+                  validate:
+                    minLength: 5
+                    maxLength: 10
+                    pattern: "[0-9]{5}(-[0-9]{4})?"
+                    customMessage: Please enter a valid zip code.
 
       - tag: hr
 

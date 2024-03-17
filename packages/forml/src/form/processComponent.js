@@ -1,69 +1,63 @@
-const ComponentDefaults = {
-	form: {},
-	panel: {
+const TableInputTrue = {
+	tableView: true,
+	input: true,
+};
+const TableInputFalse = {
+	tableView: false,
+	input: false,
+};
+const ComponentProperties = [
+	["panel", {
 		collapsible: false,
-		tableView: false,
-		input: false,
-	},
-	textfield: {
-		tableView: true,
-		input: true,
-	},
-	email: {
-		tableView: true,
-		input: true,
+	}],
+	["textfield"],
+	["email", {
 		validateOn: "blur",
-	},
-	phoneNumber: {
-		tableView: true,
-		input: true,
+	}],
+	["phoneNumber", {
 		inputMask: "999-999-9999",
 		validateOn: "blur",
-	},
-	checkbox: {
-		tableView: true,
-		input: true,
-	},
-	radio: {
-		tableView: true,
-		input: true,
-	},
-	day: {
-		tableView: true,
-		input: true,
-	},
-	selectboxes: {
-		tableView: false,
+	}],
+	["checkbox"],
+	["radio"],
+	["day"],
+	["selectboxes", {
 		inputType: "checkbox",
-	},
-	select: {
+	}],
+	["select", {
 		widget: "html5",
 		searchEnabled: false,
-		tableView: true,
-		input: true,
-	},
-	fieldSet: {
-		tableView: false,
-		input: false,
-	},
-	htmlelement: {
+	}],
+	["fieldSet",
+		TableInputFalse
+	],
+	["htmlelement", {
 			// since we allow just the tag key to be included, make sure the actual
 			// type is specified as well
 		type: "htmlelement",
-		tableView: false,
-		input: false,
+		...TableInputFalse,
+	}],
+	["columns",
+		TableInputFalse
+	],
+];
+const ComponentDefaults = ComponentProperties.reduce((result, [key, props]) => ({
+	...result,
+	[key]: {
+		...TableInputTrue,
+		...props
 	},
-	columns: {
-		tableView: false,
-		input: false,
-	}
-};
+}), {
+		// we don't want to add any defaults to the form, but we do want it in this
+		// hash so its components array gets handled in processComponent() below
+	form: {}
+});
 
 export function processComponent(
 	data,
 	uniqueKey)
 {
-	const { type, key, label, components } = data;
+	const { type, key, label, components, columns } = data;
 	const defaults = ComponentDefaults[type || (data.tag && "htmlelement")];
 
 	if (!defaults) {
@@ -89,6 +83,12 @@ export function processComponent(
 
 	if (components) {
 		result.components = components.map((comp) => processComponent(comp, uniqueKey));
+	}
+
+	if (columns) {
+			// each column has its own components that need to be processed
+		columns.forEach((col) => col.components =
+			col.components.map((comp) => processComponent(comp, uniqueKey)));
 	}
 
 	return result;
