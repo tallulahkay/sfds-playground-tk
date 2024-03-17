@@ -34,8 +34,7 @@ components:
             label: Last Name
             required: true
 
-      - type: htmlelement
-        tag: hr
+      - tag: hr
 
       - type: email
         label: Your Email Address
@@ -53,6 +52,11 @@ components:
                   value: disabled
                   type: boolean
                 state: true
+              - type: property
+                property:
+                  value: validate.required
+                  type: boolean
+                state: false
 
       - type: checkbox
         key: noEmail
@@ -114,14 +118,12 @@ components:
                 - label: Home
                   value: home
 
-      - type: htmlelement
-        tag: hr
+      - tag: hr
 
       - type: fieldSet
         label: Address
         components:
-          - type: htmlelement
-            tag: p
+          - tag: p
             content: We need the address where you currently live.
 
           - type: textfield
@@ -240,12 +242,13 @@ components:
                 - label: Wyoming
                   value: WY
 
-      - type: htmlelement
-        tag: hr
+      - tag: hr
 
       - type: radio
         label: Do you work in San Francisco?
-        description: This means you currently work in San Francisco at least 75% of your working hours.
+        description:
+          This means you currently work in San Francisco at least 75% of your
+          working hours.
         values:
           - label: Yes
             value: true
@@ -256,10 +259,13 @@ components:
     title: Alternate Contact
     components:
       - type: fieldSet
-        label: Is there someone else you'd like to authorize us to contact if we can't reach you?
+        label: Is there someone else you'd like to authorize us to contact if
+          we can't reach you?
         components:
-          - type: htmlelement
-            content: By providing an alternate contact, you are allowing us to discuss information on your application with them.
+          - tag: p
+            content:
+              By providing an alternate contact, you are allowing us to
+              discuss information on your application with them.
 
           - type: radio
             label: Alternate Contact

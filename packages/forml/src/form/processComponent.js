@@ -43,6 +43,9 @@ const ComponentDefaults = {
 		input: false,
 	},
 	htmlelement: {
+			// since we allow just the tag key to be included, make sure the actual
+			// type is specified as well
+		type: "htmlelement",
 		tableView: false,
 		input: false,
 	},
@@ -53,7 +56,7 @@ export function processComponent(
 	uniqueKey)
 {
 	const { type, key, label, components } = data;
-	const defaults = ComponentDefaults[type];
+	const defaults = ComponentDefaults[type || (data.tag && "htmlelement")];
 
 	if (!defaults) {
 		throw new Error(`Unknown component type: ${type}`);
