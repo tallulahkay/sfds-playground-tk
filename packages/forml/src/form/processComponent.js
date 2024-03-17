@@ -12,13 +12,19 @@ const ComponentDefaults = {
 	email: {
 		tableView: true,
 		input: true,
+		validateOn: "blur",
 	},
 	phoneNumber: {
 		tableView: true,
 		input: true,
 		inputMask: "999-999-9999",
+		validateOn: "blur",
 	},
 	checkbox: {
+		tableView: true,
+		input: true,
+	},
+	radio: {
 		tableView: true,
 		input: true,
 	},
@@ -41,8 +47,6 @@ const ComponentDefaults = {
 		input: false,
 	},
 };
-
-// TODO: add support for horizontal rules, date fields
 
 export function processComponent(
 	data,

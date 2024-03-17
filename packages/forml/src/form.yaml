@@ -2,6 +2,20 @@ title: Housing Application
 name: formlTest
 type: form
 display: wizard
+aliases:
+  - logic: &disabledOnNoPhone
+      - trigger:
+          type: simple
+          simple:
+            show: true
+            when: noPhone
+            eq: true
+        actions:
+          - type: property
+            property:
+              value: disabled
+              type: boolean
+            state: true
 components:
   - type: panel
     title: You
@@ -48,26 +62,15 @@ components:
     title: Contact
     components:
       - type: fieldSet
-        label:
-        logic:
-          - trigger:
-              type: simple
-              simple:
-                show: true
-                when: noPhone
-                eq: true
-            actions:
-              - type: property
-                property:
-                  value: disabled
-                  type: boolean
-                state: true
+        logic: *disabledOnNoPhone
         components:
           - type: phoneNumber
             label: Your Phone Number
+            required: true
 
           - type: select
             label: What type of number is this?
+            required: true
             data:
               values:
                 - label: Mobile
@@ -84,19 +87,7 @@ components:
       - type: checkbox
         key: anotherPhone
         label: I have an additional phone number
-        logic:
-          - trigger:
-              type: simple
-              simple:
-                show: true
-                when: noPhone
-                eq: true
-            actions:
-              - type: property
-                property:
-                  value: disabled
-                  type: boolean
-                state: true
+        logic: *disabledOnNoPhone
 
       - type: fieldSet
         label: Additional Phone Number
@@ -108,9 +99,12 @@ components:
           - type: phoneNumber
             key: additionalPhone
             label: Your Phone Number
+            required: true
 
           - type: select
+            key: additionalPhoneType
             label: What type of number is this?
+            required: true
             data:
               values:
                 - label: Mobile
@@ -123,15 +117,160 @@ components:
       - type: htmlelement
         tag: hr
 
-  - type: panel
-    title: Another panel
-    components:
-      - type: selectboxes
-        label: Select something
+      - type: fieldSet
+        label: Address
+        components:
+          - type: htmlelement
+            tag: p
+            content: We need the address where you currently live.
+
+          - type: textfield
+            label: Street Address
+
+          - type: textfield
+            label: "Apt or Unit #"
+
+          - type: textfield
+            label: City
+
+          - type: select
+            label: State
+            widget: choicesjs
+            searchEnabled: true
+            data:
+              values:
+                - label: Alabama
+                  value: AL
+                - label: Alaska
+                  value: AK
+                - label: Arizona
+                  value: AZ
+                - label: Arkansas
+                  value: AR
+                - label: California
+                  value: CA
+                - label: Colorado
+                  value: CO
+                - label: Connecticut
+                  value: CT
+                - label: Delaware
+                  value: DE
+                - label: Florida
+                  value: FL
+                - label: Georgia
+                  value: GA
+                - label: Hawaii
+                  value: HI
+                - label: Idaho
+                  value: ID
+                - label: Illinois
+                  value: IL
+                - label: Indiana
+                  value: IN
+                - label: Iowa
+                  value: IA
+                - label: Kansas
+                  value: KS
+                - label: Kentucky
+                  value: KY
+                - label: Louisiana
+                  value: LA
+                - label: Maine
+                  value: ME
+                - label: Maryland
+                  value: MD
+                - label: Massachusetts
+                  value: MA
+                - label: Michigan
+                  value: MI
+                - label: Minnesota
+                  value: MN
+                - label: Mississippi
+                  value: MS
+                - label: Missouri
+                  value: MO
+                - label: Montana
+                  value: MT
+                - label: Nebraska
+                  value: NE
+                - label: Nevada
+                  value: NV
+                - label: New Hampshire
+                  value: NH
+                - label: New Jersey
+                  value: NJ
+                - label: New Mexico
+                  value: NM
+                - label: New York
+                  value: NY
+                - label: North Carolina
+                  value: NC
+                - label: North Dakota
+                  value: ND
+                - label: Ohio
+                  value: OH
+                - label: Oklahoma
+                  value: OK
+                - label: Oregon
+                  value: OR
+                - label: Pennsylvania
+                  value: PA
+                - label: Rhode Island
+                  value: RI
+                - label: South Carolina
+                  value: SC
+                - label: South Dakota
+                  value: SD
+                - label: Tennessee
+                  value: TN
+                - label: Texas
+                  value: TX
+                - label: Utah
+                  value: UT
+                - label: Vermont
+                  value: VT
+                - label: Virginia
+                  value: VA
+                - label: Washington
+                  value: WA
+                - label: West Virginia
+                  value: WV
+                - label: Wisconsin
+                  value: WI
+                - label: Wyoming
+                  value: WY
+
+      - type: htmlelement
+        tag: hr
+
+      - type: radio
+        label: Do you work in San Francisco?
+        description: This means you currently work in San Francisco at least 75% of your working hours.
         values:
-          - label: Derp
-            value: 1
-          - label: Derpy derp
-            value: 2
-          - label: Whatev
-            value: 3
+          - label: Yes
+            value: true
+          - label: No
+            value: false
+
+  - type: panel
+    title: Alternate Contact
+    components:
+      - type: fieldSet
+        label: Is there someone else you'd like to authorize us to contact if we can't reach you?
+        components:
+          - type: htmlelement
+            content: By providing an alternate contact, you are allowing us to discuss information on your application with them.
+
+          - type: radio
+            label: Alternate Contact
+            values:
+              - label: Family member
+                value: family
+              - label: Friend
+                value: friend
+              - label: Case manager or housing counselor
+                value: counselor
+              - label: Other
+                value: other
+              - label: I don't have an alternate contact
+                value: none

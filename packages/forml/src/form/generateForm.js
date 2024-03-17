@@ -5,6 +5,9 @@ export function generateForm(
 	data)
 {
 	const uniqueKey = createUniqueKeyFn();
+	const form = processComponent(data, uniqueKey);
 
-	return processComponent(data, uniqueKey);
+	delete form.aliases;
+
+	return form;
 }
