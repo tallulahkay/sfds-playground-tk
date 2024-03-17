@@ -28,6 +28,10 @@ const ComponentDefaults = {
 		tableView: true,
 		input: true,
 	},
+	day: {
+		tableView: true,
+		input: true,
+	},
 	selectboxes: {
 		tableView: false,
 		inputType: "checkbox",
@@ -49,6 +53,10 @@ const ComponentDefaults = {
 		tableView: false,
 		input: false,
 	},
+	columns: {
+		tableView: false,
+		input: false,
+	}
 };
 
 export function processComponent(
