@@ -1,6 +1,6 @@
 import { Form } from "@formio/react";
 import { generateForm } from "./form/generateForm.js";
-import formData from "./form.yaml";
+import formData from "../form.yaml";
 
 let form;
 let errorMessage;
