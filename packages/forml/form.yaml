@@ -3,24 +3,127 @@ name: housingShortForm
 type: form
 display: wizard
 aliases:
-  - logic: &disabledOnNoPhone
-      - trigger:
-          type: simple
-          simple:
-            show: true
-            when: noPhone
-            eq: true
-        actions:
-          - type: property
-            property:
-              value: disabled
-              type: boolean
-            state: true
-          - type: property
-            property:
-              value: validate.required
-              type: boolean
-            state: false
+  logic: &disabledOnNoPhone
+    - trigger:
+        type: simple
+        simple:
+          show: true
+          when: noPhone
+          eq: true
+      actions:
+        - type: property
+          property:
+            value: disabled
+            type: boolean
+          state: true
+        - type: property
+          property:
+            value: validate.required
+            type: boolean
+          state: false
+  data: &states
+    values:
+      - label: Alabama
+        value: AL
+      - label: Alaska
+        value: AK
+      - label: Arizona
+        value: AZ
+      - label: Arkansas
+        value: AR
+      - label: California
+        value: CA
+      - label: Colorado
+        value: CO
+      - label: Connecticut
+        value: CT
+      - label: Delaware
+        value: DE
+      - label: Florida
+        value: FL
+      - label: Georgia
+        value: GA
+      - label: Hawaii
+        value: HI
+      - label: Idaho
+        value: ID
+      - label: Illinois
+        value: IL
+      - label: Indiana
+        value: IN
+      - label: Iowa
+        value: IA
+      - label: Kansas
+        value: KS
+      - label: Kentucky
+        value: KY
+      - label: Louisiana
+        value: LA
+      - label: Maine
+        value: ME
+      - label: Maryland
+        value: MD
+      - label: Massachusetts
+        value: MA
+      - label: Michigan
+        value: MI
+      - label: Minnesota
+        value: MN
+      - label: Mississippi
+        value: MS
+      - label: Missouri
+        value: MO
+      - label: Montana
+        value: MT
+      - label: Nebraska
+        value: NE
+      - label: Nevada
+        value: NV
+      - label: New Hampshire
+        value: NH
+      - label: New Jersey
+        value: NJ
+      - label: New Mexico
+        value: NM
+      - label: New York
+        value: NY
+      - label: North Carolina
+        value: NC
+      - label: North Dakota
+        value: ND
+      - label: Ohio
+        value: OH
+      - label: Oklahoma
+        value: OK
+      - label: Oregon
+        value: OR
+      - label: Pennsylvania
+        value: PA
+      - label: Rhode Island
+        value: RI
+      - label: South Carolina
+        value: SC
+      - label: South Dakota
+        value: SD
+      - label: Tennessee
+        value: TN
+      - label: Texas
+        value: TX
+      - label: Utah
+        value: UT
+      - label: Vermont
+        value: VT
+      - label: Virginia
+        value: VA
+      - label: Washington
+        value: WA
+      - label: West Virginia
+        value: WV
+      - label: Wisconsin
+        value: WI
+      - label: Wyoming
+        value: WY
+
 components:
   - type: panel
     title: You
@@ -150,108 +253,7 @@ components:
                   label: State*
                   widget: choicesjs
                   searchEnabled: true
-                  data:
-                    values:
-                      - label: Alabama
-                        value: AL
-                      - label: Alaska
-                        value: AK
-                      - label: Arizona
-                        value: AZ
-                      - label: Arkansas
-                        value: AR
-                      - label: California
-                        value: CA
-                      - label: Colorado
-                        value: CO
-                      - label: Connecticut
-                        value: CT
-                      - label: Delaware
-                        value: DE
-                      - label: Florida
-                        value: FL
-                      - label: Georgia
-                        value: GA
-                      - label: Hawaii
-                        value: HI
-                      - label: Idaho
-                        value: ID
-                      - label: Illinois
-                        value: IL
-                      - label: Indiana
-                        value: IN
-                      - label: Iowa
-                        value: IA
-                      - label: Kansas
-                        value: KS
-                      - label: Kentucky
-                        value: KY
-                      - label: Louisiana
-                        value: LA
-                      - label: Maine
-                        value: ME
-                      - label: Maryland
-                        value: MD
-                      - label: Massachusetts
-                        value: MA
-                      - label: Michigan
-                        value: MI
-                      - label: Minnesota
-                        value: MN
-                      - label: Mississippi
-                        value: MS
-                      - label: Missouri
-                        value: MO
-                      - label: Montana
-                        value: MT
-                      - label: Nebraska
-                        value: NE
-                      - label: Nevada
-                        value: NV
-                      - label: New Hampshire
-                        value: NH
-                      - label: New Jersey
-                        value: NJ
-                      - label: New Mexico
-                        value: NM
-                      - label: New York
-                        value: NY
-                      - label: North Carolina
-                        value: NC
-                      - label: North Dakota
-                        value: ND
-                      - label: Ohio
-                        value: OH
-                      - label: Oklahoma
-                        value: OK
-                      - label: Oregon
-                        value: OR
-                      - label: Pennsylvania
-                        value: PA
-                      - label: Rhode Island
-                        value: RI
-                      - label: South Carolina
-                        value: SC
-                      - label: South Dakota
-                        value: SD
-                      - label: Tennessee
-                        value: TN
-                      - label: Texas
-                        value: TX
-                      - label: Utah
-                        value: UT
-                      - label: Vermont
-                        value: VT
-                      - label: Virginia
-                        value: VA
-                      - label: Washington
-                        value: WA
-                      - label: West Virginia
-                        value: WV
-                      - label: Wisconsin
-                        value: WI
-                      - label: Wyoming
-                        value: WY
+                  data: *states
 
               - components:
                 - type: textfield
@@ -279,7 +281,7 @@ components:
             value: false
 
   - type: panel
-    title: Alternate Contact
+    title: Alternate Type
     components:
       - type: fieldSet
         label: Is there someone else you'd like to authorize us to contact if
@@ -292,6 +294,7 @@ components:
 
           - type: radio
             label: Alternate Contact
+            key: altContactType
             values:
               - label: Family member
                 value: family
@@ -303,3 +306,75 @@ components:
                 value: other
               - label: I don't have an alternate contact
                 value: none
+
+  - type: panel
+    title: Alternate Name
+    customConditional: show = data.altContactType && data.altContactType !== 'none'
+    components:
+      - type: fieldSet
+        label: Who is your alternate contact?
+        components:
+          - type: textfield
+            label: First Name
+            key: altFirstName
+
+          - type: textfield
+            label: Last Name
+            key: altLastName
+
+  - type: panel
+    title: Alternate Address
+    customConditional: show = data.altContactType && data.altContactType !== 'none'
+    components:
+      - tag: h3
+        content: Let us know how to contact your alternate contact.
+
+      - tag: p
+        content: We'll only use this information to contact them about your application.
+
+      - tag: hr
+
+      - type: phoneNumber
+        label: Contact Phone Number
+
+      - tag: hr
+
+      - type: email
+        label: Contact Email Address
+
+      - tag: hr
+
+      - type: fieldSet
+        label: Contact Mailing Address
+        components:
+          - tag: p
+            content: Choose an address where they can receive updates and materials
+              about your application.
+
+          - type: textfield
+            label: Street Address
+
+          - type: textfield
+            label: "Apt or Unit #"
+
+          - type: textfield
+            label: City
+
+          - type: columns
+            columns:
+              - components:
+                - type: select
+                  label: State
+                  widget: choicesjs
+                  searchEnabled: true
+                  data: *states
+
+              - components:
+                - type: textfield
+                  label: Zip Code
+                  validateOn: blur
+                  validate:
+                    minLength: 5
+                    maxLength: 10
+                    pattern: "[0-9]{5}(-[0-9]{4})?"
+                    customMessage: Please enter a valid zip code.
