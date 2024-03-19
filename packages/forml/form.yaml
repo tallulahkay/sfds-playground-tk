@@ -29,15 +29,13 @@ components:
         label: Your Name
         components:
           - type: textfield
-            label: First Name
-            required: true
+            label: First Name*
 
           - type: textfield
             label: Middle Name (optional)
 
           - type: textfield
-            label: Last Name
-            required: true
+            label: Last Name*
 
       - type: day
         label: Your Date of Birth
@@ -81,13 +79,11 @@ components:
       - type: fieldSet
         components:
           - type: phoneNumber
-            label: Your Phone Number
-            required: true
+            label: Your Phone Number*
             logic: *disabledOnNoPhone
 
           - type: select
-            label: What type of number is this?
-            required: true
+            label: What type of number is this?*
             logic: *disabledOnNoPhone
             data:
               values:
@@ -116,13 +112,11 @@ components:
         components:
           - type: phoneNumber
             key: additionalPhone
-            label: Your Phone Number
-            required: true
+            label: Your Phone Number*
 
           - type: select
             key: additionalPhoneType
-            label: What type of number is this?
-            required: true
+            label: What type of number is this?*
             data:
               values:
                 - label: Mobile
@@ -141,22 +135,19 @@ components:
             content: We need the address where you currently live.
 
           - type: textfield
-            label: Street Address
-            required: true
+            label: Street Address*
 
           - type: textfield
             label: "Apt or Unit #"
 
           - type: textfield
-            label: City
-            required: true
+            label: City*
 
           - type: columns
             columns:
               - components:
                 - type: select
-                  label: State
-                  required: true
+                  label: State*
                   widget: choicesjs
                   searchEnabled: true
                   data:
@@ -264,8 +255,7 @@ components:
 
               - components:
                 - type: textfield
-                  label: Zip Code
-                  required: true
+                  label: Zip Code*
                   validateOn: blur
                   validate:
                     minLength: 5
@@ -276,8 +266,7 @@ components:
       - tag: hr
 
       - type: radio
-        label: Do you work in San Francisco?
-        required: true
+        label: Do you work in San Francisco?*
         validate:
           customMessage: This must be answered.
         description:

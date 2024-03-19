@@ -73,10 +73,15 @@ export function processComponent(
 		result.key = uniqueKey(key ?? label);
 	}
 
-	if ("required" in data) {
+	if (label?.endsWith("*")) {
+		result.label = label.slice(0, -1);
+		result.required = true;
+	}
+
+	if (typeof result.required === "boolean") {
 		result.validate = {
 			...(result.validate ?? {}),
-			required: data.required,
+			required: result.required,
 		};
 		delete result.required;
 	}
