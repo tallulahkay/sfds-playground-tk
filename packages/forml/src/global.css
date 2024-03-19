@@ -4,5 +4,13 @@ body > main {
 }
 
 h1 {
-	margin-bottom: 2rem;
+	margin-bottom: 4rem;
+}
+
+nav {
+	margin-bottom: 3rem;
+}
+
+.formio-wizard-nav-container {
+	margin-top: 3rem;
 }
