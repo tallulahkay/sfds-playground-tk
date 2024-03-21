@@ -200,6 +200,19 @@ components:
       - type: checkbox
         key: noPhone
         label: I don't have a phone number
+        logic:
+          - trigger:
+              type: simple
+              simple:
+                show: true
+                when: anotherPhone
+                eq: true
+            actions:
+              - type: property
+                property:
+                  value: disabled
+                  type: boolean
+                state: true
 
       - type: checkbox
         key: anotherPhone
@@ -207,7 +220,7 @@ components:
         logic: *disabledOnNoPhone
 
       - type: fieldSet
-        label: Additional Phone Number
+        label: Your Second Phone Number
         conditional:
           show: true
           when: anotherPhone
@@ -265,6 +278,49 @@ components:
                     pattern: "[0-9]{5}(-[0-9]{4})?"
                     customMessage: Please enter a valid zip code.
 
+      - type: checkbox
+        key: sendDifferentAddress
+        label: Send my mail to a different address
+
+      - tag: hr
+        customConditional: show = data.sendDifferentAddress
+
+      - type: fieldSet
+        label: Mailing Address
+        customConditional: show = data.sendDifferentAddress
+        components:
+          - tag: p
+            content: Provide an address where you can receive updates and
+              materials about your application.
+
+          - type: textfield
+            label: Street Address*
+
+          - type: textfield
+            label: "Apt or Unit #"
+
+          - type: textfield
+            label: City*
+
+          - type: columns
+            columns:
+              - components:
+                - type: select
+                  label: State*
+                  widget: choicesjs
+                  searchEnabled: true
+                  data: *states
+
+              - components:
+                - type: textfield
+                  label: Zip Code*
+                  validateOn: blur
+                  validate:
+                    minLength: 5
+                    maxLength: 10
+                    pattern: "[0-9]{5}(-[0-9]{4})?"
+                    customMessage: Please enter a valid zip code.
+
       - tag: hr
 
       - type: radio
@@ -281,7 +337,7 @@ components:
             value: false
 
   - type: panel
-    title: Alternate Type
+    title: Alt Ct Type
     components:
       - type: fieldSet
         label: Is there someone else you'd like to authorize us to contact if
@@ -308,7 +364,7 @@ components:
                 value: none
 
   - type: panel
-    title: Alternate Name
+    title: Alt Ct Name
     customConditional: show = data.altContactType && data.altContactType !== 'none'
     components:
       - type: fieldSet
@@ -323,7 +379,7 @@ components:
             key: altLastName
 
   - type: panel
-    title: Alternate Address
+    title: Alt Ct Address
     customConditional: show = data.altContactType && data.altContactType !== 'none'
     components:
       - tag: h3
