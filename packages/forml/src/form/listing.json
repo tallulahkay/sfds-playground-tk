@@ -1,0 +1,2161 @@
+{
+  "listing": {
+    "unitSummaries": {
+      "reserved": null,
+      "general": [
+        {
+          "unitType": "1 BR",
+          "totalUnits": 49,
+          "minSquareFt": 580,
+          "minRentalMinIncome": 1464.0,
+          "minPriceWithParking": null,
+          "minPriceWithoutParking": null,
+          "minPercentIncome": null,
+          "minOccupancy": 1,
+          "minMonthlyRent": 732.0,
+          "minHoaDuesWithParking": null,
+          "minHoaDuesWithoutParking": null,
+          "maxSquareFt": 902,
+          "maxRentalMinIncome": 4612.0,
+          "maxPriceWithParking": null,
+          "maxPriceWithoutParking": null,
+          "maxPercentIncome": null,
+          "maxOccupancy": 3,
+          "maxMonthlyRent": 2306.0,
+          "maxHoaDuesWithParking": null,
+          "maxHoaDuesWithoutParking": null,
+          "listingID": "a0W4U00000IXRHWUA5",
+          "availability": 49.0,
+          "absoluteMinIncome": 1464,
+          "absoluteMaxIncome": 9729
+        },
+        {
+          "unitType": "2 BR",
+          "totalUnits": 41,
+          "minSquareFt": 607,
+          "minRentalMinIncome": 1604.0,
+          "minPriceWithParking": null,
+          "minPriceWithoutParking": null,
+          "minPercentIncome": null,
+          "minOccupancy": 2,
+          "minMonthlyRent": 802.0,
+          "minHoaDuesWithParking": null,
+          "minHoaDuesWithoutParking": null,
+          "maxSquareFt": 1183,
+          "maxRentalMinIncome": 6350.0,
+          "maxPriceWithParking": null,
+          "maxPriceWithoutParking": null,
+          "maxPercentIncome": null,
+          "maxOccupancy": 5,
+          "maxMonthlyRent": 3175.0,
+          "maxHoaDuesWithParking": null,
+          "maxHoaDuesWithoutParking": null,
+          "listingID": "a0W4U00000IXRHWUA5",
+          "availability": 41.0,
+          "absoluteMinIncome": 1604,
+          "absoluteMaxIncome": 13358
+        },
+        {
+          "unitType": "3 BR",
+          "totalUnits": 10,
+          "minSquareFt": 1021,
+          "minRentalMinIncome": 1742.0,
+          "minPriceWithParking": null,
+          "minPriceWithoutParking": null,
+          "minPercentIncome": null,
+          "minOccupancy": 3,
+          "minMonthlyRent": 871.0,
+          "minHoaDuesWithParking": null,
+          "minHoaDuesWithoutParking": null,
+          "maxSquareFt": 1366,
+          "maxRentalMinIncome": 7310.0,
+          "maxPriceWithParking": null,
+          "maxPriceWithoutParking": null,
+          "maxPercentIncome": null,
+          "maxOccupancy": 7,
+          "maxMonthlyRent": 3655.0,
+          "maxHoaDuesWithParking": null,
+          "maxHoaDuesWithoutParking": null,
+          "listingID": "a0W4U00000IXRHWUA5",
+          "availability": 10.0,
+          "absoluteMinIncome": 1742,
+          "absoluteMaxIncome": 15337
+        }
+      ]
+    },
+    "reservedDescriptor": null,
+    "prioritiesDescriptor": [
+      {
+        "shortDescription": null,
+        "numberOfUnits": 87,
+        "name": "Adaptable",
+        "listingId": "a0W4U00000IXRHWUA5"
+      },
+      {
+        "shortDescription": null,
+        "numberOfUnits": 10,
+        "name": "Mobility impairments",
+        "listingId": "a0W4U00000IXRHWUA5"
+      },
+      {
+        "shortDescription": null,
+        "numberOfUnits": 3,
+        "name": "Hearing impairments",
+        "listingId": "a0W4U00000IXRHWUA5"
+      }
+    ],
+    "listingID": "a0W4U00000IXRHWUA5",
+    "chartTypes": [
+      {
+        "year": "2023",
+        "percent": 50.0,
+        "numOfHousehold": null,
+        "chartType": "MOHCD",
+        "amount": null
+      },
+      {
+        "year": "2023",
+        "percent": 30.0,
+        "numOfHousehold": null,
+        "chartType": "MOHCD",
+        "amount": null
+      },
+      {
+        "year": "2023",
+        "percent": 40.0,
+        "numOfHousehold": null,
+        "chartType": "MOHCD",
+        "amount": null
+      },
+      {
+        "year": "2023",
+        "percent": 90.0,
+        "numOfHousehold": null,
+        "chartType": "MOHCD",
+        "amount": null
+      },
+      {
+        "year": "2023",
+        "percent": 103.0,
+        "numOfHousehold": null,
+        "chartType": "MOHCD",
+        "amount": null
+      },
+      {
+        "year": "2023",
+        "percent": 64.0,
+        "numOfHousehold": null,
+        "chartType": "MOHCD",
+        "amount": null
+      }
+    ],
+    "attributes": {
+      "type": "Listing",
+      "url": "/services/data/v35.0/sobjects/Listing/a0W4U00000IXRHWUA5"
+    },
+    "Name": "Islais Place",
+    "Realtor_Commission_Unit": "percent",
+    "Allows_Realtor_Commission": false,
+    "Parking_Information": "22 Parking spaces will be assigned in lottery rank order.",
+    "Tenure": "New rental",
+    "First_Come_First_Served": false,
+    "Building": {
+      "attributes": {
+        "type": "Building",
+        "url": "/services/data/v35.0/sobjects/Building/a0a0P00000HXxUhQAL"
+      },
+      "Id": "a0a0P00000HXxUhQAL"
+    },
+    "In_Lottery": 9918,
+    "Program_Type": "MF-RENTAL",
+    "Units_Available": 100,
+    "SASE_Required_for_Lottery_Ticket": false,
+    "nGeneral_Application_Total": 1510,
+    "Office_Hours": "Monday - Friday \r\n9AM - 5PM",
+    "Lottery_Status": "Lottery Complete",
+    "Building_Name": "4840 Mission",
+    "Project_ID": "2016-068",
+    "Building_Street_Address": "4840 Mission St",
+    "Building_City": "San Francisco",
+    "Building_State": "CA",
+    "Building_Zip_Code": "94112",
+    "Developer": "BRIDGE Housing",
+    "Neighborhood": "Outer Mission",
+    "Year_Built": 2024,
+    "LastModifiedDate": "2024-03-14T22:28:12.000+0000",
+    "Marketing_URL": "Islais-Place-Sep23",
+    "Application_Due_Date": "2023-09-29T00:00:00.000+0000",
+    "Building_URL": "https://sf.gov/sites/default/files/styles/default/public/2023-09/4840%20Mission%20rendering.jpg?itok=usqc5THs",
+    "Legal_Disclaimers": "<p>The <a href=\"https://www.treasurer.ca.gov/ctcac/compliance/manual.asp\" target=\"_blank\">California Tax Credit Allocation Committee Compliance Manual</a> governs many of the eligibility requirements for this building. Income and assets are calculated by the building staff and appeals are addressed internally by the building. Applicants should inquire with the building contact person listed above for further information about eligibility requirements for this property.</p><p><br></p><p>It is also important to note that these units are NOT governed by the San Francisco Rent Ordinance (also known as “rent control”). Among other rules, rents may increase beyond increases allowed under “rent control”. </p>",
+    "Application_Phone": "415-495-4663",
+    "Lottery_Results_Date": "2023-10-19",
+    "Lottery_Venue": "<p><span style=\"color: rgb(34, 34, 34); font-size: 15px; background-color: rgb(255, 255, 255);\">Watch the Lottery Live </span><a href=\"https://teams.microsoft.com/l/meetup-join/19%3ameeting_MDcyODE0MjgtYmJiMi00ZDBhLWJlYTEtODhiNzMxNzczODI4%40thread.v2/0?context=%7B%22Tid%22%3A%2222d5c2cf-ce3e-443d-9a7f-dfcc0231f73f%22%2C%22Oid%22%3A%227da3908e-a428-46cb-81e3-96a7891e01e6%22%2C%22IsBroadcastMeeting%22%3Atrue%2C%22role%22%3A%22a%22%7D&amp;btype=a&amp;role=a\" target=\"_blank\" style=\"color: rgb(34, 34, 34); font-size: 15px; background-color: rgb(255, 255, 255);\">HERE</a></p>",
+    "Lottery_Date": "2023-10-12T18:00:00.000+0000",
+    "Publish_Lottery_Results": true,
+    "Publish_Lottery_Results_on_DAHLIA": "Publish results in lottery modal on DAHLIA",
+    "LotteryResultsURL": "https://sf.gov/sites/default/files/2023-10/Islais%20Place%20Lottery%20Results%2010.19.23.pdf",
+    "Accepting_Online_Applications": true,
+    "Lottery_Winners": 0,
+    "Credit_Rating": "Credit History (student loans and medical expenses are excluded) \r\n•\tTotal unmet credit problems, including government tax liens, \r\n        within the last three (3) years must not be in excess of $2,500.\r\n•\tMay not have bankruptcy discharged within the last three (3) \r\n        years.\r\n•\tMay not have a total of seven (7) or more unmet credit \r\n        problems of any value within the last three (3) years.",
+    "Eviction_History": "Rental History\r\n•\tMay not have a judgement against an applicant obtained by the current or previous landlord (no-fault evictions will not count against applicant) within the last three (3) years. \r\n•\tMay not have an unmet obligation owed to a previous landlord within the last three (3) years.\r\n•\tApplicants must have made timely payments of the last year’s rental payments.",
+    "Leasing_Agent_Name": "Leopoldo Batlle",
+    "Leasing_Agent_Title": "Leasing Agent",
+    "Leasing_Agent_Email": "islaisplace.leasing@bridgehousing.com",
+    "Leasing_Agent_Phone": "415-495-4663",
+    "Accepting_applications_at_leasing_agent": false,
+    "Accepting_applications_by_PO_Box": false,
+    "Blank_paper_application_can_be_picked_up": false,
+    "Fee": 25.0,
+    "Deposit_Min": 800.0,
+    "Deposit_Max": 1000.0,
+    "Costs_Not_Included": "Tenants pay electricity (heating, cooking, lighting), telephone, internet and cable. Community Room Reservation Agreement and payment of a cleaning and damage deposit of $300.  Late Fee: $20\r\nReplacement Fees:\r\nMailbox keys - $50 \r\nDoor keys - $50 \r\nEntry card - $50",
+    "Amenities": "On-Site Laundry Rooms, Elevator, On-Site Professional Management, Parking Spaces, Bike Parking, Children’s Play Area, Courtyard, Community Room with Kitchen.",
+    "Accessibility": "Lobby and community room are wheelchair accessible. Building has common area accessible bathrooms and elevators and an accessible multipurpose room. \r\n\r\nMobility Accessible units have the following modifications: \r\nBathroom:\r\n•\tAccessible bathtub and controls with clearance for wheelchair\r\n•\tBathtub surround with grab bars\r\n•\tAccessible bathroom sink and faucet\r\n•\tAccessible medicine cabinet\r\n•\tGrab bars at toilet\r\n•\tLowered towel bars and robe hook\r\nKitchen: \r\n•\tAccessible range \r\n•\tAccessible switch for circulating hood (stove)\r\n•\tKitchen electrical outlets and controls in proper reach range\r\n•\tKitchen cabinets with 34” high countertop and 30” work surface\r\nLiving Room/Bedroom:\r\n•\tCloset rod and shelf at ADA height (48”)\r\n•\tEntry door and door hardware for ADA units include lockset with levers, closer and peepholes.\r\n\r\nHearing Accessible Units have the following modifications:\r\n•\tFire alarm has strobes\r\n•\tDoorbell with visual notification",
+    "Building_Selection_Criteria": "https://sf.gov/sites/default/files/2023-09/Islais%20Place%20DAHLIA%20RSC.pdf",
+    "Required_Documents": "o\tCompleted post lottery application\r\no\tTenant Income Certification Questionnaire \r\no\tLatest federal tax return if self-employed\r\no\tThree months of consecutive paystubs if employed. \r\no\tLatest award letter for Social Security or Supplemental Security Income\r\no\tLatest award letter if receiving unemployment benefits \r\no\tCourt order for child support/alimony \r\no\tCopy of a driver’s license or state identification per adult \r\no\tCopy of birth certificate for each minor\r\no\tCopy of social security card for all household members (if applicable)",
+    "Smoking_Policy": "Smoking is not permitted in any common area; this includes the manager’s office, the community room, hallways, laundry rooms, and offices.",
+    "Pet_Policy": "Islais Place does not allow pets of any kind. Service and Companion Animals are not considered pets. Please refer to our reasonable accommodation policy.",
+    "Reserved_community_maximum_age": 0,
+    "Reserved_community_minimum_age": 0,
+    "hasWaitlist": true,
+    "Number_of_people_currently_on_waitlist": 0,
+    "Maximum_waitlist_size": 500,
+    "Total_waitlist_openings": 500,
+    "Total_number_of_building_units": 100,
+    "RecordTypeId": "0120P000000kPUSQA2",
+    "Id": "a0W4U00000IXRHWUA5",
+    "Listing_Images": [
+      {
+        "attributes": {
+          "type": "Listing_Image",
+          "url": "/services/data/v35.0/sobjects/Listing_Image/a0t4U00000eASHWQA4"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0t4U00000eASHWQA4",
+        "Name": "Islais Place Cover Image",
+        "Image_URL": "https://sf.gov/sites/default/files/styles/default/public/2023-09/4840%20Mission%20rendering.jpg?itok=usqc5THs",
+        "Image_Description": "Listing Name:Islais Place, Address:4840 Mission St, San Francisco CA, 94112",
+        "Display_Order": 1,
+        "displayImageURL": "https://media-housing-prod.dev.sf.gov/images/listings/a0W4U00000IXRHWUA5-2762ab870317717d7b693bc7b0a0ad3c.jpg"
+      }
+    ],
+    "Listing_Lottery_Preferences": [
+      {
+        "attributes": {
+          "type": "Listing_Lottery_Preference",
+          "url": "/services/data/v35.0/sobjects/Listing_Lottery_Preference/a0l4U00001k44jTQAQ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0l4U00001k44jTQAQ",
+        "Total_Submitted_Apps": 15,
+        "Order": 1,
+        "Available_Units": 100,
+        "Current_Units_Available": 100,
+        "Custom_Preference_Description": false,
+        "Lottery_Preference": {
+          "attributes": {
+            "type": "Lottery_Preference",
+            "url": "/services/data/v35.0/sobjects/Lottery_Preference/a0m0P00000wwi3IQAQ"
+          },
+          "Id": "a0m0P00000wwi3IQAQ",
+          "Name": "Certificate of Preference (COP)"
+        }
+      },
+      {
+        "attributes": {
+          "type": "Listing_Lottery_Preference",
+          "url": "/services/data/v35.0/sobjects/Listing_Lottery_Preference/a0l4U00001k44jYQAQ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0l4U00001k44jYQAQ",
+        "Total_Submitted_Apps": 28,
+        "Order": 2,
+        "Available_Units": 20,
+        "Current_Units_Available": 20,
+        "Custom_Preference_Description": false,
+        "Lottery_Preference": {
+          "attributes": {
+            "type": "Lottery_Preference",
+            "url": "/services/data/v35.0/sobjects/Lottery_Preference/a0m0P00000www1mQAA"
+          },
+          "Id": "a0m0P00000www1mQAA",
+          "Name": "Displaced Tenant Housing Preference (DTHP)"
+        }
+      },
+      {
+        "attributes": {
+          "type": "Listing_Lottery_Preference",
+          "url": "/services/data/v35.0/sobjects/Listing_Lottery_Preference/a0l4U00001k44jZQAQ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0l4U00001k44jZQAQ",
+        "Total_Submitted_Apps": 1446,
+        "Order": 3,
+        "Available_Units": 40,
+        "Current_Units_Available": 40,
+        "Custom_Preference_Description": false,
+        "PDF_URL": "https://sf.gov/sites/default/files/2023-10/Islais%20Place%20-%20NRHP%20List%2010.4.23.pdf",
+        "Lottery_Preference": {
+          "attributes": {
+            "type": "Lottery_Preference",
+            "url": "/services/data/v35.0/sobjects/Lottery_Preference/a0m0P00000www1rQAA"
+          },
+          "Id": "a0m0P00000www1rQAA",
+          "Name": "Neighborhood Resident Housing Preference (NRHP)"
+        }
+      },
+      {
+        "attributes": {
+          "type": "Listing_Lottery_Preference",
+          "url": "/services/data/v35.0/sobjects/Listing_Lottery_Preference/a0l4U00001k44jdQAA"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0l4U00001k44jdQAA",
+        "Total_Submitted_Apps": 8390,
+        "Order": 4,
+        "Available_Units": 100,
+        "Current_Units_Available": 100,
+        "Custom_Preference_Description": false,
+        "Lottery_Preference": {
+          "attributes": {
+            "type": "Lottery_Preference",
+            "url": "/services/data/v35.0/sobjects/Lottery_Preference/a0m0P00000wwi3NQAQ"
+          },
+          "Id": "a0m0P00000wwi3NQAQ",
+          "Name": "Live or Work in San Francisco Preference"
+        }
+      }
+    ],
+    "Open_Houses": [
+      {
+        "attributes": {
+          "type": "Open_Houses",
+          "url": "/services/data/v35.0/sobjects/Open_Houses/a0Y4U00000JWcRYUA1"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0Y4U00000JWcRYUA1",
+        "Venue": "<p><a href=\"https://bridgehousing.com/wp-content/uploads/2023/09/IslaisPlace_MarketingVid_V2.mp4\" target=\"_blank\">Virtual Tour</a></p>"
+      },
+      {
+        "attributes": {
+          "type": "Open_Houses",
+          "url": "/services/data/v35.0/sobjects/Open_Houses/a0Y4U00000JWcRdUAL"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0Y4U00000JWcRdUAL",
+        "Venue": "<p><a href=\"https://bridgehousing.com/wp-content/uploads/2023/08/4840-MISSION-UNIT-PLANS-PACKET-update.pdf\" target=\"_blank\">Floor Plans</a></p>"
+      }
+    ],
+    "Units": [
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DRQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DRQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 732.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1464.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84F1QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84F1QAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DUQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DUQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DbQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DbQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 732.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1464.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DdQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DdQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DfQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DfQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1609.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 3218.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 64.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DhQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DhQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DmQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DmQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DnQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DnQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 732.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1464.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DoQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DoQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DqQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DqQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DtQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DtQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DuQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DuQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DvQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DvQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DwQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DwQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DyQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DyQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DzQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DzQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E0QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E0QAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E3QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E3QAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E4QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E4QAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 732.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1464.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E6QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E6QAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EBQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EBQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ECQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ECQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EFQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EFQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EGQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EGQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EHQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EHQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EJQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EJQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Hearing impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EKQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EKQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ELQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ELQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EMQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EMQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ENQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ENQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EOQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EOQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EQQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EQQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ESQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ESQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EUQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EUQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 732.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1464.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EaQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EaQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1609.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 3218.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 64.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EbQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EbQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EcQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EcQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EfQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EfQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EhQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EhQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EiQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EiQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EjQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EjQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EkQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EkQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 2306.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4612.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EmQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EmQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 732.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1464.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EpQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EpQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ErQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ErQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EzQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EzQAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1308.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2616.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84F0QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84F0QAJ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DSQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DSQAZ",
+        "Unit_Type": "1 BR",
+        "BMR_Rent_Monthly": 1020.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2040.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DQQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DQQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DVQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DVQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 2756.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 5512.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DXQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DXQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 802.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1604.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DYQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DYQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DZQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DZQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DaQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DaQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 3175.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 6350.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DcQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DcQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 802.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1604.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DeQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DeQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DgQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DgQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 2756.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 5512.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DiQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DiQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DjQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DjQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 802.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1604.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DkQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DkQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 802.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1604.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DlQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DlQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DsQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DsQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1920.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 3840.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 64.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DxQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DxQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 3175.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 6350.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E1QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E1QAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E2QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E2QAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E5QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E5QAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 2756.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 5512.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E7QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E7QAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E8QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E8QAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 3175.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 6350.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EAQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EAQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EDQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EDQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 3175.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 6350.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EPQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EPQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 2756.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 5512.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ERQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ERQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 802.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1604.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ETQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ETQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EVQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EVQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 2756.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 5512.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EWQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EWQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EXQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EXQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1920.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 3840.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 64.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EYQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EYQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EZQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EZQAZ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EdQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EdQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ElQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ElQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 3175.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 6350.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EnQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EnQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 3175.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 6350.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EoQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EoQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 802.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1604.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EqQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EqQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EsQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EsQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EtQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EtQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 2756.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 5512.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EuQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EuQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1450.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2900.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EvQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EvQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 1127.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2254.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84ExQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84ExQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 3175.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 6350.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EyQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EyQAJ",
+        "Unit_Type": "2 BR",
+        "BMR_Rent_Monthly": 2756.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 5512.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 90.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DTQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DTQAZ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 871.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1742.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Hearing impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DWQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DWQAZ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 3655.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 7310.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DpQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DpQAJ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 3655.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 7310.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84DrQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84DrQAJ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 1231.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2462.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Mobility impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EwQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EwQAJ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 1591.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 3182.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 50.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EEQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EEQAZ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 871.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 1742.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Hearing impairments",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 30.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EIQAZ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EIQAZ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 3655.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 7310.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EeQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EeQAJ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 1231.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 2462.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 40.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84EgQAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84EgQAJ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 3655.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 7310.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 103.0
+      },
+      {
+        "attributes": {
+          "type": "Unit",
+          "url": "/services/data/v35.0/sobjects/Unit/a0b4U00001K84E9QAJ"
+        },
+        "Listing": "a0W4U00000IXRHWUA5",
+        "Id": "a0b4U00001K84E9QAJ",
+        "Unit_Type": "3 BR",
+        "BMR_Rent_Monthly": 2131.0,
+        "BMR_Rental_Minimum_Monthly_Income_Needed": 4262.0,
+        "Status": "Available",
+        "Property_Type": "Apartment",
+        "Priority_Type": "Adaptable",
+        "isReservedCommunity": false,
+        "AMI_chart_type": "MOHCD",
+        "AMI_chart_year": 2023,
+        "Max_AMI_for_Qualifying_Unit": 64.0
+      }
+    ],
+    "RecordType": {
+      "attributes": {
+        "type": "RecordType",
+        "url": "/services/data/v35.0/sobjects/RecordType/0120P000000kPUSQA2"
+      },
+      "Id": "0120P000000kPUSQA2",
+      "Name": "Rental"
+    },
+    "imageURL": "https://media-housing-prod.dev.sf.gov/images/listings/a0W4U00000IXRHWUA5-2762ab870317717d7b693bc7b0a0ad3c.jpg"
+  }
+}

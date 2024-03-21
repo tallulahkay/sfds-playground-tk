@@ -64,30 +64,30 @@ export function processComponent(
 		throw new Error(`Unknown component type: ${type}`);
 	}
 
-	const result = {
+	const component = {
 		...defaults,
 		...data,
 	};
 
 	if (type !== "form") {
-		result.key = uniqueKey(key ?? label);
+		component.key = uniqueKey(key ?? label);
 	}
 
 	if (label?.endsWith("*")) {
-		result.label = label.slice(0, -1);
-		result.required = true;
+		component.label = label.slice(0, -1);
+		component.required = true;
 	}
 
-	if (typeof result.required === "boolean") {
-		result.validate = {
-			...(result.validate ?? {}),
-			required: result.required,
+	if (typeof component.required === "boolean") {
+		component.validate = {
+			...(component.validate ?? {}),
+			required: component.required,
 		};
-		delete result.required;
+		delete component.required;
 	}
 
 	if (components) {
-		result.components = components.map((comp) => processComponent(comp, uniqueKey));
+		component.components = components.map((comp) => processComponent(comp, uniqueKey));
 	}
 
 	if (columns) {
@@ -96,5 +96,5 @@ export function processComponent(
 			col.components.map((comp) => processComponent(comp, uniqueKey)));
 	}
 
-	return result;
+	return component;
 }

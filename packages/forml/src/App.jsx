@@ -18,7 +18,10 @@ export default function App()
 	return (
 		<div>
 			<h1>{form?.title}</h1>
-			<Form form={form} />
+			<Form
+				form={form}
+				onSubmit={console.log}
+			/>
 			{errorMessage &&
 				<p className="alert-warning">{errorMessage}</p>
 			}

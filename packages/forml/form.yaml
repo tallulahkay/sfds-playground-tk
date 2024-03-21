@@ -434,3 +434,60 @@ components:
                     maxLength: 10
                     pattern: "[0-9]{5}(-[0-9]{4})?"
                     customMessage: Please enter a valid zip code.
+
+  - type: panel
+    title: COP
+    components:
+      - tag: h3
+        content: There are lottery preferences for people who already have special certificates.
+
+      - tag: p
+        content: If you have not heard of these preferences, you most likely do not have one.
+
+      - tag: hr
+
+      - type: checkbox
+        label: Certificate of Preference (COP)
+        description:
+          <p>If you hold a Certificate of Preference (COP) from the
+          former San Francisco Redevelopment Agency.  COP holders were displaced
+          by Agency action generally during the 1960s and 1970s.</p>
+          <a href="https://www.redevelopmentagency.org/" target="_blank">Find out more about this preference</a>
+
+      - type: checkbox
+        label: Displaced Tenant Housing Preference (DTHP)
+        description:
+          <p>If you hold a Displaced Tenant Housing Preference Certificate (DTHP).
+          DTHP Certificate holders are tenants who were evicted through either an
+          Ellis Act Eviction or an Owner Move In Eviction, or have been displaced by a fire.</p>
+          <a href="https://sfmohcd.org/displaced-tenant-housing-preference" target="_blank">Find out more about this preference</a>
+
+  - type: panel
+    title: NRHP
+    customConditional: >
+      show = utils.listing?.Listing_Lottery_Preferences.some(({ Lottery_Preference: { Name } }) => Name.includes("NRHP"))
+    components:
+      - tag: h3
+        content: Good news! You qualify for a higher ranking in the lottery.
+
+      - tag: p
+        content: Just upload valid proof of this address and <strong>we'll also
+          give you Live in San Francisco Preference</strong>.
+
+      - tag: hr
+
+      - type: checkbox
+        label: Live in the Neighborhood
+        description:
+          <p>You said someone in your household lives in the same neighborhood as
+          the listing.</p>
+          <p><strong>Neighborhood Resident Housing Preference</strong> means at
+          least one household member lives within the same Supervisorial District
+          or within a 1/2 mile buffer of the project.</p>
+          <a href="https://www.redevelopmentagency.org/" target="_blank">Find out more about this preference</a>
+
+      - tag: hr
+
+      - type: checkbox
+        label: I don't want this preference
+        description: You'll still have the opportunity to claim other preferences.
