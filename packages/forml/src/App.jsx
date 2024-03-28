@@ -13,8 +13,13 @@ try {
 
 console.log(form);
 
-export default function App()
+export default function App({
+	listing })
 {
+		// this is a bit of a kludge, but provide the listing data to the blocks of
+		// component logic via the Formio.Utils var
+	Formio.Utils.listing = listing;
+
 	return (
 		<div>
 			<h1>{form?.title}</h1>
