@@ -15,12 +15,12 @@ nav {
 	margin-top: 3rem;
 }
 
-.email-desc-above {
+.desc-above {
 	display: grid;
 	grid-template-areas:
 		"label"
 		"desc"
-		"input"
+		"control"
 		"error";
 
 	label {
@@ -32,8 +32,9 @@ nav {
 		margin-bottom: .75rem;
 	}
 
-	div[ref="element"] {
-		grid-area: input;
+	div[ref="element"],
+	div[ref="radioGroup"] {
+		grid-area: control;
 	}
 
 	div.formio-errors {

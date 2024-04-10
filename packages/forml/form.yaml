@@ -149,7 +149,7 @@ components:
         label: Your Email Address*
         description:
           We will only use your email address to contact you about your application.
-        customClass: email-desc-above
+        customClass: desc-above
         logic:
           - trigger:
               type: simple
@@ -331,6 +331,7 @@ components:
         description:
           This means you currently work in San Francisco at least 75% of your
           working hours.
+        customClass: desc-above
         values:
           - label: Yes
             value: true
