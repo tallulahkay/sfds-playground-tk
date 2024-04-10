@@ -141,14 +141,15 @@ components:
             label: Last Name*
 
       - type: day
-        label: Your Date of Birth
-        required: true
+        label: Your Date of Birth*
 
       - tag: hr
 
       - type: email
-        label: Your Email Address
-        required: true
+        label: Your Email Address*
+        description:
+          We will only use your email address to contact you about your application.
+        customClass: email-desc-above
         logic:
           - trigger:
               type: simple

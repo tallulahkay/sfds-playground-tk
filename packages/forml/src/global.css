@@ -14,3 +14,29 @@ nav {
 .formio-wizard-nav-container {
 	margin-top: 3rem;
 }
+
+.email-desc-above {
+	display: grid;
+	grid-template-areas:
+		"label"
+		"desc"
+		"input"
+		"error";
+
+	label {
+		grid-area: label;
+	}
+
+	.form-text {
+		grid-area: desc;
+		margin-bottom: .75rem;
+	}
+
+	div[ref="element"] {
+		grid-area: input;
+	}
+
+	div.formio-errors {
+		grid-area: error;
+	}
+}
