@@ -125,371 +125,379 @@ aliases:
         value: WY
 
 components:
-  - type: panel
-    title: You
-    components:
-      - type: fieldSet
-        label: Your Name
+  - type: panelGroup
+    key: you
+    label: You
+    panels:
+      - type: panel
+        title: You
         components:
-          - type: textfield
-            label: First Name*
+          - type: fieldSet
+            label: Your Name
+            components:
+              - type: textfield
+                label: First Name*
 
-          - type: textfield
-            label: Middle Name (optional)
+              - type: textfield
+                label: Middle Name (optional)
 
-          - type: textfield
-            label: Last Name*
+              - type: textfield
+                label: Last Name*
 
-      - type: day
-        label: Your Date of Birth*
+          - type: day
+            label: Your Date of Birth*
 
-      - tag: hr
+          - tag: hr
 
-      - type: email
-        label: Your Email Address*
-        description:
-          We will only use your email address to contact you about your application.
-        customClass: desc-above
-        logic:
-          - trigger:
-              type: simple
-              simple:
-                show: true
-                when: noEmail
-                eq: true
-            actions:
-              - type: property
-                property:
-                  value: disabled
-                  type: boolean
-                state: true
-              - type: property
-                property:
-                  value: validate.required
-                  type: boolean
-                state: false
+          - type: email
+            label: Your Email Address*
+            description:
+              We will only use your email address to contact you about your application.
+            customClass: desc-above
+            logic:
+              - trigger:
+                  type: simple
+                  simple:
+                    show: true
+                    when: noEmail
+                    eq: true
+                actions:
+                  - type: property
+                    property:
+                      value: disabled
+                      type: boolean
+                    state: true
+                  - type: property
+                    property:
+                      value: validate.required
+                      type: boolean
+                    state: false
 
-      - type: checkbox
-        key: noEmail
-        label: I don't have an email address
+          - type: checkbox
+            key: noEmail
+            label: I don't have an email address
 
-  - type: panel
-    title: Contact
-    components:
-      - tag: h3
-        content:
-          Thanks, {{data.firstName}}. Now we need to know how to contact you.
-
-      - type: fieldSet
+      - type: panel
+        title: Contact
         components:
-          - type: phoneNumber
-            label: Your Phone Number*
-            logic: *disabledOnNoPhone
-
-          - type: select
-            label: What type of number is this?*
-            logic: *disabledOnNoPhone
-            data:
-              values:
-                - label: Mobile
-                  value: mobile
-                - label: Work
-                  value: work
-                - label: Home
-                  value: home
-
-      - type: checkbox
-        key: noPhone
-        label: I don't have a phone number
-        logic:
-          - trigger:
-              type: simple
-              simple:
-                show: true
-                when: anotherPhone
-                eq: true
-            actions:
-              - type: property
-                property:
-                  value: disabled
-                  type: boolean
-                state: true
-
-      - type: checkbox
-        key: anotherPhone
-        label: I have an additional phone number
-        logic: *disabledOnNoPhone
-
-      - type: fieldSet
-        label: Your Second Phone Number
-        conditional:
-          show: true
-          when: anotherPhone
-          eq: true
-        components:
-          - type: phoneNumber
-            key: additionalPhone
-            label: Your Phone Number*
-
-          - type: select
-            key: additionalPhoneType
-            label: What type of number is this?*
-            data:
-              values:
-                - label: Mobile
-                  value: mobile
-                - label: Work
-                  value: work
-                - label: Home
-                  value: home
-
-      - tag: hr
-
-      - type: fieldSet
-        label: Address
-        components:
-          - tag: p
-            content: We need the address where you currently live.
-
-          - type: textfield
-            label: Street Address*
-
-          - type: textfield
-            label: "Apt or Unit #"
-
-          - type: textfield
-            label: City*
-
-          - type: columns
-            columns:
-              - components:
-                - type: select
-                  label: State*
-                  widget: choicesjs
-                  searchEnabled: true
-                  data: *states
-
-              - components:
-                - type: textfield
-                  label: Zip Code*
-                  validateOn: blur
-                  validate:
-                    minLength: 5
-                    maxLength: 10
-                    pattern: "[0-9]{5}(-[0-9]{4})?"
-                    customMessage: Please enter a valid zip code.
-
-      - type: checkbox
-        key: sendDifferentAddress
-        label: Send my mail to a different address
-
-      - tag: hr
-        customConditional: show = data.sendDifferentAddress
-
-      - type: fieldSet
-        label: Mailing Address
-        customConditional: show = data.sendDifferentAddress
-        components:
-          - tag: p
-            content: Provide an address where you can receive updates and
-              materials about your application.
-
-          - type: textfield
-            label: Street Address*
-
-          - type: textfield
-            label: "Apt or Unit #"
-
-          - type: textfield
-            label: City*
-
-          - type: columns
-            columns:
-              - components:
-                - type: select
-                  label: State*
-                  widget: choicesjs
-                  searchEnabled: true
-                  data: *states
-
-              - components:
-                - type: textfield
-                  label: Zip Code*
-                  validateOn: blur
-                  validate:
-                    minLength: 5
-                    maxLength: 10
-                    pattern: "[0-9]{5}(-[0-9]{4})?"
-                    customMessage: Please enter a valid zip code.
-
-      - tag: hr
-
-      - type: radio
-        label: Do you work in San Francisco?*
-        validate:
-          customMessage: This must be answered.
-        description:
-          This means you currently work in San Francisco at least 75% of your
-          working hours.
-        customClass: desc-above
-        values:
-          - label: Yes
-            value: true
-          - label: No
-            value: false
-
-  - type: panel
-    title: Alt Ct Type
-    components:
-      - type: fieldSet
-        label: Is there someone else you'd like to authorize us to contact if
-          we can't reach you?
-        components:
-          - tag: p
+          - tag: h3
             content:
-              By providing an alternate contact, you are allowing us to
-              discuss information on your application with them.
+              Thanks, {{data.firstName}}. Now we need to know how to contact you.
+
+          - type: fieldSet
+            components:
+              - type: phoneNumber
+                label: Your Phone Number*
+                logic: *disabledOnNoPhone
+
+              - type: select
+                label: What type of number is this?*
+                logic: *disabledOnNoPhone
+                data:
+                  values:
+                    - label: Mobile
+                      value: mobile
+                    - label: Work
+                      value: work
+                    - label: Home
+                      value: home
+
+          - type: checkbox
+            key: noPhone
+            label: I don't have a phone number
+            logic:
+              - trigger:
+                  type: simple
+                  simple:
+                    show: true
+                    when: anotherPhone
+                    eq: true
+                actions:
+                  - type: property
+                    property:
+                      value: disabled
+                      type: boolean
+                    state: true
+
+          - type: checkbox
+            key: anotherPhone
+            label: I have an additional phone number
+            logic: *disabledOnNoPhone
+
+          - type: fieldSet
+            label: Your Second Phone Number
+            conditional:
+              show: true
+              when: anotherPhone
+              eq: true
+            components:
+              - type: phoneNumber
+                key: additionalPhone
+                label: Your Phone Number*
+
+              - type: select
+                key: additionalPhoneType
+                label: What type of number is this?*
+                data:
+                  values:
+                    - label: Mobile
+                      value: mobile
+                    - label: Work
+                      value: work
+                    - label: Home
+                      value: home
+
+          - tag: hr
+
+          - type: fieldSet
+            label: Address
+            components:
+              - tag: p
+                content: We need the address where you currently live.
+
+              - type: textfield
+                label: Street Address*
+
+              - type: textfield
+                label: "Apt or Unit #"
+
+              - type: textfield
+                label: City*
+
+              - type: columns
+                columns:
+                  - components:
+                    - type: select
+                      label: State*
+                      widget: choicesjs
+                      searchEnabled: true
+                      data: *states
+
+                  - components:
+                    - type: textfield
+                      label: Zip Code*
+                      validateOn: blur
+                      validate:
+                        minLength: 5
+                        maxLength: 10
+                        pattern: "[0-9]{5}(-[0-9]{4})?"
+                        customMessage: Please enter a valid zip code.
+
+          - type: checkbox
+            key: sendDifferentAddress
+            label: Send my mail to a different address
+
+          - tag: hr
+            customConditional: show = data.sendDifferentAddress
+
+          - type: fieldSet
+            label: Mailing Address
+            customConditional: show = data.sendDifferentAddress
+            components:
+              - tag: p
+                content: Provide an address where you can receive updates and
+                  materials about your application.
+
+              - type: textfield
+                label: Street Address*
+
+              - type: textfield
+                label: "Apt or Unit #"
+
+              - type: textfield
+                label: City*
+
+              - type: columns
+                columns:
+                  - components:
+                    - type: select
+                      label: State*
+                      widget: choicesjs
+                      searchEnabled: true
+                      data: *states
+
+                  - components:
+                    - type: textfield
+                      label: Zip Code*
+                      validateOn: blur
+                      validate:
+                        minLength: 5
+                        maxLength: 10
+                        pattern: "[0-9]{5}(-[0-9]{4})?"
+                        customMessage: Please enter a valid zip code.
+
+          - tag: hr
 
           - type: radio
-            label: Alternate Contact
-            key: altContactType
+            label: Do you work in San Francisco?*
+            validate:
+              customMessage: This must be answered.
+            description:
+              This means you currently work in San Francisco at least 75% of your
+              working hours.
+            customClass: desc-above
             values:
-              - label: Family member
-                value: family
-              - label: Friend
-                value: friend
-              - label: Case manager or housing counselor
-                value: counselor
-              - label: Other
-                value: other
-              - label: I don't have an alternate contact
-                value: none
+              - label: Yes
+                value: true
+              - label: No
+                value: false
 
-  - type: panel
-    title: Alt Ct Name
-    customConditional: show = data.altContactType && data.altContactType !== 'none'
-    components:
-      - type: fieldSet
-        label: Who is your alternate contact?
+      - type: panel
+        title: Alt Ct Type
         components:
-          - type: textfield
-            label: First Name
-            key: altFirstName
+          - type: fieldSet
+            label: Is there someone else you'd like to authorize us to contact if
+              we can't reach you?
+            components:
+              - tag: p
+                content:
+                  By providing an alternate contact, you are allowing us to
+                  discuss information on your application with them.
 
-          - type: textfield
-            label: Last Name
-            key: altLastName
+              - type: radio
+                label: Alternate Contact
+                key: altContactType
+                values:
+                  - label: Family member
+                    value: family
+                  - label: Friend
+                    value: friend
+                  - label: Case manager or housing counselor
+                    value: counselor
+                  - label: Other
+                    value: other
+                  - label: I don't have an alternate contact
+                    value: none
 
-  - type: panel
-    title: Alt Ct Address
-    customConditional: show = data.altContactType && data.altContactType !== 'none'
-    components:
-      - tag: h3
-        content: Let us know how to contact your alternate contact.
-
-      - tag: p
-        content: We'll only use this information to contact them about your application.
-
-      - tag: hr
-
-      - type: phoneNumber
-        label: Contact Phone Number
-
-      - tag: hr
-
-      - type: email
-        label: Contact Email Address
-
-      - tag: hr
-
-      - type: fieldSet
-        label: Contact Mailing Address
+      - type: panel
+        title: Alt Ct Name
+        customConditional: show = data.altContactType && data.altContactType !== 'none'
         components:
+          - type: fieldSet
+            label: Who is your alternate contact?
+            components:
+              - type: textfield
+                label: First Name
+                key: altFirstName
+
+              - type: textfield
+                label: Last Name
+                key: altLastName
+
+      - type: panel
+        title: Alt Ct Address
+        customConditional: show = data.altContactType && data.altContactType !== 'none'
+        components:
+          - tag: h3
+            content: Let us know how to contact your alternate contact.
+
           - tag: p
-            content: Choose an address where they can receive updates and materials
-              about your application.
+            content: We'll only use this information to contact them about your application.
 
-          - type: textfield
-            label: Street Address
+          - tag: hr
 
-          - type: textfield
-            label: "Apt or Unit #"
+          - type: phoneNumber
+            label: Contact Phone Number
 
-          - type: textfield
-            label: City
+          - tag: hr
 
-          - type: columns
-            columns:
-              - components:
-                - type: select
-                  label: State
-                  widget: choicesjs
-                  searchEnabled: true
-                  data: *states
+          - type: email
+            label: Contact Email Address
 
-              - components:
-                - type: textfield
-                  label: Zip Code
-                  validateOn: blur
-                  validate:
-                    minLength: 5
-                    maxLength: 10
-                    pattern: "[0-9]{5}(-[0-9]{4})?"
-                    customMessage: Please enter a valid zip code.
+          - tag: hr
 
-  - type: panel
-    title: COP
-    components:
-      - tag: h3
-        content: There are lottery preferences for people who already have special certificates.
+          - type: fieldSet
+            label: Contact Mailing Address
+            components:
+              - tag: p
+                content: Choose an address where they can receive updates and materials
+                  about your application.
 
-      - tag: p
-        content: If you have not heard of these preferences, you most likely do not have one.
+              - type: textfield
+                label: Street Address
 
-      - tag: hr
+              - type: textfield
+                label: "Apt or Unit #"
 
-      - type: checkbox
-        label: Certificate of Preference (COP)
-        description:
-          <p>If you hold a Certificate of Preference (COP) from the
-          former San Francisco Redevelopment Agency.  COP holders were displaced
-          by Agency action generally during the 1960s and 1970s.</p>
-          <a href="https://www.redevelopmentagency.org/" target="_blank">Find out more about this preference</a>
+              - type: textfield
+                label: City
 
-      - type: checkbox
-        label: Displaced Tenant Housing Preference (DTHP)
-        description:
-          <p>If you hold a Displaced Tenant Housing Preference Certificate (DTHP).
-          DTHP Certificate holders are tenants who were evicted through either an
-          Ellis Act Eviction or an Owner Move In Eviction, or have been displaced by a fire.</p>
-          <a href="https://sfmohcd.org/displaced-tenant-housing-preference" target="_blank">Find out more about this preference</a>
+              - type: columns
+                columns:
+                  - components:
+                    - type: select
+                      label: State
+                      widget: choicesjs
+                      searchEnabled: true
+                      data: *states
 
-  - type: panel
-    title: NRHP
-    customConditional: >
-      show = utils.listing?.Listing_Lottery_Preferences.some(({ Lottery_Preference: { Name } }) => Name.includes("NRHP"))
-    components:
-      - tag: h3
-        content: Good news! You qualify for a higher ranking in the lottery.
+                  - components:
+                    - type: textfield
+                      label: Zip Code
+                      validateOn: blur
+                      validate:
+                        minLength: 5
+                        maxLength: 10
+                        pattern: "[0-9]{5}(-[0-9]{4})?"
+                        customMessage: Please enter a valid zip code.
 
-      - tag: p
-        content: Just upload valid proof of this address and <strong>we'll also
-          give you Live in San Francisco Preference</strong>.
+  - type: panelGroup
+    key: prefs
+    label: Preferences
+    panels:
+      - type: panel
+        title: COP
+        components:
+          - tag: h3
+            content: There are lottery preferences for people who already have special certificates.
 
-      - tag: hr
+          - tag: p
+            content: If you have not heard of these preferences, you most likely do not have one.
 
-      - type: checkbox
-        label: Live in the Neighborhood
-        description:
-          <p>You said someone in your household lives in the same neighborhood as
-          the listing.</p>
-          <p><strong>Neighborhood Resident Housing Preference</strong> means at
-          least one household member lives within the same Supervisorial District
-          or within a 1/2 mile buffer of the project.</p>
-          <a href="https://www.redevelopmentagency.org/" target="_blank">Find out more about this preference</a>
+          - tag: hr
 
-      - tag: hr
+          - type: checkbox
+            label: Certificate of Preference (COP)
+            description:
+              <p>If you hold a Certificate of Preference (COP) from the
+              former San Francisco Redevelopment Agency.  COP holders were displaced
+              by Agency action generally during the 1960s and 1970s.</p>
+              <a href="https://www.redevelopmentagency.org/" target="_blank">Find out more about this preference</a>
 
-      - type: checkbox
-        label: I don't want this preference
-        description: You'll still have the opportunity to claim other preferences.
+          - type: checkbox
+            label: Displaced Tenant Housing Preference (DTHP)
+            description:
+              <p>If you hold a Displaced Tenant Housing Preference Certificate (DTHP).
+              DTHP Certificate holders are tenants who were evicted through either an
+              Ellis Act Eviction or an Owner Move In Eviction, or have been displaced by a fire.</p>
+              <a href="https://sfmohcd.org/displaced-tenant-housing-preference" target="_blank">Find out more about this preference</a>
+
+      - type: panel
+        title: NRHP
+        customConditional: >
+          show = utils.listing?.Listing_Lottery_Preferences.some(({ Lottery_Preference: { Name } }) => Name.includes("NRHP"))
+        components:
+          - tag: h3
+            content: Good news! You qualify for a higher ranking in the lottery.
+
+          - tag: p
+            content: Just upload valid proof of this address and <strong>we'll also
+              give you Live in San Francisco Preference</strong>.
+
+          - tag: hr
+
+          - type: checkbox
+            label: Live in the Neighborhood
+            description:
+              <p>You said someone in your household lives in the same neighborhood as
+              the listing.</p>
+              <p><strong>Neighborhood Resident Housing Preference</strong> means at
+              least one household member lives within the same Supervisorial District
+              or within a 1/2 mile buffer of the project.</p>
+              <a href="https://www.redevelopmentagency.org/" target="_blank">Find out more about this preference</a>
+
+          - tag: hr
+
+          - type: checkbox
+            label: I don't want this preference
+            description: You'll still have the opportunity to claim other preferences.

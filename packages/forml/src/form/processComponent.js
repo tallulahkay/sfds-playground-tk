@@ -1,3 +1,5 @@
+import { panelGroup } from "./panelGroup.js";
+
 const TableInputTrue = {
 	tableView: true,
 	input: true,
@@ -9,6 +11,7 @@ const TableInputFalse = {
 const ComponentProperties = [
 	["panel", {
 		collapsible: false,
+//		breadcrumb: "hidden",
 	}],
 	["textfield"],
 	["email", {
@@ -50,7 +53,8 @@ const ComponentDefaults = ComponentProperties.reduce((result, [key, props]) => (
 }), {
 		// we don't want to add any defaults to the form, but we do want it in this
 		// hash so its components array gets handled in processComponent() below
-	form: {}
+	form: {},
+	panelGroup: {}
 });
 
 export function processComponent(
@@ -69,8 +73,10 @@ export function processComponent(
 		...data,
 	};
 
-	if (type !== "form") {
-		component.key = uniqueKey(key ?? label);
+	if (type === "panelGroup") {
+		return panelGroup(component, uniqueKey);
+	} else if (type !== "form") {
+		component.key = uniqueKey(key || label || component.title || component.tag);
 	}
 
 	if (label?.endsWith("*")) {
@@ -87,7 +93,8 @@ export function processComponent(
 	}
 
 	if (components) {
-		component.components = components.map((comp) => processComponent(comp, uniqueKey));
+			// use flatMap in case the component returns an array
+		component.components = components.flatMap((comp) => processComponent(comp, uniqueKey));
 	}
 
 	if (columns) {
