@@ -7,4 +7,9 @@ export default defineConfig({
 		react(),
 		ViteYaml(),
 	],
+	resolve: {
+		alias: {
+			"@": "/src",
+		},
+	},
 });
