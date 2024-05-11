@@ -4,7 +4,8 @@
 	border: 1px solid #ccc;
 	border-radius: .25rem;
 	width: 100%;
-	display: table;
+	display: flex;
+	justify-items: stretch;
 }
 
 .breadcrumbs > li {
@@ -13,7 +14,7 @@
 	list-style: none;
 	text-align: center;
 	text-transform: uppercase;
-	display: table-cell;
+	flex: 1;
 	position: relative;
 }
 
