@@ -442,6 +442,40 @@ components:
                         customMessage: Please enter a valid zip code.
 
   - type: panelGroup
+    key: income
+    label: Income
+    panels:
+      - type: panel
+        title: Income
+        components:
+          - tag: h3
+            content: Let's move to income.
+
+          - tag: p
+            content: Add up your total gross (pre-tax) household income from wages, benefits and other sources from all household members.
+
+          - tag: p
+            content: You only need to provide an estimated total right now. The actual total will be calculated if you are selected in the lottery.
+
+          - type: number
+            key: householdIncome
+            label: What is your household total pre-tax income?
+            placeholder: Total all of your income sources
+            prefix: $
+            decimalLimit: 2
+            validate:
+              min: 0
+
+          - type: radio
+            key: incomeSource
+            label: ""
+            values:
+              - label: per month
+                value: month
+              - label: per year
+                value: year
+
+  - type: panelGroup
     key: prefs
     label: Preferences
     panels:

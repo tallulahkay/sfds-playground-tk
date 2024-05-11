@@ -11,7 +11,6 @@ const TableInputFalse = {
 const ComponentProperties = [
 	["panel", {
 		collapsible: false,
-//		breadcrumb: "hidden",
 	}],
 	["textfield"],
 	["email", {
@@ -19,6 +18,13 @@ const ComponentProperties = [
 	}],
 	["phoneNumber", {
 		inputMask: "999-999-9999",
+		validateOn: "blur",
+	}],
+	["number", {
+		delimiter: false,
+		requireDecimal: false,
+		inputFormat: "plain",
+		truncateMultipleSpaces: false,
 		validateOn: "blur",
 	}],
 	["checkbox"],
