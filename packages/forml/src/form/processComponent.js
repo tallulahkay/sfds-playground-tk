@@ -65,9 +65,10 @@ const ComponentDefaults = ComponentProperties.reduce((result, [key, props]) => (
 
 export function processComponent(
 	data,
-	uniqueKey)
+	context)
 {
 	const { type, key, label, components, columns } = data;
+	const { uniqueKey } = context;
 	const defaults = ComponentDefaults[type || (data.tag && "htmlelement")];
 
 	if (!defaults) {
@@ -80,7 +81,7 @@ export function processComponent(
 	};
 
 	if (type === "panelGroup") {
-		return panelGroup(component, uniqueKey);
+		return panelGroup(component, context);
 	} else if (type !== "form") {
 		component.key = uniqueKey(key || label || component.title || component.tag);
 	}
@@ -100,13 +101,13 @@ export function processComponent(
 
 	if (components) {
 			// use flatMap in case the component returns an array
-		component.components = components.flatMap((comp) => processComponent(comp, uniqueKey));
+		component.components = components.flatMap((comp) => processComponent(comp, context));
 	}
 
 	if (columns) {
 			// each column has its own components that need to be processed
 		columns.forEach((col) => col.components =
-			col.components.map((comp) => processComponent(comp, uniqueKey)));
+ 			col.components.map((comp) => processComponent(comp, context)));
 	}
 
 	return component;

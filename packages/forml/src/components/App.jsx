@@ -1,8 +1,8 @@
 import { useCallback, useRef, useState } from "react";
 import { Form } from "@formio/react";
+import Breadcrumbs from "@/components/Breadcrumbs.jsx";
 import { generateForm } from "@/form/generateForm.js";
 import formData from "@/../form.yaml";
-import Breadcrumbs from "@/components/Breadcrumbs.jsx";
 
 let form;
 let errorMessage;
@@ -22,8 +22,8 @@ export default function App({
 		// to recreate the pageChange handler every time the App re-renders.  that
 		// then causes the Form component to re-render and re-add those event
 		// handlers, which seems to deeply confuse Formio.  this way, the event
-		// handlers can be created once on mount, and reference the live form through
-		// the ref.
+		// handlers can be created once on mount, and then reference the live form
+		// through the ref.
 	const liveFormRef = useRef();
 	const [currentPanelKey, setCurrentPanelKey] = useState();
 

@@ -12,6 +12,7 @@
 	padding-top: 1.25rem;
 	list-style: none;
 	text-align: center;
+	text-transform: uppercase;
 	display: table-cell;
 	position: relative;
 }
@@ -56,14 +57,4 @@
 .breadcrumbs > li:last-of-type::after {
 	left: auto;
 	right: 50%;
-}
-
-.breadcrumbs > li > a {
-	color: inherit;
-	text-decoration: none;
-	text-transform: uppercase;
-}
-
-.breadcrumbs > li > a:hover {
-	text-decoration: underline;
 }

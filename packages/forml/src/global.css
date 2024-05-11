@@ -15,6 +15,10 @@ nav {
 	margin-top: 3rem;
 }
 
+.pagination {
+	opacity: .2;
+}
+
 .desc-above {
 	display: grid;
 	grid-template-areas:
