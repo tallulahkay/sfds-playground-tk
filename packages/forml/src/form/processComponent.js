@@ -30,6 +30,7 @@ const ComponentProperties = [
 	["checkbox"],
 	["radio"],
 	["day"],
+	["button"],
 	["selectboxes", {
 		inputType: "checkbox",
 	}],

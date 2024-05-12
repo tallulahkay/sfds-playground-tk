@@ -442,6 +442,60 @@ components:
                         customMessage: Please enter a valid zip code.
 
   - type: panelGroup
+    key: household
+    label: Household
+    panels:
+      - type: panel
+        title: Household
+        components:
+          - tag: h3
+            content: Next, we'd like to know about the others who will live with you in the unit.
+
+          - type: button
+            label: I Will Live Alone
+            block: true
+            theme: info
+            action: custom
+            custom: >
+              data.willLiveAlone = true;
+              form.triggerChange();
+              setTimeout(() => form.nextPage(), 100);
+
+          - type: button
+            label: Other People Will Live With Me
+            block: true
+            theme: info
+            action: custom
+            custom: >
+              data.willLiveAlone = false;
+              form.triggerChange();
+              setTimeout(() => form.nextPage(), 100);
+
+      - type: panel
+        title: HH Warning
+        customConditional: show = data.willLiveAlone === false
+        components:
+          - tag: h3
+            content: Before adding other people, make sure that they aren't named on any other application for this listing.
+
+          - tag: h3
+            content: If you include someone who has already applied, all of your applications will be disqualified.
+
+
+      - type: panel
+        title: HH Add Member
+        customConditional: show = data.willLiveAlone === false
+        components:
+          - tag: h3
+            content: Tell us about your household.
+
+          - type: button
+            label: Add Household Member
+            block: true
+            theme: info
+            action: custom
+
+  - type: panelGroup
     key: income
     label: Income
     panels:
@@ -535,3 +589,19 @@ components:
           - type: checkbox
             label: I don't want this preference
             description: You'll still have the opportunity to claim other preferences.
+
+  - type: panelGroup
+    key: review
+    label: Review
+    panels:
+      - type: panel
+        title: Review
+        components:
+          - tag: h3
+            content: Take a moment to review your information before submitting your application.
+
+          - tag: p
+            content: "[Some sort of review UI would go here.]"
+
+          - tag: p
+            content: This is your last chance to edit before submitting.
