@@ -136,13 +136,13 @@ components:
             label: Your Name
             components:
               - type: textfield
-                label: First Name*
+                placeholder: First Name*
 
               - type: textfield
-                label: Middle Name (optional)
+                placeholder: Middle Name (optional)
 
               - type: textfield
-                label: Last Name*
+                placeholder: Last Name*
 
           - type: day
             label: Your Date of Birth*
@@ -456,10 +456,14 @@ components:
             block: true
             theme: info
             action: custom
+            # after setting the willLiveAlone value, the only way to force the visible
+            # pages to update is to call triggerChange().  but that's debounced by 100ms,
+            # so if we immediately call nextPage(), the current next page will be wrong.
+            # thus, the setTimeout kludge.
             custom: >
               data.willLiveAlone = true;
               form.triggerChange();
-              setTimeout(() => form.nextPage(), 100);
+              setTimeout(() => form.nextPage(), 150);
 
           - type: button
             label: Other People Will Live With Me
@@ -469,7 +473,7 @@ components:
             custom: >
               data.willLiveAlone = false;
               form.triggerChange();
-              setTimeout(() => form.nextPage(), 100);
+              setTimeout(() => form.nextPage(), 150);
 
       - type: panel
         title: HH Warning
@@ -481,7 +485,6 @@ components:
           - tag: h3
             content: If you include someone who has already applied, all of your applications will be disqualified.
 
-
       - type: panel
         title: HH Add Member
         customConditional: show = data.willLiveAlone === false
@@ -489,11 +492,96 @@ components:
           - tag: h3
             content: Tell us about your household.
 
-          - type: button
-            label: Add Household Member
-            block: true
-            theme: info
-            action: custom
+          - type: editgrid
+            label:
+            key: householdMembers
+            addAnother: Add Household Member
+            openWhenEmpty: false
+            tableView: false
+            modal: true
+            conditionalAddButton:
+              show = data.householdMembers?.length < 2
+            templates:
+              header:
+              row: >
+                <div class="row household-member-row">
+                  <div class="col-sm">
+                    <strong>{{ row.hhmFirstName }} {{ row.hhmLastName }}</strong>
+                    <em>Household Member</em>
+                  </div>
+                  {% if (!instance.options.readOnly && !instance.disabled) { %}
+                    <div class="col-sm-2">
+                      <div class="btn-group pull-right">
+                        <button class="btn btn-default btn-light btn-sm editRow"><i class="{{ iconClass('edit') }}"></i></button>
+                        {% if (!instance.hasRemoveButtons || instance.hasRemoveButtons()) { %}
+                          <button class="btn btn-danger btn-sm removeRow"><i class="{{ iconClass('trash') }}"></i></button>
+                        {% } %}
+                      </div>
+                    </div>
+                  {% } %}
+                </div>
+            components:
+              - type: fieldSet
+                label: Household Member's Name
+                components:
+                  - type: textfield
+                    key: hhmFirstName
+                    placeholder: First Name*
+
+                  - type: textfield
+                    key: hhmMiddleName
+                    placeholder: Middle Name (optional)
+
+                  - type: textfield
+                    key: hhmLastName
+                    placeholder: Last Name
+
+              - type: day
+                label: Date of Birth
+
+              - type: radio
+                label: Do they have the same address as you?
+                key: hhmSameAddress
+                values:
+                  - label: Yes
+                    value: true
+                  - label: No
+                    value: false
+
+              - type: radio
+                label: Do they work in San Francisco?
+                key: hhmWorkInSF
+                description:
+                  This means they currently work in San Francisco at least 75% of their working hours.
+                customClass: desc-above
+                values:
+                  - label: Yes
+                    value: true
+                  - label: No
+                    value: false
+
+              - tag: p
+                content:
+                  In order to claim this as a lottery preference, you'll need to upload
+                  supporting documentation as instructed on a later screen.
+                customConditional: show = row.hhmWorkInSF === true
+
+              - type: select
+                label: What is their relationship to you?
+                data:
+                  values:
+                    - label: Spouse
+                      value: spouse
+                    - label: Registered Domestic Partner
+                      value: partner
+                    - label: Child
+                      value: child
+                    - label: Parent
+                      value: parent
+                    - label: Sibling
+                      value: sibling
+                    - label: Other
+                      value: other
 
   - type: panelGroup
     key: income

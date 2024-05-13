@@ -56,3 +56,14 @@ nav {
 		grid-area: error;
 	}
 }
+
+.household-member-row {
+	align-items: center;
+
+	em {
+		color: #888;
+		font-size: smaller;
+		font-style: normal;
+		display: block;
+	}
+}

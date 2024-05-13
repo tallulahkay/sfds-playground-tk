@@ -29,7 +29,23 @@ const ComponentProperties = [
 	}],
 	["checkbox"],
 	["radio"],
-	["day"],
+	["day", {
+		hideInputLabels: true,
+		fields: {
+			day: {
+				placeholder: "Day",
+				hide: false
+			},
+			month: {
+				placeholder: "Month",
+				hide: false
+			},
+			year: {
+				placeholder: "Year",
+				hide: false
+			}
+		},
+	}],
 	["button"],
 	["selectboxes", {
 		inputType: "checkbox",
@@ -39,6 +55,9 @@ const ComponentProperties = [
 		searchEnabled: false,
 	}],
 	["fieldSet",
+		TableInputFalse
+	],
+	["editgrid",
 		TableInputFalse
 	],
 	["htmlelement", {
@@ -68,7 +87,7 @@ export function processComponent(
 	data,
 	context)
 {
-	const { type, key, label, components, columns } = data;
+	const { type, key, label, placeholder, components, columns } = data;
 	const { uniqueKey } = context;
 	const defaults = ComponentDefaults[type || (data.tag && "htmlelement")];
 
@@ -84,12 +103,20 @@ export function processComponent(
 	if (type === "panelGroup") {
 		return panelGroup(component, context);
 	} else if (type !== "form") {
-		component.key = uniqueKey(key || label || component.title || component.tag);
+		component.key = uniqueKey(key || label || placeholder || component.title || component.tag);
 	}
 
 	if (label?.endsWith("*")) {
 		component.label = label.slice(0, -1);
 		component.required = true;
+	} else if (!label && placeholder?.endsWith("*")) {
+		component.placeholder = placeholder.slice(0, -1);
+		component.required = true;
+	}
+
+	if (placeholder && !label) {
+			// set this key to null so that no element will be created for it
+		component.label = null;
 	}
 
 	if (typeof component.required === "boolean") {
