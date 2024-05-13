@@ -1,23 +1,11 @@
 import { Form } from "@formio/react";
-import { generateForm } from "./form/generateForm.js";
-import formData from "../form.yaml";
+import form from "../form.json";
+import { Formio } from "@formio/react";
+import { CustomAddress } from "./CustomComponent";
 
-let form;
-let errorMessage;
+Formio.use(CustomAddress);
 
-try {
-	form = generateForm(formData);
-} catch (e) {
-	errorMessage = e.message;
-}
-
-console.log(form);
-
-export default function App({
-	listing })
-{
-		// this is a bit of a kludge, but provide the listing data to the blocks of
-		// component logic via the Formio.Utils var
+export default function App({ listing }) {
 	Formio.Utils.listing = listing;
 
 	return (
@@ -27,9 +15,6 @@ export default function App({
 				form={form}
 				onSubmit={console.log}
 			/>
-			{errorMessage &&
-				<p className="alert-warning">{errorMessage}</p>
-			}
 		</div>
 	);
 }

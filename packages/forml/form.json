@@ -1,0 +1,1599 @@
+{
+    "title": "Housing Application",
+    "name": "housingShortForm",
+    "type": "form",
+    "display": "wizard",
+    "key": "test-class-name",
+    "components": [
+        {
+            "label": "HTML",
+            "tag": "header",
+            "attrs": [
+                {
+                "attr": "",
+                "value": ""
+                }
+            ],
+            "content": "<h2>What's your name?</h2>",
+            "className": "you-header",
+            "refreshOnChange": false,
+            "key": "html6",
+            "type": "htmlelement",
+            "input": false,
+            "tableView": false
+        },
+        {
+          "label": "HTML",
+          "tag": "error-message",
+          "content": "<div class='alert-box' role='alert'><span class='ui-icon ui-static ui-medium'><svg><use xlink:href='#i-warning' xmlns:xlink='http://www.w3.org/1999/xlink'></use></svg></span></span><button class='button-link close'>×</button><p class='alert-body'>You'll need to resolve any errors before moving on.</p></div>",
+          "className": "you-header",
+          "refreshOnChange": false,
+          "key": "html6",
+          "type": "htmlelement",
+          "input": false,
+          "tableView": false,
+          "conditional": {
+            "show": true,
+            "when": "firstName"
+          }
+      },
+      {
+        "tableView": true,
+        "input": true,
+        "collapsible": false,
+        "type": "panel",
+        "title": "You",
+        "components": [
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "label": "Your Name",
+            "key": "firstName",
+            "components": [
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "placeholder": "First Name",
+                "key": "firstName",
+                "validate": {
+                  "required": true
+                },
+                "errors": {
+                  "required": "Please enter a First Name"
+                }
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "placeholder": "Middle Name (optional)",
+                "key": "undefined2"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "placeholder": "Last Name",
+                "key": "undefined3",
+                "validate": {
+                  "required": true
+                },
+                "errors": {
+                  "required": "Please enter a Last Name"
+                }
+              }
+            ]
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "day",
+            "label": "Your Date of Birth",
+            "fields": {
+              "month": {
+                "type": "text",
+                "placeholder": "MM"
+              },
+              "day": {
+                "placeholder": "DD"
+              },
+              "year": {
+                "placeholder": "YYYY"
+              }
+            },
+            "errors": {
+              "required": "Please enter a valid Date of Birth"
+            },
+            "key": "yourDateOfBirth",
+            "validate": {
+              "required": true
+            }
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined4"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "validateOn": "blur",
+            "type": "email",
+            "errors": {
+              "required": "Please enter an email address"
+            },
+            "label": "Your Email Address<p>We will only use your email address to contact you about your application.</p>",
+            "placeholder": "you@myemail.com",
+            "logic": [
+              {
+                "trigger": {
+                  "type": "simple",
+                  "simple": {
+                    "show": true,
+                    "when": "noEmail",
+                    "eq": true
+                  }
+                },
+                "actions": [
+                  {
+                    "type": "property",
+                    "property": {
+                      "value": "disabled",
+                      "type": "boolean"
+                    },
+                    "state": true
+                  },
+                  {
+                    "type": "property",
+                    "property": {
+                      "value": "validate.required",
+                      "type": "boolean"
+                    },
+                    "state": false
+                  }
+                ]
+              }
+            ],
+            "key": "yourEmailAddress",
+            "validate": {
+              "required": true
+            }
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "key": "noEmail",
+            "label": "I don't have an email address"
+          }
+        ],
+        "key": "undefined"
+      },
+      {
+        "tableView": true,
+        "input": true,
+        "collapsible": false,
+        "type": "panel",
+        "title": "Contact",
+        "components": [
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "h3",
+            "content": "Thanks, {{data.firstName}}. Now we need to know how to contact you.",
+            "key": "undefined6"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "components": [
+              {
+                "tableView": true,
+                "input": true,
+                "inputMask": "999-999-9999",
+                "validateOn": "blur",
+                "type": "phoneNumber",
+                "label": "Your Phone Number",
+                "logic": [
+                  {
+                    "trigger": {
+                      "type": "simple",
+                      "simple": {
+                        "show": true,
+                        "when": "noPhone",
+                        "eq": true
+                      }
+                    },
+                    "actions": [
+                      {
+                        "type": "property",
+                        "property": {
+                          "value": "disabled",
+                          "type": "boolean"
+                        },
+                        "state": true
+                      },
+                      {
+                        "type": "property",
+                        "property": {
+                          "value": "validate.required",
+                          "type": "boolean"
+                        },
+                        "state": false
+                      }
+                    ]
+                  }
+                ],
+                "key": "yourPhoneNumber",
+                "validate": {
+                  "required": true
+                }
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "widget": "html5",
+                "searchEnabled": false,
+                "type": "select",
+                "label": "What type of number is this?",
+                "logic": [
+                  {
+                    "trigger": {
+                      "type": "simple",
+                      "simple": {
+                        "show": true,
+                        "when": "noPhone",
+                        "eq": true
+                      }
+                    },
+                    "actions": [
+                      {
+                        "type": "property",
+                        "property": {
+                          "value": "disabled",
+                          "type": "boolean"
+                        },
+                        "state": true
+                      },
+                      {
+                        "type": "property",
+                        "property": {
+                          "value": "validate.required",
+                          "type": "boolean"
+                        },
+                        "state": false
+                      }
+                    ]
+                  }
+                ],
+                "data": {
+                  "values": [
+                    {
+                      "label": "Mobile",
+                      "value": "mobile"
+                    },
+                    {
+                      "label": "Work",
+                      "value": "work"
+                    },
+                    {
+                      "label": "Home",
+                      "value": "home"
+                    }
+                  ]
+                },
+                "key": "whatTypeOfNumberIsThis",
+                "validate": {
+                  "required": true
+                }
+              }
+            ],
+            "key": "undefined7"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "key": "noPhone",
+            "label": "I don't have a phone number",
+            "logic": [
+              {
+                "trigger": {
+                  "type": "simple",
+                  "simple": {
+                    "show": true,
+                    "when": "anotherPhone",
+                    "eq": true
+                  }
+                },
+                "actions": [
+                  {
+                    "type": "property",
+                    "property": {
+                      "value": "disabled",
+                      "type": "boolean"
+                    },
+                    "state": true
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "key": "anotherPhone",
+            "label": "I have an additional phone number",
+            "logic": [
+              {
+                "trigger": {
+                  "type": "simple",
+                  "simple": {
+                    "show": true,
+                    "when": "noPhone",
+                    "eq": true
+                  }
+                },
+                "actions": [
+                  {
+                    "type": "property",
+                    "property": {
+                      "value": "disabled",
+                      "type": "boolean"
+                    },
+                    "state": true
+                  },
+                  {
+                    "type": "property",
+                    "property": {
+                      "value": "validate.required",
+                      "type": "boolean"
+                    },
+                    "state": false
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "label": "Your Second Phone Number",
+            "conditional": {
+              "show": true,
+              "when": "anotherPhone",
+              "eq": true
+            },
+            "components": [
+              {
+                "tableView": true,
+                "input": true,
+                "inputMask": "999-999-9999",
+                "validateOn": "blur",
+                "type": "phoneNumber",
+                "key": "additionalPhone",
+                "label": "Your Phone Number",
+                "validate": {
+                  "required": true
+                }
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "widget": "html5",
+                "searchEnabled": false,
+                "type": "select",
+                "key": "additionalPhoneType",
+                "label": "What type of number is this?",
+                "data": {
+                  "values": [
+                    {
+                      "label": "Mobile",
+                      "value": "mobile"
+                    },
+                    {
+                      "label": "Work",
+                      "value": "work"
+                    },
+                    {
+                      "label": "Home",
+                      "value": "home"
+                    }
+                  ]
+                },
+                "validate": {
+                  "required": true
+                }
+              }
+            ],
+            "key": "yourSecondPhoneNumber"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined8"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "label": "Address",
+            "components": [
+              {
+                "tableView": false,
+                "input": false,
+                "type": "htmlelement",
+                "tag": "p",
+                "content": "We need the address where you currently live.",
+                "key": "undefined9"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "Street Address",
+                "key": "streetAddress",
+                "validate": {
+                  "required": true
+                }
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "Apt or Unit #",
+                "key": "aptOrUnit"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "City",
+                "key": "city",
+                "validate": {
+                  "required": true
+                }
+              },
+              {
+                "tableView": false,
+                "input": false,
+                "type": "columns",
+                "columns": [
+                  {
+                    "components": [
+                      {
+                        "tableView": true,
+                        "input": true,
+                        "widget": "choicesjs",
+                        "searchEnabled": true,
+                        "type": "select",
+                        "label": "State",
+                        "data": {
+                          "values": [
+                            {
+                              "label": "Alabama",
+                              "value": "AL"
+                            },
+                            {
+                              "label": "Alaska",
+                              "value": "AK"
+                            },
+                            {
+                              "label": "Arizona",
+                              "value": "AZ"
+                            },
+                            {
+                              "label": "Arkansas",
+                              "value": "AR"
+                            },
+                            {
+                              "label": "California",
+                              "value": "CA"
+                            },
+                            {
+                              "label": "Colorado",
+                              "value": "CO"
+                            },
+                            {
+                              "label": "Connecticut",
+                              "value": "CT"
+                            },
+                            {
+                              "label": "Delaware",
+                              "value": "DE"
+                            },
+                            {
+                              "label": "Florida",
+                              "value": "FL"
+                            },
+                            {
+                              "label": "Georgia",
+                              "value": "GA"
+                            },
+                            {
+                              "label": "Hawaii",
+                              "value": "HI"
+                            },
+                            {
+                              "label": "Idaho",
+                              "value": "ID"
+                            },
+                            {
+                              "label": "Illinois",
+                              "value": "IL"
+                            },
+                            {
+                              "label": "Indiana",
+                              "value": "IN"
+                            },
+                            {
+                              "label": "Iowa",
+                              "value": "IA"
+                            },
+                            {
+                              "label": "Kansas",
+                              "value": "KS"
+                            },
+                            {
+                              "label": "Kentucky",
+                              "value": "KY"
+                            },
+                            {
+                              "label": "Louisiana",
+                              "value": "LA"
+                            },
+                            {
+                              "label": "Maine",
+                              "value": "ME"
+                            },
+                            {
+                              "label": "Maryland",
+                              "value": "MD"
+                            },
+                            {
+                              "label": "Massachusetts",
+                              "value": "MA"
+                            },
+                            {
+                              "label": "Michigan",
+                              "value": "MI"
+                            },
+                            {
+                              "label": "Minnesota",
+                              "value": "MN"
+                            },
+                            {
+                              "label": "Mississippi",
+                              "value": "MS"
+                            },
+                            {
+                              "label": "Missouri",
+                              "value": "MO"
+                            },
+                            {
+                              "label": "Montana",
+                              "value": "MT"
+                            },
+                            {
+                              "label": "Nebraska",
+                              "value": "NE"
+                            },
+                            {
+                              "label": "Nevada",
+                              "value": "NV"
+                            },
+                            {
+                              "label": "New Hampshire",
+                              "value": "NH"
+                            },
+                            {
+                              "label": "New Jersey",
+                              "value": "NJ"
+                            },
+                            {
+                              "label": "New Mexico",
+                              "value": "NM"
+                            },
+                            {
+                              "label": "New York",
+                              "value": "NY"
+                            },
+                            {
+                              "label": "North Carolina",
+                              "value": "NC"
+                            },
+                            {
+                              "label": "North Dakota",
+                              "value": "ND"
+                            },
+                            {
+                              "label": "Ohio",
+                              "value": "OH"
+                            },
+                            {
+                              "label": "Oklahoma",
+                              "value": "OK"
+                            },
+                            {
+                              "label": "Oregon",
+                              "value": "OR"
+                            },
+                            {
+                              "label": "Pennsylvania",
+                              "value": "PA"
+                            },
+                            {
+                              "label": "Rhode Island",
+                              "value": "RI"
+                            },
+                            {
+                              "label": "South Carolina",
+                              "value": "SC"
+                            },
+                            {
+                              "label": "South Dakota",
+                              "value": "SD"
+                            },
+                            {
+                              "label": "Tennessee",
+                              "value": "TN"
+                            },
+                            {
+                              "label": "Texas",
+                              "value": "TX"
+                            },
+                            {
+                              "label": "Utah",
+                              "value": "UT"
+                            },
+                            {
+                              "label": "Vermont",
+                              "value": "VT"
+                            },
+                            {
+                              "label": "Virginia",
+                              "value": "VA"
+                            },
+                            {
+                              "label": "Washington",
+                              "value": "WA"
+                            },
+                            {
+                              "label": "West Virginia",
+                              "value": "WV"
+                            },
+                            {
+                              "label": "Wisconsin",
+                              "value": "WI"
+                            },
+                            {
+                              "label": "Wyoming",
+                              "value": "WY"
+                            }
+                          ]
+                        },
+                        "key": "state",
+                        "validate": {
+                          "required": true
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "components": [
+                      {
+                        "tableView": true,
+                        "input": true,
+                        "type": "textfield",
+                        "label": "Zip Code",
+                        "validateOn": "blur",
+                        "validate": {
+                          "minLength": 5,
+                          "maxLength": 10,
+                          "pattern": "[0-9]{5}(-[0-9]{4})?",
+                          "customMessage": "Please enter a valid zip code.",
+                          "required": true
+                        },
+                        "key": "zipCode"
+                      }
+                    ]
+                  }
+                ],
+                "key": "undefined10"
+              }
+            ],
+            "key": "address"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "key": "sendDifferentAddress",
+            "label": "Send my mail to a different address"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "customConditional": "show = data.sendDifferentAddress",
+            "key": "undefined11"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "label": "Mailing Address",
+            "customConditional": "show = data.sendDifferentAddress",
+            "components": [
+              {
+                "tableView": false,
+                "input": false,
+                "type": "htmlelement",
+                "tag": "p",
+                "content": "Provide an address where you can receive updates and materials about your application.",
+                "key": "undefined12"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "Street Address",
+                "key": "streetAddress1",
+                "validate": {
+                  "required": true
+                }
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "Apt or Unit #",
+                "key": "aptOrUnit1"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "City",
+                "key": "city1",
+                "validate": {
+                  "required": true
+                }
+              },
+              {
+                "tableView": false,
+                "input": false,
+                "type": "columns",
+                "columns": [
+                  {
+                    "components": [
+                      {
+                        "tableView": true,
+                        "input": true,
+                        "widget": "choicesjs",
+                        "searchEnabled": true,
+                        "type": "select",
+                        "label": "State",
+                        "data": {
+                          "values": [
+                            {
+                              "label": "Alabama",
+                              "value": "AL"
+                            },
+                            {
+                              "label": "Alaska",
+                              "value": "AK"
+                            },
+                            {
+                              "label": "Arizona",
+                              "value": "AZ"
+                            },
+                            {
+                              "label": "Arkansas",
+                              "value": "AR"
+                            },
+                            {
+                              "label": "California",
+                              "value": "CA"
+                            },
+                            {
+                              "label": "Colorado",
+                              "value": "CO"
+                            },
+                            {
+                              "label": "Connecticut",
+                              "value": "CT"
+                            },
+                            {
+                              "label": "Delaware",
+                              "value": "DE"
+                            },
+                            {
+                              "label": "Florida",
+                              "value": "FL"
+                            },
+                            {
+                              "label": "Georgia",
+                              "value": "GA"
+                            },
+                            {
+                              "label": "Hawaii",
+                              "value": "HI"
+                            },
+                            {
+                              "label": "Idaho",
+                              "value": "ID"
+                            },
+                            {
+                              "label": "Illinois",
+                              "value": "IL"
+                            },
+                            {
+                              "label": "Indiana",
+                              "value": "IN"
+                            },
+                            {
+                              "label": "Iowa",
+                              "value": "IA"
+                            },
+                            {
+                              "label": "Kansas",
+                              "value": "KS"
+                            },
+                            {
+                              "label": "Kentucky",
+                              "value": "KY"
+                            },
+                            {
+                              "label": "Louisiana",
+                              "value": "LA"
+                            },
+                            {
+                              "label": "Maine",
+                              "value": "ME"
+                            },
+                            {
+                              "label": "Maryland",
+                              "value": "MD"
+                            },
+                            {
+                              "label": "Massachusetts",
+                              "value": "MA"
+                            },
+                            {
+                              "label": "Michigan",
+                              "value": "MI"
+                            },
+                            {
+                              "label": "Minnesota",
+                              "value": "MN"
+                            },
+                            {
+                              "label": "Mississippi",
+                              "value": "MS"
+                            },
+                            {
+                              "label": "Missouri",
+                              "value": "MO"
+                            },
+                            {
+                              "label": "Montana",
+                              "value": "MT"
+                            },
+                            {
+                              "label": "Nebraska",
+                              "value": "NE"
+                            },
+                            {
+                              "label": "Nevada",
+                              "value": "NV"
+                            },
+                            {
+                              "label": "New Hampshire",
+                              "value": "NH"
+                            },
+                            {
+                              "label": "New Jersey",
+                              "value": "NJ"
+                            },
+                            {
+                              "label": "New Mexico",
+                              "value": "NM"
+                            },
+                            {
+                              "label": "New York",
+                              "value": "NY"
+                            },
+                            {
+                              "label": "North Carolina",
+                              "value": "NC"
+                            },
+                            {
+                              "label": "North Dakota",
+                              "value": "ND"
+                            },
+                            {
+                              "label": "Ohio",
+                              "value": "OH"
+                            },
+                            {
+                              "label": "Oklahoma",
+                              "value": "OK"
+                            },
+                            {
+                              "label": "Oregon",
+                              "value": "OR"
+                            },
+                            {
+                              "label": "Pennsylvania",
+                              "value": "PA"
+                            },
+                            {
+                              "label": "Rhode Island",
+                              "value": "RI"
+                            },
+                            {
+                              "label": "South Carolina",
+                              "value": "SC"
+                            },
+                            {
+                              "label": "South Dakota",
+                              "value": "SD"
+                            },
+                            {
+                              "label": "Tennessee",
+                              "value": "TN"
+                            },
+                            {
+                              "label": "Texas",
+                              "value": "TX"
+                            },
+                            {
+                              "label": "Utah",
+                              "value": "UT"
+                            },
+                            {
+                              "label": "Vermont",
+                              "value": "VT"
+                            },
+                            {
+                              "label": "Virginia",
+                              "value": "VA"
+                            },
+                            {
+                              "label": "Washington",
+                              "value": "WA"
+                            },
+                            {
+                              "label": "West Virginia",
+                              "value": "WV"
+                            },
+                            {
+                              "label": "Wisconsin",
+                              "value": "WI"
+                            },
+                            {
+                              "label": "Wyoming",
+                              "value": "WY"
+                            }
+                          ]
+                        },
+                        "key": "state1",
+                        "validate": {
+                          "required": true
+                        }
+                      }
+                    ]
+                  },
+                  {
+                    "components": [
+                      {
+                        "tableView": true,
+                        "input": true,
+                        "type": "textfield",
+                        "label": "Zip Code",
+                        "validateOn": "blur",
+                        "validate": {
+                          "minLength": 5,
+                          "maxLength": 10,
+                          "pattern": "[0-9]{5}(-[0-9]{4})?",
+                          "customMessage": "Please enter a valid zip code.",
+                          "required": true
+                        },
+                        "key": "zipCode1"
+                      }
+                    ]
+                  }
+                ],
+                "key": "undefined13"
+              }
+            ],
+            "key": "mailingAddress"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined14"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "radio",
+            "label": "Do you work in San Francisco?",
+            "validate": {
+              "customMessage": "This must be answered.",
+              "required": true
+            },
+            "description": "This means you currently work in San Francisco at least 75% of your working hours.",
+            "values": [
+              {
+                "label": "Yes",
+                "value": true
+              },
+              {
+                "label": "No",
+                "value": false
+              }
+            ],
+            "key": "doYouWorkInSanFrancisco"
+          }
+        ],
+        "key": "undefined5"
+      },
+      {
+        "tableView": true,
+        "input": true,
+        "collapsible": false,
+        "type": "panel",
+        "title": "Alt Ct Type",
+        "components": [
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "label": "Is there someone else you'd like to authorize us to contact if we can't reach you?",
+            "components": [
+              {
+                "tableView": false,
+                "input": false,
+                "type": "htmlelement",
+                "tag": "p",
+                "content": "By providing an alternate contact, you are allowing us to discuss information on your application with them.",
+                "key": "undefined16"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "radio",
+                "label": "Alternate Contact",
+                "key": "altContactType",
+                "values": [
+                  {
+                    "label": "Family member",
+                    "value": "family"
+                  },
+                  {
+                    "label": "Friend",
+                    "value": "friend"
+                  },
+                  {
+                    "label": "Case manager or housing counselor",
+                    "value": "counselor"
+                  },
+                  {
+                    "label": "Other",
+                    "value": "other"
+                  },
+                  {
+                    "label": "I don't have an alternate contact",
+                    "value": "none"
+                  }
+                ]
+              }
+            ],
+            "key": "isThereSomeoneElseYouDLikeTo"
+          }
+        ],
+        "key": "undefined15"
+      },
+      {
+        "tableView": true,
+        "input": true,
+        "collapsible": false,
+        "type": "panel",
+        "title": "Alt Ct Name",
+        "customConditional": "show = data.altContactType && data.altContactType !== 'none'",
+        "components": [
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "label": "Who is your alternate contact?",
+            "components": [
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "First Name",
+                "key": "altFirstName"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "Last Name",
+                "key": "altLastName"
+              }
+            ],
+            "key": "whoIsYourAlternateContact"
+          }
+        ],
+        "key": "undefined17"
+      },
+      {
+        "tableView": true,
+        "input": true,
+        "collapsible": false,
+        "type": "panel",
+        "title": "Alt Ct Address",
+        "customConditional": "show = data.altContactType && data.altContactType !== 'none'",
+        "components": [
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "h3",
+            "content": "Let us know how to contact your alternate contact.",
+            "key": "undefined19"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "p",
+            "content": "We'll only use this information to contact them about your application.",
+            "key": "undefined20"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined21"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "inputMask": "999-999-9999",
+            "validateOn": "blur",
+            "type": "phoneNumber",
+            "label": "Contact Phone Number",
+            "key": "contactPhoneNumber"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined22"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "validateOn": "blur",
+            "type": "email",
+            "label": "Contact Email Address",
+            "key": "contactEmailAddress"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined23"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "fieldSet",
+            "label": "Contact Mailing Address",
+            "components": [
+              {
+                "tableView": false,
+                "input": false,
+                "type": "htmlelement",
+                "tag": "p",
+                "content": "Choose an address where they can receive updates and materials about your application.",
+                "key": "undefined24"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "Street Address",
+                "key": "streetAddress2"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "Apt or Unit #",
+                "key": "aptOrUnit2"
+              },
+              {
+                "tableView": true,
+                "input": true,
+                "type": "textfield",
+                "label": "City",
+                "key": "city2"
+              },
+              {
+                "tableView": false,
+                "input": false,
+                "type": "columns",
+                "columns": [
+                  {
+                    "components": [
+                      {
+                        "tableView": true,
+                        "input": true,
+                        "widget": "choicesjs",
+                        "searchEnabled": true,
+                        "type": "select",
+                        "label": "State",
+                        "data": {
+                          "values": [
+                            {
+                              "label": "Alabama",
+                              "value": "AL"
+                            },
+                            {
+                              "label": "Alaska",
+                              "value": "AK"
+                            },
+                            {
+                              "label": "Arizona",
+                              "value": "AZ"
+                            },
+                            {
+                              "label": "Arkansas",
+                              "value": "AR"
+                            },
+                            {
+                              "label": "California",
+                              "value": "CA"
+                            },
+                            {
+                              "label": "Colorado",
+                              "value": "CO"
+                            },
+                            {
+                              "label": "Connecticut",
+                              "value": "CT"
+                            },
+                            {
+                              "label": "Delaware",
+                              "value": "DE"
+                            },
+                            {
+                              "label": "Florida",
+                              "value": "FL"
+                            },
+                            {
+                              "label": "Georgia",
+                              "value": "GA"
+                            },
+                            {
+                              "label": "Hawaii",
+                              "value": "HI"
+                            },
+                            {
+                              "label": "Idaho",
+                              "value": "ID"
+                            },
+                            {
+                              "label": "Illinois",
+                              "value": "IL"
+                            },
+                            {
+                              "label": "Indiana",
+                              "value": "IN"
+                            },
+                            {
+                              "label": "Iowa",
+                              "value": "IA"
+                            },
+                            {
+                              "label": "Kansas",
+                              "value": "KS"
+                            },
+                            {
+                              "label": "Kentucky",
+                              "value": "KY"
+                            },
+                            {
+                              "label": "Louisiana",
+                              "value": "LA"
+                            },
+                            {
+                              "label": "Maine",
+                              "value": "ME"
+                            },
+                            {
+                              "label": "Maryland",
+                              "value": "MD"
+                            },
+                            {
+                              "label": "Massachusetts",
+                              "value": "MA"
+                            },
+                            {
+                              "label": "Michigan",
+                              "value": "MI"
+                            },
+                            {
+                              "label": "Minnesota",
+                              "value": "MN"
+                            },
+                            {
+                              "label": "Mississippi",
+                              "value": "MS"
+                            },
+                            {
+                              "label": "Missouri",
+                              "value": "MO"
+                            },
+                            {
+                              "label": "Montana",
+                              "value": "MT"
+                            },
+                            {
+                              "label": "Nebraska",
+                              "value": "NE"
+                            },
+                            {
+                              "label": "Nevada",
+                              "value": "NV"
+                            },
+                            {
+                              "label": "New Hampshire",
+                              "value": "NH"
+                            },
+                            {
+                              "label": "New Jersey",
+                              "value": "NJ"
+                            },
+                            {
+                              "label": "New Mexico",
+                              "value": "NM"
+                            },
+                            {
+                              "label": "New York",
+                              "value": "NY"
+                            },
+                            {
+                              "label": "North Carolina",
+                              "value": "NC"
+                            },
+                            {
+                              "label": "North Dakota",
+                              "value": "ND"
+                            },
+                            {
+                              "label": "Ohio",
+                              "value": "OH"
+                            },
+                            {
+                              "label": "Oklahoma",
+                              "value": "OK"
+                            },
+                            {
+                              "label": "Oregon",
+                              "value": "OR"
+                            },
+                            {
+                              "label": "Pennsylvania",
+                              "value": "PA"
+                            },
+                            {
+                              "label": "Rhode Island",
+                              "value": "RI"
+                            },
+                            {
+                              "label": "South Carolina",
+                              "value": "SC"
+                            },
+                            {
+                              "label": "South Dakota",
+                              "value": "SD"
+                            },
+                            {
+                              "label": "Tennessee",
+                              "value": "TN"
+                            },
+                            {
+                              "label": "Texas",
+                              "value": "TX"
+                            },
+                            {
+                              "label": "Utah",
+                              "value": "UT"
+                            },
+                            {
+                              "label": "Vermont",
+                              "value": "VT"
+                            },
+                            {
+                              "label": "Virginia",
+                              "value": "VA"
+                            },
+                            {
+                              "label": "Washington",
+                              "value": "WA"
+                            },
+                            {
+                              "label": "West Virginia",
+                              "value": "WV"
+                            },
+                            {
+                              "label": "Wisconsin",
+                              "value": "WI"
+                            },
+                            {
+                              "label": "Wyoming",
+                              "value": "WY"
+                            }
+                          ]
+                        },
+                        "key": "state2"
+                      }
+                    ]
+                  },
+                  {
+                    "components": [
+                      {
+                        "tableView": true,
+                        "input": true,
+                        "type": "textfield",
+                        "label": "Zip Code",
+                        "validateOn": "blur",
+                        "validate": {
+                          "minLength": 5,
+                          "maxLength": 10,
+                          "pattern": "[0-9]{5}(-[0-9]{4})?",
+                          "customMessage": "Please enter a valid zip code."
+                        },
+                        "key": "zipCode2"
+                      }
+                    ]
+                  }
+                ],
+                "key": "undefined25"
+              }
+            ],
+            "key": "contactMailingAddress"
+          }
+        ],
+        "key": "undefined18"
+      },
+      {
+        "tableView": true,
+        "input": true,
+        "collapsible": false,
+        "type": "panel",
+        "title": "COP",
+        "components": [
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "h3",
+            "content": "There are lottery preferences for people who already have special certificates.",
+            "key": "undefined27"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "p",
+            "content": "If you have not heard of these preferences, you most likely do not have one.",
+            "key": "undefined28"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined29"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "label": "Certificate of Preference (COP)",
+            "description": "<p>If you hold a Certificate of Preference (COP) from the former San Francisco Redevelopment Agency.  COP holders were displaced by Agency action generally during the 1960s and 1970s.</p> <a href=\"https://www.redevelopmentagency.org/\" target=\"_blank\">Find out more about this preference</a>",
+            "key": "certificateOfPreferenceCOP"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "label": "Displaced Tenant Housing Preference (DTHP)",
+            "description": "<p>If you hold a Displaced Tenant Housing Preference Certificate (DTHP). DTHP Certificate holders are tenants who were evicted through either an Ellis Act Eviction or an Owner Move In Eviction, or have been displaced by a fire.</p> <a href=\"https://sfmohcd.org/displaced-tenant-housing-preference\" target=\"_blank\">Find out more about this preference</a>",
+            "key": "displacedTenantHousingPreference"
+          }
+        ],
+        "key": "undefined26"
+      },
+      {
+        "tableView": true,
+        "input": true,
+        "collapsible": false,
+        "type": "panel",
+        "title": "NRHP",
+        "customConditional": "show = utils.listing?.Listing_Lottery_Preferences.some(({ Lottery_Preference: { Name } }) => Name.includes(\"NRHP\"))\n",
+        "components": [
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "h3",
+            "content": "Good news! You qualify for a higher ranking in the lottery.",
+            "key": "undefined31"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "p",
+            "content": "Just upload valid proof of this address and <strong>we'll also give you Live in San Francisco Preference</strong>.",
+            "key": "undefined32"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined33"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "label": "Live in the Neighborhood",
+            "description": "<p>You said someone in your household lives in the same neighborhood as the listing.</p> <p><strong>Neighborhood Resident Housing Preference</strong> means at least one household member lives within the same Supervisorial District or within a 1/2 mile buffer of the project.</p> <a href=\"https://www.redevelopmentagency.org/\" target=\"_blank\">Find out more about this preference</a>",
+            "key": "liveInTheNeighborhood"
+          },
+          {
+            "tableView": false,
+            "input": false,
+            "type": "htmlelement",
+            "tag": "hr",
+            "key": "undefined34"
+          },
+          {
+            "tableView": true,
+            "input": true,
+            "type": "checkbox",
+            "label": "I don't want this preference",
+            "description": "You'll still have the opportunity to claim other preferences.",
+            "key": "iDonTWantThisPreference"
+          }
+        ],
+        "key": "undefined30"
+      }
+    ]
+  }
